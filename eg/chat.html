@@ -2,10 +2,48 @@
 <html>
 <head>
 <title>RiveScript-JS</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <script type="text/javascript" src="jquery-1.7.2.min.js"></script>
+<script type="text/javascript" src="datadumper.js"></script>
 <script type="text/javascript" src="../bin/RiveScript-web.js"></script>
 </head>
 <body>
+
+<input type="button" value="Dump" onClick="DumperPopup(rs)">
+
+	<div id="dialogue"></div>
+
+	<div id="debug"></div>
+
+<script type="text/javascript">
+var rs = new RiveScript({
+	debug_div: "debug",
+	debug:     true
+});
+
+// This won't work on the web!
+rs.loadDirectory("brain");
+
+rs.loadFile([
+	"brain/begin.rs",
+	"brain/admin.rs",
+	"brain/clients.rs",
+	"brain/eliza.rs",
+	"brain/myself.rs",
+	"brain/rpg.rs"
+	], on_load_success, on_load_error);
+
+function on_load_success () {
+	console.log("Loading completed!");
+
+	// Now to sort the replies!
+	rs.sortReplies();
+}
+
+function on_load_error (e) {
+	console.log("Loading error: " + e);
+}
+</script>
 
 </body>
 </html>
