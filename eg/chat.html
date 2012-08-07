@@ -65,12 +65,13 @@ rs.loadDirectory("brain");
 
 // Load our files from the brain/ folder.
 rs.loadFile([
-	"brain/begin.rs",
-	"brain/admin.rs",
-	"brain/clients.rs",
-	"brain/eliza.rs",
-	"brain/myself.rs",
-	"brain/rpg.rs"
+//	"brain/begin.rs",
+//	"brain/admin.rs",
+//	"brain/clients.rs",
+//	"brain/eliza.rs",
+//	"brain/myself.rs",
+//	"brain/rpg.rs"
+	"brain/testsuite.rs"
 	], on_load_success, on_load_error);
 
 function on_load_success () {
@@ -91,9 +92,12 @@ function sendMessage () {
 	$("#dialogue").append("<div><span class='user'>You:</span> " + text + "</div>");
 	try {
 	var reply = rs.reply("soandso", text);
+	reply = reply.replace(/\n/g, "<br>");
 	$("#dialogue").append("<div><span class='bot'>Bot:</span> " + reply + "</div>");
+	$("#dialogue").animate({ scrollTop: $("#dialogue").height() }, 1000);
 	} catch(e) {
-		window.alert(e.message);
+		window.alert(e.message + "\n" + e.line);
+		console.log(e);
 	}
 
 	return false;

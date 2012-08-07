@@ -1,4 +1,51 @@
 (function(publish) {
+	// JavaScript Object Handler Method
+	/**
+	 * JsRiveObjects (RiveScript master)
+	 *
+	 * A default Object handler that can deal with JavaScript code.
+	 */
+	function JsRiveObjects (master) {
+		this._master  = master;
+		this._objects = {}; // Cache of objects.
+	};
+
+	/**
+	 * void load (string name, string[] code)
+	 *
+	 * Called by the RiveScript object to load JavaScript code.
+	 */
+	JsRiveObjects.prototype.load = function (name, code) {
+		// We need to make a dynamic JavaScript function.
+		var source = "this._objects[\"" + name + "\"] = function (rs, args) {\n"
+			+ code.join("\n")
+			+ "}\n";
+
+		try {
+			eval(source);
+		} catch (e) {
+			this._master.warn("Error evaluating JavaScript object: " + e.message);
+		}
+	};
+
+	/**
+	 * string call (RiveScript rs, string name, string[] fields)
+	 *
+	 * Called by the RiveScript object to execute JavaScript code.
+	 */
+	JsRiveObjects.prototype.call = function (rs, name, fields) {
+		// Call the dynamic method.
+		var func = this._objects[name];
+		var reply = "";
+		try {
+			reply = func.call(undefined, rs, fields);
+		} catch (e) {
+			reply = "[ERR: Error when executing JavaScript object]";
+		}
+
+		return reply;
+	};
+
 	////////////////////////////////////////////////////////////////////////////
 	// Constructor and Debug Methods                                          //
 	////////////////////////////////////////////////////////////////////////////
@@ -25,6 +72,7 @@
 		this._div     = undefined;
 
 		// Identify our runtime environment. Web, or NodeJS?
+		this._node    = {}; // NodeJS objects
 		this._runtime = this.runtime();
 
 		// Loading files in will be asynchronous, so we'll need to be able to
@@ -68,8 +116,20 @@
 			}
 		}
 
+		// Set the default JavaScript language handler.
+		this._handlers["javascript"] = new JsRiveObjects(this);
+
 		this.say("RiveScript Interpreter v" + VERSION + " Initialized.");
 		this.say("Runtime Environment: " + this._runtime);
+	}
+
+	/**
+	 * float version ()
+	 *
+	 * Return the version number of the RiveScript.js library.
+	 */
+	RiveScript.prototype.version = function () {
+		return VERSION;
 	}
 
 	/**
@@ -81,6 +141,7 @@
 	RiveScript.prototype.runtime = function () {
 		// In Node, there is no window, and module is a thing.
 		if (typeof(window) == "undefined" && typeof(module) == "object") {
+			this._node["fs"] = require("fs");
 			return "node";
 		} else {
 			return "web";
@@ -103,7 +164,7 @@
 
 		// A debug div provided?
 		if (this._div) {
-			$(this._div).append("<div>[RS] " + message + "</div>");
+			$(this._div).append("<div>[RS] " + this._escape_html(message) + "</div>");
 		} else if (console) {
 			console.log("[RS] " + message);
 		}
@@ -126,7 +187,7 @@
 		if (this._div) {
 			// A debug div is provided.
 			$(this._div).append("<div style='color: #FF0000; font-weight: bold'>"
-				+ message + "</div>");
+				+ this._escape_html(message) + "</div>");
 		} else if (console) {
 			// The console seems to exist.
 			if (console.error) {
@@ -186,6 +247,9 @@
 			if (this._runtime == "web") {
 				// With ajax!
 				this._ajax_load_file(loadcount, file, on_success, on_error);
+			} else if (this._runtime == "node") {
+				// With Node FS!
+				this._node_load_file(loadcount, file, on_success, on_error);
 			}
 		}
 
@@ -213,16 +277,47 @@
 				// All gone?
 				if (Object.keys(RS._pending[loadcount]).length == 0) {
 					if (typeof(on_success) == "function") {
-						on_success.call(loadcount);
+						on_success.call(undefined,loadcount);
 					}
 				}
 			},
 			error: function(xhr, textStatus, errorThrown) {
 				RS.say("Error! " + textStatus + "; " + errorThrown);
 				if (typeof(on_error) == "function") {
-					on_error.call(loadcount,textStatus);
+					on_error.call(undefined,loadcount,textStatus);
 				}
 			},
+		});
+	};
+
+	// Load a file using Node FS. DO NOT CALL THIS DIRECTLY.
+	RiveScript.prototype._node_load_file = function (loadcount, file, on_success, on_error) {
+		// A pointer to ourself.
+		var RS = this;
+
+		// Load the file.
+		this._node.fs.readFile(file, function (err, data) {
+			if (err) {
+				if (typeof(on_error) == "function") {
+					on_error.call(undefined,loadcount,err);
+				} else {
+					RS.warn(err);
+				}
+				return;
+			}
+
+			// Parse it!
+			RS.parse(file, ""+data, on_error);
+
+			// Log that we've received this file.
+			delete RS._pending[loadcount][file];
+
+			// All gone?
+			if (Object.keys(RS._pending[loadcount]).length == 0) {
+				if (typeof(on_success) == "function") {
+					on_success.call(undefined,loadcount);
+				}
+			}
 		});
 	};
 
@@ -234,14 +329,43 @@
 	 * This function is not supported in a web environment. Only for
 	 * NodeJS.
 	 */
-	RiveScript.prototype.loadDirectory = function (path) {
+	RiveScript.prototype.loadDirectory = function (path, on_success, on_error) {
 		// This can't be done on the web.
 		if (this._runtime === "web") {
 			this.warn("loadDirectory can't be used on the web!");
 			return;
 		}
 
-		// TODO
+		var loadcount = this._loadcount++;
+		this._pending[loadcount] = {};
+
+		var RS = this;
+		this._node.fs.readdir(path, function(err, files) {
+			if (err) {
+				if (typeof(on_error) == "function") {
+					on_error.call(undefined,err);
+				} else {
+					RS.warn(error);
+				}
+				return;
+			}
+
+			var to_load = [];
+			for (var i = 0, iend = files.length; i < iend; i++) {
+				if (files[i].match(/\.rs$/i)) {
+					// Keep track of the file's status.
+					RS._pending[loadcount][path+"/"+files[i]] = 1;
+					to_load.push(path + "/" + files[i]);
+				}
+			}
+
+			for (var i = 0, iend = to_load.length; i < iend; i++) {
+				var file = to_load[i];
+
+				// Load it.
+				RS._node_load_file(loadcount, to_load[i], on_success, on_error);
+			}
+		});
 	};
 
 	/**
@@ -304,7 +428,13 @@
 				if (line.indexOf("< object") > -1) {
 					// End the object.
 					if (objname.length > 0) {
-						// Call the object's handler. TODO
+						// Call the object's handler.
+						if (this._handlers[objlang]) {
+							this._objlangs[objname] = objlang;
+							this._handlers[objlang].load(objname, objbuf);
+						} else {
+							this.warn("Object creation failed: no handler for " + objlang, fname, lineno);
+						}
 					}
 					objname = '';
 					objlang = '';
@@ -353,7 +483,7 @@
 
 			// Ignore in-line comments if there's a space before and after the "//" symbols.
 			if (line.indexOf(" // ") > -1) {
-				line = this._strip(line.split(" // ")[0]); // TODO: test this!
+				line = this._strip(line.split(" // ")[0]);
 			}
 
 			// Run a syntax check on this line.
@@ -1005,6 +1135,7 @@
 						highest_inherits = inherits;
 					}
 					this.say("Trigger belongs to a topic that inherits other topics. Level=" + inherits);
+					trig = trig.replace(/\{inherits=\d+\}/ig, "");
 				} else {
 					inherits = -1;
 				}
@@ -1088,7 +1219,7 @@
 				var kinds = ["atomic", "option", "alpha", "number", "wild"];
 				for (var k = 0, kend = kinds.length; k < kend; k++) {
 					var kind = kinds[k];
-					var kind_sorted = Object.keys(track[ip][kind], function(a,b) { return b-a });
+					var kind_sorted = Object.keys(track[ip][kind]).sort(function(a,b) { return b-a });
 					for (var l = 0, lend = kind_sorted.length; l < lend; l++) {
 						var item = kind_sorted[l];
 						running.push.apply(running, track[ip][kind][item]);
@@ -1159,56 +1290,232 @@
 	// Public Configuration Methods                                           //
 	////////////////////////////////////////////////////////////////////////////
 
-	RiveScript.prototype.setHandler = function () {
-		self.warn("Not Implemented"); // TODO
+	/**
+	 * void setHandler (string lang, object)
+	 *
+	 * Set a custom language handler for RiveScript objects. See the source for
+	 * the built-in JavaScript handler as an example.
+	 *
+	 * @param lang: The lowercased name of the programming language, e.g. perl, python
+	 * @param obj:  A JavaScript object that has functions named "load" and "call".
+	 *              Use the undefined value to delete a language handler.
+	 */
+	RiveScript.prototype.setHandler = function (lang, obj) {
+		if (obj == undefined) {
+			delete this._handlers[lang];
+		} else {
+			this._handlers[lang] = obj;
+		}
 	};
 
-	RiveScript.prototype.setSubroutine = function () {
-		self.warn("Not Implemented"); // TODO
+	/**
+	 * void setSubroutine (string name, function)
+	 *
+	 * Define a JavaScript object from your program.
+	 *
+	 * This is equivalent to having a JS object defined in the RiveScript code, except
+	 * your JavaScript code is defining it instead.
+	 */
+	RiveScript.prototype.setSubroutine = function (name, code) {
+		// Do we have a JS handler?
+		if (this._handlers["javascript"]) {
+			this._handlers["javascript"]._objects[name] = code;
+		} else {
+			this.warn("Can't setSubroutine: no JavaScript object handler is loaded!");
+		}
 	};
 
-	RiveScript.prototype.setGlobal = function () {
-		self.warn("Not Implemented"); // TODO
+	/**
+	 * void setGlobal (string name, string value)
+	 *
+	 * Set a global variable. This is equivalent to '! global' in RiveScript.
+	 * Set the value to undefined to delete a global.
+	 */
+	RiveScript.prototype.setGlobal = function (name, value) {
+		if (value == undefined) {
+			delete this._gvars[name];
+		} else {
+			this._gvars[name] = value;
+		}
 	};
 
-	RiveScript.prototype.setVariable = function () {
-		self.warn("Not Implemented"); // TODO
+	/**
+	 * void setVariable (string name, string value)
+	 *
+	 * Set a bot variable. This is equivalent to '! var' in RiveScript.
+	 * Set the value to undefined to delete a variable.
+	 */
+	RiveScript.prototype.setVariable = function (name, value) {
+		if (value == undefined) {
+			delete this._bvars[name];
+		} else {
+			this._bvars[name] = value;
+		}
 	};
 
-	RiveScript.prototype.setSubstitution = function () {
-		self.warn("Not Implemented"); // TODO
+	/**
+	 * void setSubstitution (string name, string value)
+	 *
+	 * Set a substitution. This is equivalent to '! sub' in RiveScript.
+	 * Set the value to undefined to delete a substitution.
+	 */
+	RiveScript.prototype.setSubstitution = function (name, value) {
+		if (value == undefined) {
+			delete this._subs[name];
+		} else {
+			this._subs[name] = value;
+		}
 	};
 
-	RiveScript.prototype.setPerson = function () {
-		self.warn("Not Implemented"); // TODO
+	/**
+	 * void setPerson (string name, string value)
+	 *
+	 * Set a person substitution. This is equivalent to '! person' in RiveScript.
+	 * Set the value to undefined to delete a substitution.
+	 */
+	RiveScript.prototype.setPerson = function (name, value) {
+		if (value == undefined) {
+			delete this._person[name];
+		} else {
+			this._person[name] = value;
+		}
 	};
 
-	RiveScript.prototype.setUservar = function () {
-		self.warn("Not Implemented"); // TODO
+	/**
+	 * void setUservar (string user, string name, string value)
+	 *
+	 * Set a user variable for a user.
+	 */
+	RiveScript.prototype.setUservar = function (user, name, value) {
+		// Initialize the user?
+		if (!this._users[user]) {
+			this._users[user] = { "topic": "random" };
+		}
+
+		if (value == undefined) {
+			delete this._users[user][name];
+		} else {
+			this._users[user][name] = value;
+		}
 	};
 
-	RiveScript.prototype.getUservar = function () {
-		self.warn("Not Implemented"); // TODO
+	/**
+	 * string getUservar (string user, string name)
+	 *
+	 * Get a variable from a user. Returns the string "undefined" if it isn't
+	 * defined.
+	 */
+	RiveScript.prototype.getUservar = function (user, name) {
+		// No user?
+		if (!this._users[user]) {
+			return "undefined";
+		}
+
+		// The var exists?
+		if (this._users[user][name]) {
+			return this._users[user][name];
+		} else {
+			return "undefined";
+		}
 	};
 
-	RiveScript.prototype.getUservars = function () {
-		self.warn("Not Implemented"); // TODO
+	/**
+	 * data getUservars ([string user])
+	 *
+	 * Get all variables about a user. If no user is provided, returns all
+	 * data about all users.
+	 */
+	RiveScript.prototype.getUservars = function (user) {
+		if (user == undefined) {
+			// All the users! Return a cloned object to break refs.
+			return $.extend(true, {}, this._users);
+		} else {
+			// Exists?
+			if (this._users[user]) {
+				return $.extend(true, {}, this._users[user]);
+			} else {
+				return undefined;
+			}
+		}
 	};
 
-	RiveScript.prototype.clearUservars = function () {
-		self.warn("Not Implemented"); // TODO
+	/**
+	 * void clearUservars ([string user])
+	 *
+	 * Clear all a user's variables. If no user is provided, clears all variables
+	 * for all users.
+	 */
+	RiveScript.prototype.clearUservars = function (user) {
+		if (user == undefined) {
+			// All the users!
+			this._users = {};
+		} else {
+			delete this._users[user];
+		}
 	};
 
-	RiveScript.prototype.freezeUservars = function () {
-		self.warn("Not Implemented"); // TODO
+	/**
+	 * void freezeUservars (string user)
+	 *
+	 * Freeze the variable state of a user. This will clone and preserve the user's
+	 * entire variable state, so that it can be restored later with thawUservars().
+	 */
+	RiveScript.prototype.freezeUservars = function (user) {
+		if (this._users[user]) {
+			// Freeze them.
+			this._freeze[user] = $.extend(true, {}, this._users[user]);
+		} else {
+			this.warn("Can't freeze vars for user " + user + ": not found!");
+		}
 	};
 
-	RiveScript.prototype.thawUservars = function () {
-		self.warn("Not Implemented"); // TODO
+	/**
+	 * void thawUservars (string user[, string action])
+	 *
+	 * Thaws a user's frozen variables. The action can be one of the following:
+	 * - discard: Don't restore the variables, just delete the frozen copy.
+	 * - keep:    Keep the frozen copy after restoring.
+	 * - thaw:    Restore the variables and delete the frozen copy (default)
+	 */
+	RiveScript.prototype.thawUservars = function (user, action) {
+		if (typeof(action) != "string") {
+			action = "thaw";
+		}
+
+		// Frozen?
+		if (!this._freeze[user]) {
+			this.warn("Can't thaw user vars: " + user + " not found!");
+			return;
+		}
+
+		// What are we doing?
+		if (action == "thaw") {
+			// Thawing them out.
+			this.clearUservars(user);
+			this._users[user] = $.extend(true, {}, this._freeze[user]);
+			delete this._freeze[user];
+		} else if (action == "discard") {
+			// Just throw it away.
+			delete this._freeze[user];
+		} else if (action == "keep") {
+			// Copy them back, but keep them.
+			this.clearUservars(user);
+			this._users[user] = $.extend(true, {}, this._freeze[user]);
+		} else {
+			this.warn("Unsupported thaw action");
+		}
 	};
 
-	RiveScript.prototype.lastMatch = function () {
-		self.warn("Not Implemented"); // TODO
+	/**
+	 * void lastMatch (string user)
+	 *
+	 * Retrieve the trigger that the user matched most recently.
+	 */
+	RiveScript.prototype.lastMatch = function (user) {
+		if (this._users[user]) {
+			return this._users[user]["__lastmatch__"];
+		}
+		return undefined;
 	};
 
 	////////////////////////////////////////////////////////////////////////////
@@ -1234,13 +1541,24 @@
 
 		// If the BEGIN block exists, consult it first.
 		if (this._topics["__begin__"] && false) {
-			// TODO
+			var begin = this._getreply(user, "request", "begin", 0);
+
+			// Okay to continue?
+			if (begin.indexOf("{ok}") > -1) {
+				reply = this._getreply(user, msg, "normal", 0);
+				begin = begin.replace(/\{ok\}/g, reply);
+			}
+
+			reply = begin;
 		} else {
 			reply = this._getreply(user, msg, "normal", 0);
 		}
 
 		// Save their reply history.
-		// TODO
+		this._users[user]["__history__"]["input"].pop();
+		this._users[user]["__history__"]["input"].unshift(msg);
+		this._users[user]["__history__"]["reply"].pop();
+		this._users[user]["__history__"]["reply"].unshift(reply);
 
 		return reply;
 	};
@@ -1248,6 +1566,7 @@
 	// Format a user's message for safe processing.
 	RiveScript.prototype._format_message = function (msg) {
 		// Lowercase it.
+		msg = "" + msg;
 		msg = msg.toLowerCase();
 
 		// Run substitutions and sanitize what's left.
@@ -1324,7 +1643,83 @@
 		// to it. This should only be done the first time -- not during a recursive
 		// redirection. This is because in a redirection, "lastreply" is still gonna
 		// be the same as it was the first time, resulting in an infinite loop!
-		// TODO
+		if (step == 0) {
+			var allTopics = [ topic ];
+			if (this._includes[topic] || this._lineage[topic]) {
+				// Get ALL the topics!
+				allTopics = this._get_topic_tree(topic);
+			}
+
+			// Scan them all.
+			for (var i = 0, iend = allTopics.length; i < iend; i++) {
+				var top = allTopics[i];
+				this.say("Checking topic " + top + " for any %Previous's.");
+
+				if (this._sorted["thats"][top]) {
+					// There's one here!
+					this.say("There's a %Previous in this topic!");
+
+					// Do we have history yet?
+					var lastReply = this._users[user]["__history__"]["reply"][0];
+
+					// Format the bot's last reply the same way as the human's.
+					lastReply = this._format_message(lastReply);
+					this.say("Last reply: " + lastReply);
+
+					// See if it's a match.
+					for (var j = 0, jend = this._sorted["thats"][top].length; j < jend; j++) {
+						var trig = this._sorted["thats"][top][j];
+						var botside = this._reply_regexp(user, trig);
+						this.say("Try to match lastReply (" + lastReply + ") to " + botside);
+
+						// Match?
+						var match = lastReply.match(new RegExp('^' + botside + '$'));
+						if (match) {
+							// Huzzah! See if OUR message is right too.
+							this.say("Bot side matched!");
+							thatstars = []; // Collect the bot stars in case we need them.
+							for (var k = 1, kend = match.length; k < kend; k++) {
+								thatstars.push(match[k]);
+							}
+
+							// Compare the triggers to the user's message.
+							for (var k = 0, kend = this._sorted["that_trig"][top][trig].length; k < kend; k++) {
+								var subtrig = this._sorted["that_trig"][top][trig][k];
+								var humanside = this._reply_regexp(user, subtrig);
+								this.say("Now try to match " + msg + " to " + humanside);
+
+								match = msg.match(new RegExp("^" + humanside + "$"));
+								if (match) {
+									this.say("Found a match!");
+									matched        = this._thats[top][trig][subtrig];
+									matchedTrigger = subtrig;
+									foundMatch     = true;
+
+									// Collect the stars.
+									stars = [];
+									if (match.length > 1) {
+										for (var j = 1, jend = match.length; j < jend; j++) {
+											stars.push(match[j]);
+										}
+									}
+									break;
+								}
+							}
+						}
+
+						// Stop if we found a match.
+						if (foundMatch) {
+							break;
+						}
+					}
+				}
+
+				// Stop if we found a match.
+				if (foundMatch) {
+					break;
+				}
+			}
+		}
 
 		// Search their topic for a match to their trigger.
 		if (!foundMatch) {
@@ -1338,7 +1733,7 @@
 				var isAtomic = this._is_atomic(trig);
 				var isMatch = false;
 				if (isAtomic) {
-					if (msg == trig) {
+					if (msg == regexp) {
 						isMatch = true;
 					}
 				} else {
@@ -1349,6 +1744,7 @@
 						isMatch = true;
 
 						// Collect the stars.
+						stars = [];
 						if (match.length > 1) {
 							for (var j = 1, jend = match.length; j < jend; j++) {
 								stars.push(match[j]);
@@ -1393,7 +1789,76 @@
 					break;
 				}
 
-				// Check the conditionals. TODO
+				// Check the conditionals.
+				for (var i = 0; matched["condition"][i]; i++) {
+					var halves = matched["condition"][i].split(/\s*=>\s*/);
+					if (halves && halves.length == 2) {
+						var condition = halves[0].match(/^(.+?)\s+(==|eq|!=|ne|<>|<|<=|>|>=)\s+(.+?)$/);
+						if (condition) {
+							var left     = this._strip(condition[1]);
+							var eq       = condition[2];
+							var right    = this._strip(condition[3]);
+							var potreply = this._strip(halves[1]);
+
+							// Process tags all around.
+							left  = this._process_tags(user, msg, left, stars, thatstars, step);
+							right = this._process_tags(user, msg, right, stars, thatstars, step);
+
+							// Defaults?
+							if (left.length == 0) {
+								left = "undefined";
+							}
+							if (right.length == 0) {
+								right = "undefined";
+							}
+
+							this.say("Check if " + left + " " + eq + " " + right);
+
+							// Validate it.
+							var passed = false;
+							if (eq == "eq" || eq == "==") {
+								if (left == right) {
+									passed = true;
+								}
+							} else if (eq == "ne" || eq == "!=" || eq == "<>") {
+								if (left != right) {
+									passed = true;
+								}
+							} else {
+								// Dealing with numbers here.
+								try {
+									left  = parseInt(left);
+									right = parseInt(right);
+									if (eq == "<") {
+										if (left < right) {
+											passed = true;
+										}
+									} else if (eq == "<=") {
+										if (left <= right) {
+											passed = true;
+										}
+									} else if (eq == ">") {
+										if (left > right) {
+											passed = true;
+										}
+									} else if (eq == ">=") {
+										if (left >= right) {
+											passed = true;
+										}
+									}
+								} catch(e) {
+									this.warn("Failed to evaluate numeric condition!");
+								}
+							}
+
+							// OK?
+							if (passed) {
+								reply = potreply;
+								break;
+							}
+						}
+					}
+				}
 
 				// Have our reply yet?
 				if (reply != undefined && reply.length > 0) {
@@ -1402,10 +1867,8 @@
 
 				// Process weights in the replies.
 				var bucket = [];
-				console.log(matched["reply"]);
 				for (var rep_index in matched["reply"]) {
 					var rep = matched["reply"][rep_index];
-					console.log("Candidate: " + rep);
 					var weight = 1;
 					var match  = rep.match(/\{weight=(\\d+?)\}/i);
 					if (match) {
@@ -1423,8 +1886,6 @@
 
 				// Get a random reply.
 				var choice = parseInt(Math.random() * bucket.length);
-				console.log("choice: " + choice);
-				console.log(bucket);
 				reply = bucket[choice];
 				break;
 			}
@@ -1441,7 +1902,36 @@
 
 		// Process tags for the BEGIN block.
 		if (context == "begin") {
-			// TODO
+			// The BEGIN block can set {topic} and user vars.
+			var giveup = 0;
+
+			// Topic setter.
+			var match = reply.match(/\{topic=(.+?)\}/i);
+			while (match) {
+				giveup++;
+				if (giveup >= 50) {
+					this.warn("Infinite loop looking for topic tag!");
+					break;
+				}
+				var name = match[1];
+				this._users[user]["topic"] = name;
+				reply = reply.replace(new RegExp("{topic=" + this.quotemeta(name) + "}","ig"), "");
+				match = reply.match(/\{topic=(.+?)\}/i); // Look for more
+			}
+
+			// Set user vars.
+			match = reply.match(/<set (.+?)=(.+?)>/i);
+			giveup = 0;
+			while (match) {
+				giveup++;
+				if (giveup >= 50) {
+					this.warn("Infinite loop looking for set tag!");
+					break;
+				}
+				var name  = match[1];
+				var value = match[2];
+				this._users[user][name] = value;
+			}
 		} else {
 			// Process more tags if not in BEGIN.
 			reply = this._process_tags(user, msg, reply, stars, thatstars, step);
@@ -1458,12 +1948,39 @@
 
 		// Simple replacements.
 		regexp = regexp.replace(/\*/g, "(.+?)");  // Convert * into (.+?)
-		regexp = regexp.replace(/#/g,  "(\\d+?"); // Convert # into (\d+?)
+		regexp = regexp.replace(/#/g,  "(\\d+?)"); // Convert # into (\d+?)
 		regexp = regexp.replace(/_/g,  "([A-Za-z]+?)"); // Convert _ into (\w+?)
 		regexp = regexp.replace(/\{weight=\d+\}/g, ""); // Remove {weight} tags
 		regexp = regexp.replace(/<zerowidthstar>/g, "(.*?)");
 
-		// Optionals. TODO
+		// Optionals.
+		var match  = regexp.match(/\[(.+?)\]/);
+		var giveup = 0;
+		while (match) {
+			giveup++;
+			if (giveup >= 50) {
+				this.warn("Infinite loop when trying to process optionals in trigger!");
+				return "";
+			}
+
+			var parts = match[1].split("|");
+			var opts  = [];
+			for (var i = 0, iend = parts.length; i < iend; i++) {
+				var p = "\\s*" + parts[i] + "\\s*";
+				opts.push(p);
+			}
+			opts.push("\\s*");
+
+			// If this optional had a star or anything in it, make it non-matching.
+			var pipes = opts.join("|");
+			pipes = pipes.replace(new RegExp(this.quotemeta("(.+?)"), "g"),        "(?:.+?)");
+			pipes = pipes.replace(new RegExp(this.quotemeta("(\\d+?)"), "g"),      "(?:\\d+?)");
+			pipes = pipes.replace(new RegExp(this.quotemeta("([A-Za-z]+?)"), "g"), "(?:[A-Za-z]+?)");
+
+			regexp = regexp.replace(new RegExp("\\s*\\[" + this.quotemeta(match[1]) + "\\]\\s*"),
+				"(?:" + pipes + ")");
+			match  = regexp.match(/\[(.+?)\]/); // Circle of life!
+		}
 
 		// Filter in arrays.
 		var giveup = 0;
@@ -1503,9 +2020,38 @@
 			}
 		}
 
+		// Filter in user variables.
+		var match = regexp.match(/<get (.+?)>/i);
+		giveup = 0;
+		while (match) {
+			giveup++;
+			if (giveup >= 50) {
+				this.warn("Infinite loop looking for get tag!");
+				break;
+			}
+			var name = match[1];
+			var value = "undefined";
+			if (this._users[user][name]) {
+				value = this._users[user][name];
+			}
+			regexp = regexp.replace(new RegExp("<get " + this.quotemeta(name) + ">","ig"), value);
+			match  = regexp.match(/<get (.+?)>/i); // Look for more
+		}
+
 		// Filter in <input> and <reply> tags.
 		if (regexp.indexOf("<input") > -1 || regexp.indexOf("<reply") > -1) {
-			// TODO
+			var types = ["input", "reply"];
+			for (var i = 0; i < 2; i++) {
+				var type = types[i];
+				for (var j = 1; j <= 9; j++) {
+					if (regexp.indexOf("<" + type + j + ">")) {
+						regexp = regexp.replace(new RegExp("<" + type + j + ">","g"),
+							this._users[user]["__history__"][type][j]);
+					}
+				}
+				regexp = regexp.replace(new RegExp("<" + type + ">","g"),
+					this._users[user]["__history__"][type][0]);
+			}
 		}
 
 		return regexp;
@@ -1548,7 +2094,19 @@
 			reply = reply.replace(new RegExp("<botstar" + i + ">","ig"), botstars[i]);
 		}
 
-		// <input> and <reply> TODO
+		// <input> and <reply>
+		reply = reply.replace(/<input>/ig, this._users[user]["__history__"]["input"][0]);
+		reply = reply.replace(/<reply>/ig, this._users[user]["__history__"]["reply"][0]);
+		for (var i = 1; i <= 9; i++) {
+			if (reply.indexOf("<input" + i + ">")) {
+				reply = reply.replace(new RegExp("<input" + i + ">","ig"),
+					this._users[user]["__history__"]["input"][i]);
+			}
+			if (reply.indexOf("<reply" + i + ">")) {
+				reply = reply.replace(new RegExp("<reply" + i + ">","ig"),
+					this._users[user]["__history__"]["reply"][i]);
+			}
+		}
 
 		// <id> and escape codes
 		reply = reply.replace(/<id>/ig, user);
@@ -1556,13 +2114,36 @@
 		reply = reply.replace(/\\n/ig, "\n");
 		reply = reply.replace(/\\#/ig, "#");
 
-		// {random} TODO
+		// {random}
+		match = reply.match(/\{random\}(.+?)\{\/random\}/i);
+		giveup = 0;
+		while (match) {
+			giveup++;
+			if (giveup > 50) {
+				this.warn("Infinite loop looking for random tag!");
+				break;
+			}
 
-		// Person substitutions TODO
+			var random = [];
+			var text   = match[1];
+			if (text.indexOf("|") > -1) {
+				random = text.split("|");
+			} else {
+				random = text.split(" ");
+			}
 
-		// String formatting.
-		var formats = ["formal", "sentence", "uppercase", "lowercase"];
-		for (var i = 0; i < 4; i++) {
+			var output = random[
+				parseInt(Math.random() * random.length)
+			];
+
+			reply = reply.replace(new RegExp("\\{random\\}" + this.quotemeta(text) + "\\{\\/random\\}", "ig"),
+				output);
+			match = reply.match(/\{random\}(.+?)\{\/random\}/i);
+		}
+
+		// Person Substitutions & String formatting.
+		var formats = ["person", "formal", "sentence", "uppercase", "lowercase"];
+		for (var i = 0; i < 5; i++) {
 			var type = formats[i];
 			match = reply.match(new RegExp("{" + type + "}(.+?){/" + type + "}", "i"));
 			giveup = 0;
@@ -1574,19 +2155,42 @@
 				}
 
 				var content = match[1];
-				var replace = this._string_format(type, content);
+				var replace;
+				if (type == "person") {
+					replace = this._substitute(content, "person");
+				} else {
+					replace = this._string_format(type, content);
+				}
+
 				reply = reply.replace(new RegExp("{" + type + "}" + this.quotemeta(content) + "{/" + type + "}", "ig"), replace);
+				match = reply.match(new RegExp("{" + type + "}(.+?){/" + type + "}", "i"));
 			}
 		}
 
-		// Bot variables: set TODO
-		// Bot variables: get
-		match = reply.match(/<bot (.+?)>/i);
+		// Bot variables: set
+		match = reply.match(/<bot ([^>]+?)=([^>]+?)>/i);
 		giveup = 0;
-		console.log("REPLY: " + reply);
 		while (match) {
 			giveup++;
-			console.log("Try " + giveup);
+			if (giveup >= 50) {
+				this.warn("Infinite loop looking for bot set tag!");
+				break;
+			}
+
+			var name  = match[1];
+			var value = match[2];
+			this._bvars[name] = value;
+
+			reply = reply.replace(new RegExp("<bot " + this.quotemeta(name) + "=" + this.quotemeta(value) + ">","ig"),
+				"");
+			match = reply.match(/<bot ([^>]+?)=([^>]+?)>/i);
+		}
+
+		// Bot variables: get
+		match = reply.match(/<bot ([^>]+?)>/i);
+		giveup = 0;
+		while (match) {
+			giveup++;
 			if (giveup >= 50) {
 				this.warn("Infinite loop looking for bot tag!");
 				break;
@@ -1596,15 +2200,31 @@
 			if (this._bvars[name]) {
 				value = this._bvars[name];
 			}
-			console.log("BEFORE: " + reply);
 			reply = reply.replace(new RegExp("<bot " + this.quotemeta(name) + ">", "ig"), value);
-			console.log("AFTER: " + reply);
-			match = reply.match(/<bot (.+?)>/i); // Look for more
+			match = reply.match(/<bot ([^>]+?)>/i); // Look for more
 		}
 
-		// Global variables: set TODO
+		// Global variables: set
+		match = reply.match(/<env ([^>]+?)=([^>]+?)>/i);
+		giveup = 0;
+		while (match) {
+			giveup++;
+			if (giveup >= 50) {
+				this.warn("Infinite loop looking for env set tag!");
+				break;
+			}
+
+			var name  = match[1];
+			var value = match[2];
+			this._gvars[name] = value;
+
+			reply = reply.replace(new RegExp("<env " + this.quotemeta(name) + "=" + this.quotemeta(value) + ">","ig"),
+				"");
+			match = reply.match(/<env ([^>]+?)=([^>]+?)>/i);
+		}
+
 		// Global variables: get
-		match = reply.match(/<env (.+?)>/i);
+		match = reply.match(/<env ([^>]+?)>/i);
 		giveup = 0;
 		while (match) {
 			giveup++;
@@ -1618,11 +2238,11 @@
 				value = this._gvars[name];
 			}
 			reply = reply.replace(new RegExp("<env " + this.quotemeta(name) + ">", "ig"), value);
-			match = reply.match(/<env (.+?)>/i); // Look for more
+			match = reply.match(/<env ([^>]+?)>/i); // Look for more
 		}
 
 		// Set user vars.
-		match = reply.match(/<set (.+?)=(.+?)>/i);
+		match = reply.match(/<set ([^>]+?)=([^>]+?)>/i);
 		giveup = 0;
 		while (match) {
 			giveup++;
@@ -1633,9 +2253,56 @@
 			var name  = match[1];
 			var value = match[2];
 			this._users[user][name] = value;
+			reply = reply.replace(new RegExp("<set " + this.quotemeta(name) + "=" + this.quotemeta(value) + ">", "ig"), "");
+			match = reply.match(/<set ([^>]+?)=([^>]+?)>/i); // Look for more
 		}
 
-		// Math tags. TODO
+		// Math tags.
+		var math = ["add", "sub", "mult", "div"];
+		for (var i = 0; i < 4; i++) {
+			var oper = math[i];
+			match  = reply.match(new RegExp("<" + oper + " ([^>]+?)=([^>]+?)>"));
+			giveup = 0;
+			while (match) {
+				var name   = match[1];
+				var value  = match[2];
+				var newval = 0;
+				var output = "";
+
+				// Sanity check.
+				value = parseInt(value);
+				if (isNaN(value)) {
+					output = "[ERR: Math can't '" + oper + "' non-numeric value '" + match[2] + "']";
+				} else if (isNaN(parseInt(this._users[user][name]))) {
+					output = "[ERR: Math can't '" + oper + "' non-numeric user variable '" + name + "']";
+				} else {
+					var orig   = parseInt(this._users[user][name]);
+					if (oper == "add") {
+						newval = orig + value;
+					} else if (oper == "sub") {
+						newval = orig - value;
+					} else if (oper == "mult") {
+						newval = orig * value;
+					} else if (oper == "div") {
+						if (value == 0) {
+							output = "[ERR: Can't Divide By Zero]";
+						} else {
+							newval = orig / value;
+						}
+					}
+				}
+
+				// No errors?
+				if (output == "") {
+					// Commit.
+					this._users[user][name] = newval;
+				}
+
+				reply = reply.replace(new RegExp("<" + oper + " " + this.quotemeta(name) + "=" + this.quotemeta(""+value) + ">", "i"),
+					output);
+				match = reply.match(new RegExp("<" + oper + " ([^>]+?)=([^>]+?)>"));
+			}
+		}
 
 		// Get user vars.
 		match = reply.match(/<get (.+?)>/i);
@@ -1670,9 +2337,59 @@
 			match = reply.match(/\{topic=(.+?)\}/i); // Look for more
 		}
 
-		// Inline redirector. TODO
+		// Inline redirector.
+		match = reply.match(/\{@(.+?)\}/);
+		giveup = 0;
+		while (match) {
+			giveup++;
+			if (giveup >= 50) {
+				this.warn("Infinite loop looking for redirect tag!");
+				break;
+			}
 
-		// Object caller. TODO
+			var target = this._strip(match[1]);
+			this.say("Inline redirection to: " + target);
+			var subreply = this._getreply(user, target, "normal", step+1);
+			reply = reply.replace(new RegExp("\\{@" + this.quotemeta(target) + "\\}", "i"), subreply);
+			match = reply.match(/\{@(.+?)\}/);
+		}
+
+		// Object caller.
+		match = reply.match(/<call>(.+?)<\/call>/i);
+		giveup = 0;
+		while (match) {
+			giveup++;
+			if (giveup >= 50) {
+				this.warn("Infinite loop looking for call tag!");
+				break;
+			}
+
+			var text = this._strip(match[1]);
+			var parts = text.split(/\s+/);
+			var obj   = parts[0];
+			var args  = [];
+			for (var i = 1, iend = parts.length; i < iend; i++) {
+				args.push(parts[i]);
+			}
+
+			// Do we know this object?
+			var output = "";
+			if (this._objlangs[obj]) {
+				// We do. Do we have a handler for it?
+				var lang = this._objlangs[obj];
+				if (this._handlers[lang]) {
+					// We do.
+					output = this._handlers[lang].call(rs, obj, args);
+				} else {
+					output = "[ERR: No Object Handler]";
+				}
+			} else {
+				output = "[ERR: Object Not Found]";
+			}
+
+			reply = reply.replace(new RegExp("<call>" + this.quotemeta(match[1]) + "</call>","i"), output);
+			match = reply.match(/<call>(.+?)<\/call>/i);
+		}
 
 		return reply;
 	};
@@ -1888,6 +2605,43 @@
 		return undefined;
 	};
 
+	// Given a topic, this returns an array of every topic related to it (all the
+	// topics it includes or inherits, plus all the topics included or inherited
+	// by those topics, and so on). The array includes the original topic too.
+	RiveScript.prototype._get_topic_tree = function (topic, depth) {
+		// Default depth.
+		if (typeof(depth) != "number") {
+			depth = 0;
+		}
+
+		// Break if we're in too deep.
+		if (depth > this._depth) {
+			this.warn("Deep recursion while scanning topic tree!");
+			return [];
+		}
+
+		// Collect an array of all topics.
+		var topics = [ topic ];
+
+		// Does this topic include others?
+		if (this._includes[topic]) {
+			// Try each of these.
+			for (var includes in this._includes[topic]) {
+				topics.push.apply(topics, this._get_topic_tree(includes, depth+1));
+			}
+		}
+
+		// Does this topic inherit other topics?
+		if (this._lineage[topic]) {
+			// Try each of these.
+			for (var inherits in this._lineage[topic]) {
+				topics.push.apply(topics, this._get_topic_tree(inherits, depth+1));
+			}
+		}
+
+		return topics;
+	};
+
 	////////////////////////////////////////////////////////////////////////////
 	// Misc Utility Methods                                                   //
 	////////////////////////////////////////////////////////////////////////////
@@ -1906,7 +2660,7 @@
 		if (all) {
 			words = trigger.split(/\s+/);
 		} else {
-			words = trigger.split(/[\s\*\#\_]+/);
+			words = trigger.split(/[\s\*\#\_\|]+/);
 		}
 
 		var wc = 0;
@@ -1958,6 +2712,7 @@
 		} else if (type == "lowercase") {
 			return string.toLowerCase();
 		} else if (type == "sentence") {
+			string += "";
 			var first = string.charAt(0).toUpperCase();
 			return first + string.substring(1);
 		} else if (type == "formal") {
@@ -1978,6 +2733,15 @@
 		return string;
 	};
 	
+	// HTML escape.
+	RiveScript.prototype._escape_html = function (string) {
+		string = string.replace(/&/g, "&amp;");
+		string = string.replace(/</g, "&lt;");
+		string = string.replace(/>/g, "&gt;");
+		string = string.replace(/"/g, "&quot;");
+		return string;
+	};
+
 	publish(RiveScript);
 })((typeof(module) == "undefined" && (typeof(window) != "undefined" && this == window))
 	? function(a) { this["RiveScript"] = a; }
