@@ -1,0 +1,38 @@
+body {
+	background-color: #EDEDFF;
+	font-family: Verdana,Arial,Helvetica,sans-serif;
+	font-size: small;
+	color: #000000;
+}
+h1 {
+	font-weight: bold;
+	font-size: 24pt;
+	color: #0000FF;
+}
+fieldset {
+	border: 1px dotted #000000;
+}
+legend {
+	font-weight: bold;
+}
+input#message {
+	width: 100%;
+}
+div#dialogue {
+	overflow: auto;
+	height: 450px;
+	width: 100%;
+}
+div#debug {
+	overflow: auto;
+	max-height: 450px;
+	width: 100%;
+}
+span.user {
+	font-weight: bold;
+	color: #0000FF;
+}
+span.bot {
+	font-weight: bold;
+	color: #FF0000;
+}

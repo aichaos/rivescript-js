@@ -145,13 +145,25 @@
 	////////////////////////////////////////////////////////////////////////////
 
 	/**
-	 * void loadFile (string path || array path[, on_success[, on_error]])
+	 * int loadFile (string path || array path[, on_success[, on_error]])
 	 *
 	 * Load a RiveScript document from a file. The path can either be a string
 	 * that contains the path to a single file, or an array of paths to load
 	 * multiple files. on_success is a function to be called when the file(s)
 	 * have been successfully loaded. on_error is for catching any errors, such
 	 * as syntax errors.
+	 *
+	 * This loading method is asyncronous. You should define an on_success
+	 * handler to be called when the file(s) have been successfully loaded.
+	 *
+	 * This method returns the "batch number" for this load attempt. The first
+	 * call to this function will have a batch number of 0 and that will go
+	 * up from there. This batch number is passed to your on_success handler
+	 * as its only argument, in case you want to correlate it with your call
+	 * to loadFile.
+	 *
+	 * on_success receives: int batch_count
+	 * on_error receives: string error_message
 	 */
 	RiveScript.prototype.loadFile = function (path, on_success, on_error) {
 		// Did they give us a single path?
@@ -176,13 +188,11 @@
 				this._ajax_load_file(loadcount, file, on_success, on_error);
 			}
 		}
+
+		return loadcount;
 	};
 
-	/**
-	 * private void _ajax_load_file (int loadcount, string path, on_success(), on_error())
-	 *
-	 * Load a file using ajax. DO NOT CALL THIS DIRECTLY.
-	 */
+	// Load a file using ajax. DO NOT CALL THIS DIRECTLY.
 	RiveScript.prototype._ajax_load_file = function (loadcount, file, on_success, on_error) {
 		// A pointer to ourself.
 		var RS = this;
@@ -203,14 +213,14 @@
 				// All gone?
 				if (Object.keys(RS._pending[loadcount]).length == 0) {
 					if (typeof(on_success) == "function") {
-						on_success.call();
+						on_success.call(loadcount);
 					}
 				}
 			},
 			error: function(xhr, textStatus, errorThrown) {
 				RS.say("Error! " + textStatus + "; " + errorThrown);
 				if (typeof(on_error) == "function") {
-					on_error.call(textStatus);
+					on_error.call(loadcount,textStatus);
 				}
 			},
 		});
@@ -235,16 +245,23 @@
 	};
 
 	/**
-	 * void stream (string code)
+	 * bool stream (string code[, func on_error])
 	 *
-	 * Stream in RiveScript code dynamically.
+	 * Stream in RiveScript code dynamically. 'code' should be the raw
+	 * RiveScript source code as a string (with line breaks after each line).
+	 *
+	 * This function is synchronous, meaning there is no success handler
+	 * needed. It will return false on parsing error, true otherwise.
+	 *
+	 * on_error receives: string error_message
 	 */
-	RiveScript.prototype.stream = function (code) {
-		this.warn("Not Implemeneted!"); // TODO
+	RiveScript.prototype.stream = function (code, on_error) {
+		this.say("Streaming code.");
+		return this.parse("stream()", code, on_error);
 	};
 
 	/**
-	 * private void parse (string name, string code[, func on_error])
+	 * private bool parse (string name, string code[, func on_error])
 	 *
 	 * Parse RiveScript code and load it into memory. 'name' is a file name in
 	 * case syntax errors need to be pointed out. 'code' is the source code,
@@ -341,12 +358,12 @@
 
 			// Run a syntax check on this line.
 			var syntax_error = this.checkSyntax(cmd, line);
-			if (typeof(syntax_error) != "undefined") {
+			if (syntax_error != "") {
 				if (this._strict && typeof(on_error) == "function") {
-					on_error.call("Syntax error: " + syntax_error
+					on_error.call(null,"Syntax error: " + syntax_error
 						+ " at " + fname + " line " + lineno
 						+ ", near " + cmd + " " + line);
-					return undefined;
+					return false;
 				} else {
 					this.warn("Syntax error: " + syntax_error);
 				}
@@ -436,7 +453,7 @@
 						// Verify we support it.
 						if (parseFloat(value) > parseFloat(RS_VERSION)) {
 							this.warn("Unsupported RiveScript version. We only support " + RS_VERSION, fname, lineno);
-							return;
+							return false;
 						}
 						continue;
 					}
@@ -691,10 +708,118 @@
 					this.warn("Unknown command '" + cmd + "'", fname, lineno);
 			}
 		}
+
+		return true;
 	};
 
+	/**
+	 * string checkSyntax (char command, string line)
+	 *
+	 * Check the syntax of a RiveScript command. 'command' is the single
+	 * character command symbol, and 'line' is the rest of the line after
+	 * the command.
+	 *
+	 * Returns an empty string on success, or a description of the error
+	 * on error.
+	 */
 	RiveScript.prototype.checkSyntax = function (cmd, line) {
-		return undefined; // TODO
+		// Run syntax tests based on the command used.
+		if (cmd == '!') {
+			// ! Definition
+			// - Must be formatted like this:
+			//   ! type name = value
+			//   OR
+			//   ! type = value
+			var match = line.match(/^.+(?:\s+.+|)\s*=\s*.+?$/);
+			if (!match) {
+				return "Invalid format for !Definition line: must be '! type name = value' OR '! type = value'";
+			}
+		} else if (cmd == '>') {
+			// > Label
+			// - The "begin" label must have only one argument ("begin")
+			// - The "topic" label must be lowercased but can inherit other topics (a-z0-9_\s)
+			// - The "object" label must follow the same rules as "topic", but don't need to be lowercase.
+			var parts = line.split(/\s+/);
+			if (parts[0] == "begin" && parts.length > 1) {
+				return "The 'begin' label takes no additional arguments.";
+			} else if (parts[0] == "topic") {
+				var match = line.match(/[^a-z0-9_\-\s]/);
+				if (match) {
+					return "Topics should be lowercased and contain only letters and numbers.";
+				}
+			} else if (parts[0] == "object") {
+				var match = line.match(/[^A-Za-z0-9\_\-\s]/);
+				if (match) {
+					return "Objects can only contain numbers and letters.";
+				}
+			}
+		} else if (cmd == '+' || cmd == '%' || cmd == '@') {
+			// + Trigger, % Previous, @ Redirect
+			// This one is strict. The triggers are to be run through the regexp engine,
+			// therefore it should be acceptable for the regexp engine.
+			// - Entirely lowercase
+			// - No symbols except: ( | ) [ ] * _ # @ { } < > =
+			// - All brackets should be matched.
+			var parens = square = curly = angle = 0; // Count the brackets
+
+			// Look for obvious errors first.
+			if (line.match(/[^a-z0-9(|)\[\]*_#@{}<>=\s]/)) {
+				return "Triggers may only contain lowercase letters, numbers, and these symbols: ( | ) [ ] * _ # @ { } < > =";
+			}
+
+			// Count brackets.
+			var chars = line.split("");
+			for (var i = 0, end = chars.length; i < end; i++) {
+				switch (chars[i]) {
+					case '(':
+						parens++;
+						continue;
+					case ')':
+						parens--;
+						continue;
+					case '[':
+						square++;
+						continue;
+					case ']':
+						square--;
+						continue;
+					case '{':
+						curly++;
+						continue;
+					case '}':
+						curly--;
+						continue;
+					case '<':
+						angle++;
+						continue;
+					case '>':
+						angle--;
+						continue;
+				}
+			}
+
+			// Any mismatches?
+			if (parens != 0) {
+				return "Unmatched parenthesis brackets.";
+			} else if (square != 0) {
+				return "Unmatched square brackets.";
+			} else if (curly != 0) {
+				return "Unmatched curly brackets.";
+			} else if (angle != 0) {
+				return "Unmatched angle brackets.";
+			}
+		} else if (cmd == '*') {
+			// * Condition
+			// Syntax for a conditional is as follows:
+			// * value symbol value => response
+			var match = line.match(/^.+?\s*(?:==|eq|!=|ne|<>|<|<=|>|>=)\s*.+?=>.+?$/);
+			if (!match) {
+				return "Invalid format for !Condition: should be like '* value symbol value => response'";
+			}
+		}
+
+		// No problems!
+		return "";
 	};
 
 	// Initialize a Topic Tree data structure.
@@ -1090,8 +1215,532 @@
 	// Reply Fetching Methods                                                 //
 	////////////////////////////////////////////////////////////////////////////
 
+	/**
+	 * string reply (string username, string message)
+	 *
+	 * Fetch a reply from the RiveScript brain. The message doesn't require any
+	 * special pre-processing to be done to it, i.e. it's allowed to contain
+	 * punctuation and weird symbols. The username is arbitrary and is used to
+	 * uniquely identify the user, in the case that you may have multiple
+	 * distinct users chatting with your bot.
+	 */
 	RiveScript.prototype.reply = function (user, msg) {
-		return "Not implemented!";
+		this.say("Asked to reply to [" + user + "] " + msg);
+
+		// Format their message.
+		msg = this._format_message(msg);
+
+		var reply = '';
+
+		// If the BEGIN block exists, consult it first.
+		if (this._topics["__begin__"] && false) {
+			// TODO
+		} else {
+			reply = this._getreply(user, msg, "normal", 0);
+		}
+
+		// Save their reply history.
+		// TODO
+
+		return reply;
+	};
+
+	// Format a user's message for safe processing.
+	RiveScript.prototype._format_message = function (msg) {
+		// Lowercase it.
+		msg = msg.toLowerCase();
+
+		// Run substitutions and sanitize what's left.
+		msg = this._substitute(msg, "subs");
+		msg = this._strip_nasties(msg);
+
+		return msg;
+	};
+
+	// The internal reply method. DO NOT CALL THIS DIRECTLY.
+	RiveScript.prototype._getreply = function (user, msg, context, step) {
+		// Need to sort replies?
+		if (!this._sorted["topics"]) {
+			this.warn("You forgot to call sortReplies()!");
+			return "ERR: Replies Not Sorted";
+		}
+
+		// Initialize the user's profile?
+		if (!this._users[user]) {
+			this._users[user] = {'topic': 'random'};
+		}
+
+		// Collect data on this user.
+		var topic     = this._users[user]['topic'];
+		var stars     = [];
+		var thatstars = []; // For %Previous
+		var reply     = '';
+
+		// Avoid letting them fall into a missing topic.
+		if (!this._topics[topic]) {
+			this.warn("User " + user + " was in an empty topic named '" + topic + "'");
+			topic = this._users[user]['topic'] = 'random';
+		}
+
+		// Avoid deep recursion.
+		if (step > this._depth) {
+			return "ERR: Deep Recursion Detected";
+		}
+
+		// Are we in the BEGIN block?
+		if (context == "begin") {
+			topic = "__begin__";
+		}
+
+		// Initialize this user's history.
+		if (!this._users[user]['__history__']) {
+			this._users[user]['__history__'] = {
+				'input': [
+					'undefined', 'undefined', 'undefined', 'undefined',
+					'undefined', 'undefined', 'undefined', 'undefined',
+					'undefined', 'undefined'
+				],
+				'reply': [
+					'undefined', 'undefined', 'undefined', 'undefined',
+					'undefined', 'undefined', 'undefined', 'undefined',
+					'undefined', 'undefined'
+				],
+			};
+		}
+
+		// More topic sanity checking.
+		if (!this._topics[topic]) {
+			// This was handled before, which would mean topic=random and it
+			// doesn't exist. Serious issue!
+			return "ERR: No default topic 'random' was found!";
+		}
+
+		// Create a pointer for the matched data when we find it.
+		var matched        = null;
+		var matchedTrigger = null;
+		var foundMatch     = false;
+
+		// See if there were any %Previous's in this topic, or any topic related
+		// to it. This should only be done the first time -- not during a recursive
+		// redirection. This is because in a redirection, "lastreply" is still gonna
+		// be the same as it was the first time, resulting in an infinite loop!
+		// TODO
+
+		// Search their topic for a match to their trigger.
+		if (!foundMatch) {
+			this.say("Searching their topic for a match...");
+			for (var i = 0, iend = this._sorted["topics"][topic].length; i < iend; i++) {
+				var trig   = this._sorted["topics"][topic][i];
+				var regexp = this._reply_regexp(user, trig);
+				this.say("Try to match \"" + msg + "\" against " + trig + " (" + regexp + ")");
+
+				// If the trigger is atomic, we don't need to bother with the regexp engine.
+				var isAtomic = this._is_atomic(trig);
+				var isMatch = false;
+				if (isAtomic) {
+					if (msg == trig) {
+						isMatch = true;
+					}
+				} else {
+					// Non-atomic triggers always need the regexp.
+					var match = msg.match(new RegExp('^' + regexp + '$'));
+					if (match) {
+						// The regexp matched!
+						isMatch = true;
+
+						// Collect the stars.
+						if (match.length > 1) {
+							for (var j = 1, jend = match.length; j < jend; j++) {
+								stars.push(match[j]);
+							}
+						}
+					}
+				}
+
+				// A match somehow?
+				if (isMatch) {
+					this.say("Found a match!");
+					
+					// We found a match, but what if the trigger we've matched
+					// doesn't belong to our topic? Find it!
+					if (!this._topics[topic][trig]) {
+						// We have to find it.
+						matched = this._find_trigger_by_inheritence(topic, trig, 0);
+					} else {
+						matched = this._topics[topic][trig];
+					}
+
+					foundMatch = true;
+					matchedTrigger = trig;
+					break;
+				}
+			}
+		}
+
+		// Store what trigger they matched on. If their matched trigger is undefined,
+		// this will be too, which is great.
+		this._users[user]["__lastmatch__"] = matchedTrigger;
+
+		// Did we match?
+		if (matched) {
+			for (var nil = 0; nil < 1; nil++) {
+				// See if there are any hard redirects.
+				if (matched["redirect"]) {
+					this.say("Redirecting us to '" + matched["redirect"] + "'");
+					var redirect = this._process_tags(user, msg, matched["redirect"], stars, thatstars, step);
+					this.say("Pretend user said: " + redirect);
+					reply = this._getreply(user, redirect, context, (step+1));
+					break;
+				}
+
+				// Check the conditionals. TODO
+
+				// Have our reply yet?
+				if (reply != undefined && reply.length > 0) {
+					break;
+				}
+
+				// Process weights in the replies.
+				var bucket = [];
+				console.log(matched["reply"]);
+				for (var rep_index in matched["reply"]) {
+					var rep = matched["reply"][rep_index];
+					console.log("Candidate: " + rep);
+					var weight = 1;
+					var match  = rep.match(/\{weight=(\\d+?)\}/i);
+					if (match) {
+						weight = match[1];
+						if (weight <= 0) {
+							this.warn("Can't have a weight <= 0!");
+							weight = 1;
+						}
+					}
+
+					for (var j = 0; j < weight; j++) {
+						bucket.push(rep);
+					}
+				}
+
+				// Get a random reply.
+				var choice = parseInt(Math.random() * bucket.length);
+				console.log("choice: " + choice);
+				console.log(bucket);
+				reply = bucket[choice];
+				break;
+			}
+		}
+
+		// Still no reply?
+		if (!foundMatch) {
+			reply = "ERR: No Reply Matched";
+		} else if (reply == undefined || reply.length == 0) {
+			reply = "ERR: No Reply Found";
+		}
+
+		this.say("Reply: " + reply);
+
+		// Process tags for the BEGIN block.
+		if (context == "begin") {
+			// TODO
+		} else {
+			// Process more tags if not in BEGIN.
+			reply = this._process_tags(user, msg, reply, stars, thatstars, step);
+		}
+
+		return reply;
+	};
+
+	// Prepares a trigger for the regular expression engine.
+	RiveScript.prototype._reply_regexp = function (user, regexp) {
+		// If the trigger is simply '*' then the * needs to become (.*?)
+		// to match the blank string too.
+		regexp = regexp.replace(/^\*$/, "<zerowidthstar>");
+
+		// Simple replacements.
+		regexp = regexp.replace(/\*/g, "(.+?)");  // Convert * into (.+?)
+		regexp = regexp.replace(/#/g,  "(\\d+?"); // Convert # into (\d+?)
+		regexp = regexp.replace(/_/g,  "([A-Za-z]+?)"); // Convert _ into (\w+?)
+		regexp = regexp.replace(/\{weight=\d+\}/g, ""); // Remove {weight} tags
+		regexp = regexp.replace(/<zerowidthstar>/g, "(.*?)");
+
+		// Optionals. TODO
+
+		// Filter in arrays.
+		var giveup = 0;
+		while (regexp.indexOf("@") > -1) {
+			giveup++;
+			if (giveup >= 50) {
+				break;
+			}
+
+			var match = regexp.match(/\@(.+?)\b/);
+			if (match) {
+				var name = match[1];
+				var rep  = '';
+				if (this._arrays[name]) {
+					rep = "(?:" + this._arrays[name].join("|") + ")";
+				}
+				regexp = regexp.replace(new RegExp("@" + this.quotemeta(name) + "\\b"), rep);
+			}
+		}
+
+		// Filter in bot variables.
+		giveup = 0;
+		while (regexp.indexOf("<bot") > -1) {
+			giveup++;
+			if (giveup >= 50) {
+				break;
+			}
+
+			var match = regexp.match(/<bot (.+?)>/i);
+			if (match) {
+				var name = match[1];
+				var rep  = '';
+				if (this._bvars[name]) {
+					rep = this._strip_nasties(this._bvars[name]);
+				}
+				regexp = regexp.replace(new RegExp("<bot " + this.quotemeta(name) + ">"), rep);
+			}
+		}
+
+		// Filter in <input> and <reply> tags.
+		if (regexp.indexOf("<input") > -1 || regexp.indexOf("<reply") > -1) {
+			// TODO
+		}
+
+		return regexp;
+	};
+
+	// Process tags in a reply element.
+	RiveScript.prototype._process_tags = function (user, msg, reply, st, bst, step) {
+		// Prepare the stars and botstars.
+		var stars = [""];
+		stars.push.apply(stars, st);
+		var botstars = [""];
+		botstars.push.apply(botstars, bst);
+		if (stars.length == 1) {
+			stars.push("undefined");
+		}
+		if (botstars.length == 1) {
+			botstars.push("undefined");
+		}
+
+		// For while loops.
+		var match;
+		var giveup = 0;
+
+		// Tag shortcuts.
+		reply = reply.replace(/<person>/ig,    "{person}<star>{/person}");
+		reply = reply.replace(/<@>/ig,         "{@<star>}");
+		reply = reply.replace(/<formal>/ig,    "{formal}<star>{/formal}");
+		reply = reply.replace(/<sentence>/ig,  "{sentence}<star>{/sentence}");
+		reply = reply.replace(/<uppercase>/ig, "{uppercase}<star>{/uppercase}");
+		reply = reply.replace(/<lowercase>/ig, "{lowercase}<star>{/lowercase}");
+
+		// Weight and star tags.
+		reply = reply.replace(/\{weight=\d+\}/ig, ""); // Leftover {weight}s
+		reply = reply.replace(/<star>/ig, stars[1]);
+		reply = reply.replace(/<botstar>/ig, botstars[1]);
+		for (var i = 1; i <= stars.length; i++) {
+			reply = reply.replace(new RegExp("<star" + i + ">","ig"), stars[i]);
+		}
+		for (var i = 1; i <= botstars.length; i++) {
+			reply = reply.replace(new RegExp("<botstar" + i + ">","ig"), botstars[i]);
+		}
+
+		// <input> and <reply> TODO
+
+		// <id> and escape codes
+		reply = reply.replace(/<id>/ig, user);
+		reply = reply.replace(/\\s/ig, " ");
+		reply = reply.replace(/\\n/ig, "\n");
+		reply = reply.replace(/\\#/ig, "#");
+
+		// {random} TODO
+
+		// Person substitutions TODO
+
+		// String formatting.
+		var formats = ["formal", "sentence", "uppercase", "lowercase"];
+		for (var i = 0; i < 4; i++) {
+			var type = formats[i];
+			match = reply.match(new RegExp("{" + type + "}(.+?){/" + type + "}", "i"));
+			giveup = 0;
+			while (match) {
+				giveup++;
+				if (giveup >= 50) {
+					this.warn("Infinite loop looking for " + type + " tag!");
+					break;
+				}
+
+				var content = match[1];
+				var replace = this._string_format(type, content);
+				reply = reply.replace(new RegExp("{" + type + "}" + this.quotemeta(content) + "{/" + type + "}", "ig"), replace);
+			}
+		}
+
+		// Bot variables: set TODO
+		// Bot variables: get
+		match = reply.match(/<bot (.+?)>/i);
+		giveup = 0;
+		console.log("REPLY: " + reply);
+		while (match) {
+			giveup++;
+			console.log("Try " + giveup);
+			if (giveup >= 50) {
+				this.warn("Infinite loop looking for bot tag!");
+				break;
+			}
+			var name = match[1];
+			var value = "undefined";
+			if (this._bvars[name]) {
+				value = this._bvars[name];
+			}
+			console.log("BEFORE: " + reply);
+			reply = reply.replace(new RegExp("<bot " + this.quotemeta(name) + ">", "ig"), value);
+			console.log("AFTER: " + reply);
+			match = reply.match(/<bot (.+?)>/i); // Look for more
+		}
+
+		// Global variables: set TODO
+		// Global variables: get
+		match = reply.match(/<env (.+?)>/i);
+		giveup = 0;
+		while (match) {
+			giveup++;
+			if (giveup >= 50) {
+				this.warn("Infinite loop looking for env tag!");
+				break;
+			}
+			var name = match[1];
+			var value = "undefined";
+			if (this._gvars[name]) {
+				value = this._gvars[name];
+			}
+			reply = reply.replace(new RegExp("<env " + this.quotemeta(name) + ">", "ig"), value);
+			match = reply.match(/<env (.+?)>/i); // Look for more
+		}
+
+		// Set user vars.
+		match = reply.match(/<set (.+?)=(.+?)>/i);
+		giveup = 0;
+		while (match) {
+			giveup++;
+			if (giveup >= 50) {
+				this.warn("Infinite loop looking for set tag!");
+				break;
+			}
+			var name  = match[1];
+			var value = match[2];
+			this._users[user][name] = value;
+		}
+
+		// Math tags. TODO
+
+		// Get user vars.
+		match = reply.match(/<get (.+?)>/i);
+		giveup = 0;
+		while (match) {
+			giveup++;
+			if (giveup >= 50) {
+				this.warn("Infinite loop looking for get tag!");
+				break;
+			}
+			var name = match[1];
+			var value = "undefined";
+			if (this._users[user][name]) {
+				value = this._users[user][name];
+			}
+			reply = reply.replace(new RegExp("<get " + this.quotemeta(name) + ">","ig"), value);
+			match = reply.match(/<get (.+?)>/i); // Look for more
+		}
+
+		// Topic setter.
+		match = reply.match(/\{topic=(.+?)\}/i);
+		giveup = 0;
+		while (match) {
+			giveup++;
+			if (giveup >= 50) {
+				this.warn("Infinite loop looking for topic tag!");
+				break;
+			}
+			var name = match[1];
+			this._users[user]["topic"] = name;
+			reply = reply.replace(new RegExp("{topic=" + this.quotemeta(name) + "}","ig"), "");
+			match = reply.match(/\{topic=(.+?)\}/i); // Look for more
+		}
+
+		// Inline redirector. TODO
+
+		// Object caller. TODO
+
+		return reply;
+	};
+
+	// Run a kind of substitution on a message.
+	RiveScript.prototype._substitute = function (msg, list) {
+		// Safety checking.
+		if (!this._sorted["lists"] || !this._sorted["lists"][list]) {
+			this.warn("You forgot to call sortReplies()!");
+			return "";
+		}
+
+		// Get the substitutions map.
+		var subs;
+		if (list == "subs") {
+			subs = this._subs;
+		} else {
+			subs = this._person;
+		}
+
+		var notword = "([^A-Za-z0-9])";
+		notword = "(\\W+)";
+		for (var i = 0, end = this._sorted["lists"][list].length; i < end; i++) {
+			var pattern = this._sorted["lists"][list][i];
+			var result  = "<rot13sub>" + this._rot13(subs[pattern]) + "<bus31tor>";
+			var qm      = this.quotemeta(pattern);
+
+			// Run substitutions.
+			msg = msg.replace(new RegExp("^" + qm + "$", "g"),           result);
+			msg = msg.replace(new RegExp("^" + qm + "(\\W+)", "g"),      result + "$1");
+			msg = msg.replace(new RegExp("(\\W+)" + qm + "(\\W+)", "g"), "$1" + result + "$2");
+			msg = msg.replace(new RegExp("(\\W+)" + qm + "$", "g"),      "$1"+result);
+		}
+
+		// Convert the rot13-escaped placeholders back.
+		var tries = 0;
+		while (msg.indexOf("<rot13sub>") > -1) {
+			tries++;
+			if (tries > 50) {
+				this.warn("Too many loops!");
+				break;
+			}
+
+			var match = msg.match("<rot13sub>(.+?)<bus31tor>");
+			if (match) {
+				var cap = match[1];
+				var decoded = this._rot13(cap);
+				msg = msg.replace(new RegExp("<rot13sub>" + this.quotemeta(cap) + "<bus31tor>", "g"), decoded);
+			} else {
+				this.warn("Unknown fatal error! Saw a <rot13sub> but the regexp to find it failed!");
+				return "";
+			}
+		}
+
+		return msg;
+	};
+
+	// Determine if a trigger is atomic or not.
+	RiveScript.prototype._is_atomic = function (trigger) {
+		// Atomic triggers don't contain any wildcards or parenthesis or anything of the sort.
+		// We don't need to test the full character set, just left brackets will do.
+		var special = [ '*', '#', '_', '(', '[', '<' ];
+		for (var i = 0, end = special.length; i < end; i++) {
+			if (trigger.indexOf(special[i]) > -1) {
+				return false;
+			}
+		}
+		return true;
 	};
 
 	////////////////////////////////////////////////////////////////////////////
@@ -1183,6 +1832,62 @@
 		return triggers;
 	};
 
+	// Given a topic and a trigger, find the pointer to the trigger's data.
+	// This will search the inheritence tree until it finds the topic that
+	// the trigger exists in.
+	RiveScript.prototype._find_trigger_by_inheritence = function (topic, trig, depth) {
+		// Prevent recursion.
+		if (depth > this._depth) {
+			this.warn("Deep recursion detected while following an inheritence trail!");
+			return undefined;
+		}
+
+		// Inheritence is more important than inclusion: triggers in one topic can
+		// override those in an inherited topic.
+		if (this._lineage[topic]) {
+			for (var inherits in this._lineage[topic]) {
+				// See if this inherited topic has our trigger.
+				if (this._topics[inherits][trig]) {
+					// Great!
+					return this._topics[inherits][trig];
+				} else {
+					// Check what THAT topic inherits from.
+					var match = this._find_trigger_by_inheritence (
+						inherits, trig, (depth+1)
+					);
+					if (match) {
+						// Found it!
+						return match;
+					}
+				}
+			}
+		}
+
+		// See if this topic has an "includes".
+		if (this._includes[topic]) {
+			for (var includes in this._includes[topic]) {
+				// See if this included topic has our trigger.
+				if (this._topics[includes][trig]) {
+					// It does!
+					return this._topics[includes][trig];
+				} else {
+					// Check what THAT topic includes.
+					var match = this._find_trigger_by_inheritence (
+						includes, trig, (depth+1)
+					);
+					if (match) {
+						// Found it!
+						return match;
+					}
+				}
+			}
+		}
+
+		// Not much else we can do!
+		this.warn("User matched a trigger, " + trig + ", but I can't find out what topic it belongs to!");
+		return undefined;
+	};
+
 	////////////////////////////////////////////////////////////////////////////
 	// Misc Utility Methods                                                   //
 	////////////////////////////////////////////////////////////////////////////
@@ -1212,6 +1917,65 @@
 		}
 
 		return wc;
+	};
+
+	// Escape a string for a regexp.
+	RiveScript.prototype.quotemeta = function (string) {
+		var unsafe = "\\.+*?[^]$(){}=!<>|:";
+		for (var i = 0, end = unsafe.length; i < end; i++) {
+			string = string.replace(new RegExp("\\" + unsafe.charAt(i), "g"), "\\" + unsafe.charAt(i));
+		}
+		return string;
+	};
+
+	// ROT13 encode a string.
+	RiveScript.prototype._rot13 = function (string) {
+		var result = '';
+
+		for (var i = 0, end = string.length; i < end; i++) {
+			var b = string.charCodeAt(i);
+
+			if (b >= 65 && b <= 77) {
+				b += 13;
+			} else if (b >= 97 && b <= 109) {
+				b += 13;
+			} else if (b >= 78 && b <= 90) {
+				b -= 13;
+			} else if (b >= 110 && b <= 122) {
+				b -= 13;
+			}
+
+			result += String.fromCharCode(b);
+		}
+
+		return result;
+	};
+
+	// String formatting.
+	RiveScript.prototype._string_format = function (type, string) {
+		if (type == "uppercase") {
+			return string.toUpperCase();
+		} else if (type == "lowercase") {
+			return string.toLowerCase();
+		} else if (type == "sentence") {
+			var first = string.charAt(0).toUpperCase();
+			return first + string.substring(1);
+		} else if (type == "formal") {
+			var words = string.split(/\s+/);
+			for (var i = 0; i < words.length; i++) {
+				var first = words[i].charAt(0).toUpperCase();
+				words[i] = first + words[i].substring(1);
+			}
+			return words.join(" ");
+		}
+
+		return string;
+	};
+
+	// Strip nasties.
+	RiveScript.prototype._strip_nasties = function (string) {
+		string = string.replace(/[^A-Za-z0-9 ]/g, "");
+		return string;
 	};
 	
 	publish(RiveScript);
