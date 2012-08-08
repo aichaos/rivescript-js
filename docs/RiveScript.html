@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>RiveScript</title>
+<link rel="stylesheet" type="text/css" href="docs.css">
+</head>
+<body>
+
+<h1>RiveScript</h1>
+
+<hr>
+
+<h1>Methods</h1>
+
+<h2>RiveScript (hash options)</h2>
+<br>
+Create a new RiveScript interpreter. options is a hash:<br>
+<br>
+bool debug:     Debug mode            (default false)<br>
+int  depth:     Recursion depth limit (default 50)<br>
+bool strict:    Strict mode           (default true)<br>
+str  debug_div: ID of an element to write debug lines to (optional)
+
+<hr>
+
+<h2>float version ()</h2>
+
+<br>
+Return the version number of the RiveScript.js library.<hr>
+
+<h2>private void runtime ()</h2>
+
+<br>
+Detect the runtime environment of this module, to determine if we're<br>
+running in a web browser or from NodeJS for example.<hr>
+
+<h2>private void say (string message)</h2>
+
+<br>
+This is the debug function. If debug mode is enabled, the 'message' will be<br>
+sent to the console via console.log (if available), or to your debug div if<br>
+you defined one.<br>
+<br>
+@param message: A message to add to the debug log.<hr>
+
+<h2>private void warn (string message)</h2>
+
+<br>
+Print a warning or error message. This is like debug, except it's GOING to be<br>
+given to the user one way or another. If the debug div is defined, this is<br>
+written to it. If console is defined, the error will be sent there. In a<br>
+worst case scenario, an alert box is shown.<hr>
+
+<h2>int loadFile (string path || array path[, on_success[, on_error]])</h2>
+
+<br>
+Load a RiveScript document from a file. The path can either be a string<br>
+that contains the path to a single file, or an array of paths to load<br>
+multiple files. on_success is a function to be called when the file(s)<br>
+have been successfully loaded. on_error is for catching any errors, such<br>
+as syntax errors.<br>
+<br>
+This loading method is asyncronous. You should define an on_success<br>
+handler to be called when the file(s) have been successfully loaded.<br>
+<br>
+This method returns the "batch number" for this load attempt. The first<br>
+call to this function will have a batch number of 0 and that will go<br>
+up from there. This batch number is passed to your on_success handler<br>
+as its only argument, in case you want to correlate it with your call<br>
+to loadFile.<br>
+<br>
+on_success receives: int batch_count<br>
+on_error receives: string error_message<hr>
+
+<h2>void loadDirectory (string path[, func on_success[, func on_error]])</h2>
+
+<br>
+Load RiveScript documents from a directory.<br>
+<br>
+This function is not supported in a web environment. Only for<br>
+NodeJS.<hr>
+
+<h2>bool stream (string code[, func on_error])</h2>
+
+<br>
+Stream in RiveScript code dynamically. 'code' should be the raw<br>
+RiveScript source code as a string (with line breaks after each line).<br>
+<br>
+This function is synchronous, meaning there is no success handler<br>
+needed. It will return false on parsing error, true otherwise.<br>
+<br>
+on_error receives: string error_message<hr>
+
+<h2>private bool parse (string name, string code[, func on_error])</h2>
+
+<br>
+Parse RiveScript code and load it into memory. 'name' is a file name in<br>
+case syntax errors need to be pointed out. 'code' is the source code,<br>
+and 'on_error' is a function to call when a syntax error occurs.<hr>
+
+<h2>string checkSyntax (char command, string line)</h2>
+
+<br>
+Check the syntax of a RiveScript command. 'command' is the single<br>
+character command symbol, and 'line' is the rest of the line after<br>
+the command.<br>
+<br>
+Returns an empty string on success, or a description of the error<br>
+on error.<hr>
+
+<h2>void sortReplies ()</h2>
+
+<br>
+After you have finished loading your RiveScript code, call this method to<br>
+populate the various sort buffers. This is absolutely necessary for<br>
+reply matching to work efficiently!<hr>
+
+<h2>void setHandler (string lang, object)</h2>
+
+<br>
+Set a custom language handler for RiveScript objects. See the source for<br>
+the built-in JavaScript handler as an example.<br>
+<br>
+@param lang: The lowercased name of the programming language, e.g. perl, python<br>
+@param obj:  A JavaScript object that has functions named "load" and "call".<br>
+Use the undefined value to delete a language handler.<hr>
+
+<h2>void setSubroutine (string name, function)</h2>
+
+<br>
+Define a JavaScript object from your program.<br>
+<br>
+This is equivalent to having a JS object defined in the RiveScript code, except<br>
+your JavaScript code is defining it instead.<hr>
+
+<h2>void setGlobal (string name, string value)</h2>
+
+<br>
+Set a global variable. This is equivalent to '! global' in RiveScript.<br>
+Set the value to undefined to delete a global.<hr>
+
+<h2>void setVariable (string name, string value)</h2>
+
+<br>
+Set a bot variable. This is equivalent to '! var' in RiveScript.<br>
+Set the value to undefined to delete a variable.<hr>
+
+<h2>void setSubstitution (string name, string value)</h2>
+
+<br>
+Set a substitution. This is equivalent to '! sub' in RiveScript.<br>
+Set the value to undefined to delete a substitution.<hr>
+
+<h2>void setPerson (string name, string value)</h2>
+
+<br>
+Set a person substitution. This is equivalent to '! person' in RiveScript.<br>
+Set the value to undefined to delete a substitution.<hr>
+
+<h2>void setUservar (string user, string name, string value)</h2>
+
+<br>
+Set a user variable for a user.<hr>
+
+<h2>string getUservar (string user, string name)</h2>
+
+<br>
+Get a variable from a user. Returns the string "undefined" if it isn't<br>
+defined.<hr>
+
+<h2>data getUservars ([string user])</h2>
+
+<br>
+Get all variables about a user. If no user is provided, returns all<br>
+data about all users.<hr>
+
+<h2>void clearUservars ([string user])</h2>
+
+<br>
+Clear all a user's variables. If no user is provided, clears all variables<br>
+for all users.<hr>
+
+<h2>void freezeUservars (string user)</h2>
+
+<br>
+Freeze the variable state of a user. This will clone and preserve the user's<br>
+entire variable state, so that it can be restored later with thawUservars().<hr>
+
+<h2>void thawUservars (string user[, string action])</h2>
+
+<br>
+Thaws a user's frozen variables. The action can be one of the following:<br>
+- discard: Don't restore the variables, just delete the frozen copy.<br>
+- keep:    Keep the frozen copy after restoring.<br>
+- thaw:    Restore the variables and delete the frozen copy (default)<hr>
+
+<h2>void lastMatch (string user)</h2>
+
+<br>
+Retrieve the trigger that the user matched most recently.<hr>
+
+<h2>string reply (string username, string message)</h2>
+
+<br>
+Fetch a reply from the RiveScript brain. The message doesn't require any<br>
+special pre-processing to be done to it, i.e. it's allowed to contain<br>
+punctuation and weird symbols. The username is arbitrary and is used to<br>
+uniquely identify the user, in the case that you may have multiple<br>
+distinct users chatting with your bot.<hr>
+
+</body>
+</html>

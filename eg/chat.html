@@ -24,7 +24,7 @@
 		<table border="0" cellspacing="4" cellpadding="4" width="100%">
 			<tr>
 				<td align="left" valign="middle">
-					<input type="text" size="40" name="message" id="message" autocomplete="off">
+					<input type="text" size="40" name="message" id="message" autocomplete="off" disabled placeholder="Please wait... loading...">
 				</td>
 				<td width="10" align="center" valign="middle">
 					<input type="submit" value="Send">
@@ -65,17 +65,19 @@ rs.loadDirectory("brain");
 
 // Load our files from the brain/ folder.
 rs.loadFile([
-//	"brain/begin.rs",
-//	"brain/admin.rs",
-//	"brain/clients.rs",
-//	"brain/eliza.rs",
-//	"brain/myself.rs",
-//	"brain/rpg.rs"
-	"brain/testsuite.rs"
+	"brain/begin.rs",
+	"brain/admin.rs",
+	"brain/clients.rs",
+	"brain/eliza.rs",
+	"brain/myself.rs",
+	"brain/rpg.rs"
 	], on_load_success, on_load_error);
 
 function on_load_success () {
 	console.log("Loading completed!");
+	$("#message").removeAttr("disabled");
+	$("#message").attr("placeholder", "Send message");
+	$("#message").focus();
 
 	// Now to sort the replies!
 	rs.sortReplies();
@@ -112,10 +114,6 @@ function toggleDebug () {
 	}
 }
 
-// On page load, focus the message field.
-$(document).ready(function() {
-	$("#message").focus();
-});
 </script>
 
 </body>

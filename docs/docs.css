@@ -1,0 +1,16 @@
+body {
+	font-family: Verdana,Arial,Helvetica,sans-serif;
+	font-size: small;
+	color: #000000;
+	background-color: #FFFFFF;
+}
+h1,h2,h3,h4 {
+	color: #000066;
+	font-weight: bold;
+}
+h1 {
+	font-size: 28pt;
+}
+h2 {
+	font-size: 18pt;
+}
