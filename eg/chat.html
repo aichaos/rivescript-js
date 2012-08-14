@@ -74,7 +74,6 @@ rs.loadFile([
 	], on_load_success, on_load_error);
 
 function on_load_success () {
-	console.log("Loading completed!");
 	$("#message").removeAttr("disabled");
 	$("#message").attr("placeholder", "Send message");
 	$("#message").focus();

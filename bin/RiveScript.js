@@ -139,6 +139,11 @@
 	 * running in a web browser or from NodeJS for example.
 	 **/
 	RiveScript.prototype.runtime = function () {
+		// Make sure we have access to Object.keys().
+		if (!Object.keys) {
+			this._shim_keys();
+		}
+
 		// In Node, there is no window, and module is a thing.
 		if (typeof(window) == "undefined" && typeof(module) == "object") {
 			this._node["fs"] = require("fs");
@@ -165,7 +170,7 @@
 		// A debug div provided?
 		if (this._div) {
 			$(this._div).append("<div>[RS] " + this._escape_html(message) + "</div>");
-		} else if (console) {
+		} else if (console && console.log) {
 			console.log("[RS] " + message);
 		}
 	};
@@ -192,7 +197,7 @@
 			// The console seems to exist.
 			if (console.error) {
 				console.error(message);
-			} else {
+			} else if (console.log) {
 				console.log("[WARNING] " + message);
 			}
 		} else {
@@ -2740,6 +2745,49 @@
 		string = string.replace(/>/g, "&gt;");
 		string = string.replace(/"/g, "&quot;");
 		return string;
+	};
+
+	// Create Object.keys() because it doesn't exist.
+	RiveScript.prototype._shim_keys = function () {
+		window.alert("Creating Object.keys!");
+		if (!Object.keys) {
+			Object.keys = (function () {
+				var hasOwnProperty = Object.prototype.hasOwnProperty,
+					hasDontEnumBug = !({toString: null}).propertyIsEnumerable('toString'),
+					dontEnums = [
+						'toString',
+						'toLocaleString',
+						'valueOf',
+						'hasOwnProperty',
+						'isPrototypeOf',
+						'propertyIsEnumerable',
+						'constructor'
+					],
+					dontEnumsLength = dontEnums.length;
+
+				return function (obj) {
+					if (typeof(obj) !== 'object' && typeof(obj) !== 'function' || obj == null) throw new TypeError('Object.keys called on non-object');
+
+					var result = [];
+
+					for (var prop in obj) {
+						if (hasOwnProperty.call(obj, prop)) {
+							result.push(prop);
+						}
+					}
+
+					if (hasDontEnumBug) {
+						for (var i = 0; i < dontEnumsLength; i++) {
+							if (hasOwnProperty.call(obj, dontEnums[i])) {
+								result.push(dontEnums[i]);
+							}
+						}
+					}
+
+					return result;
+				}
+			})();
+		}
 	};
 
 	publish(RiveScript);
