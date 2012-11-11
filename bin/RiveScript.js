@@ -2384,7 +2384,7 @@
 				var lang = this._objlangs[obj];
 				if (this._handlers[lang]) {
 					// We do.
-					output = this._handlers[lang].call(rs, obj, args);
+					output = this._handlers[lang].call(this, obj, args);
 				} else {
 					output = "[ERR: No Object Handler]";
 				}
