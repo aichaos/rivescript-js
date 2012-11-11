@@ -33,12 +33,12 @@
 	 *
 	 * Called by the RiveScript object to execute JavaScript code.
 	 */
-	JsRiveObjects.prototype.call = function (rs, name, fields) {
+	JsRiveObjects.prototype.call = function (rs, name, fields, scope) {
 		// Call the dynamic method.
 		var func = this._objects[name];
 		var reply = "";
 		try {
-			reply = func.call(undefined, rs, fields);
+			reply = func.call(scope, rs, fields);
 		} catch (e) {
 			reply = "[ERR: Error when executing JavaScript object]";
 		}
@@ -1536,7 +1536,7 @@
 	 * uniquely identify the user, in the case that you may have multiple
 	 * distinct users chatting with your bot.
 	 */
-	RiveScript.prototype.reply = function (user, msg) {
+	RiveScript.prototype.reply = function (user, msg, scope) {
 		this.say("Asked to reply to [" + user + "] " + msg);
 
 		// Format their message.
@@ -1546,17 +1546,17 @@
 
 		// If the BEGIN block exists, consult it first.
 		if (this._topics["__begin__"] && false) {
-			var begin = this._getreply(user, "request", "begin", 0);
+			var begin = this._getreply(user, "request", "begin", 0, scope);
 
 			// Okay to continue?
 			if (begin.indexOf("{ok}") > -1) {
-				reply = this._getreply(user, msg, "normal", 0);
+				reply = this._getreply(user, msg, "normal", 0, scope);
 				begin = begin.replace(/\{ok\}/g, reply);
 			}
 
 			reply = begin;
 		} else {
-			reply = this._getreply(user, msg, "normal", 0);
+			reply = this._getreply(user, msg, "normal", 0, scope);
 		}
 
 		// Save their reply history.
@@ -1582,7 +1582,7 @@
 	};
 
 	// The internal reply method. DO NOT CALL THIS DIRECTLY.
-	RiveScript.prototype._getreply = function (user, msg, context, step) {
+	RiveScript.prototype._getreply = function (user, msg, context, step, scope) {
 		// Need to sort replies?
 		if (!this._sorted["topics"]) {
 			this.warn("You forgot to call sortReplies()!");
@@ -1788,9 +1788,9 @@
 				// See if there are any hard redirects.
 				if (matched["redirect"]) {
 					this.say("Redirecting us to '" + matched["redirect"] + "'");
-					var redirect = this._process_tags(user, msg, matched["redirect"], stars, thatstars, step);
+					var redirect = this._process_tags(user, msg, matched["redirect"], stars, thatstars, step, scope);
 					this.say("Pretend user said: " + redirect);
-					reply = this._getreply(user, redirect, context, (step+1));
+					reply = this._getreply(user, redirect, context, (step+1), scope);
 					break;
 				}
 
@@ -1806,8 +1806,8 @@
 							var potreply = this._strip(halves[1]);
 
 							// Process tags all around.
-							left  = this._process_tags(user, msg, left, stars, thatstars, step);
-							right = this._process_tags(user, msg, right, stars, thatstars, step);
+							left  = this._process_tags(user, msg, left, stars, thatstars, step, scope);
+							right = this._process_tags(user, msg, right, stars, thatstars, step, scope);
 
 							// Defaults?
 							if (left.length == 0) {
@@ -1939,7 +1939,7 @@
 			}
 		} else {
 			// Process more tags if not in BEGIN.
-			reply = this._process_tags(user, msg, reply, stars, thatstars, step);
+			reply = this._process_tags(user, msg, reply, stars, thatstars, step, scope);
 		}
 
 		return reply;
@@ -2063,7 +2063,7 @@
 	};
 
 	// Process tags in a reply element.
-	RiveScript.prototype._process_tags = function (user, msg, reply, st, bst, step) {
+	RiveScript.prototype._process_tags = function (user, msg, reply, st, bst, step, scope) {
 		// Prepare the stars and botstars.
 		var stars = [""];
 		stars.push.apply(stars, st);
@@ -2354,7 +2354,7 @@
 
 			var target = this._strip(match[1]);
 			this.say("Inline redirection to: " + target);
-			var subreply = this._getreply(user, target, "normal", step+1);
+			var subreply = this._getreply(user, target, "normal", step+1, scope);
 			reply = reply.replace(new RegExp("\\{@" + this.quotemeta(target) + "\\}", "i"), subreply);
 			match = reply.match(/\{@(.+?)\}/);
 		}
@@ -2384,7 +2384,7 @@
 				var lang = this._objlangs[obj];
 				if (this._handlers[lang]) {
 					// We do.
-					output = this._handlers[lang].call(this, obj, args);
+					output = this._handlers[lang].call(this, obj, args, scope);
 				} else {
 					output = "[ERR: No Object Handler]";
 				}
@@ -2794,3 +2794,4 @@
 })((typeof(module) == "undefined" && (typeof(window) != "undefined" && this == window))
 	? function(a) { this["RiveScript"] = a; }
 	: function(a) { module.exports     = a; });
+
