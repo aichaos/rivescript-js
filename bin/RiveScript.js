@@ -51,7 +51,7 @@
 	////////////////////////////////////////////////////////////////////////////
 	
 	// Constants.
-	var VERSION    = "1.00";
+	var VERSION    = "1.01";
 	var RS_VERSION = "2.0";
 
 	/**
@@ -1545,7 +1545,7 @@
 		var reply = '';
 
 		// If the BEGIN block exists, consult it first.
-		if (this._topics["__begin__"] && false) {
+		if (this._topics["__begin__"]) {
 			var begin = this._getreply(user, "request", "begin", 0, scope);
 
 			// Okay to continue?
