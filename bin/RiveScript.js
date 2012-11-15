@@ -1547,18 +1547,15 @@
 		// If the BEGIN block exists, consult it first.
 		if (this._topics["__begin__"]) {
 			var begin = this._getreply(user, "request", "begin", 0, scope);
-			console.log("BEGIN: " + begin);
 
 			// Okay to continue?
 			if (begin.indexOf("{ok}") > -1) {
 				reply = this._getreply(user, msg, "normal", 0, scope);
-				console.log("REPLY: " + reply);
 				begin = begin.replace(/\{ok\}/g, reply);
 			}
 
 			reply = begin;
 			reply = this._process_tags(user, msg, reply, [], [], 0, scope);
-			console.log("FINAL REPLY: " + reply);
 		} else {
 			reply = this._getreply(user, msg, "normal", 0, scope);
 		}
