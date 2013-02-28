@@ -25,7 +25,7 @@
 - <set sex=female>Alright, you're female.
 
 + i (am from|live in) *
-- <set location=<formal>>I've spoken to people from <get location> before.
+- <set location={formal}<star2>{/formal}>I've spoken to people from <get location> before.
 
 + my favorite * is *
 - <set fav<star1>=<star2>>Why is it your favorite?
