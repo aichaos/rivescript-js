@@ -199,6 +199,16 @@ Thaws a user's frozen variables. The action can be one of the following:<br>
 <br>
 Retrieve the trigger that the user matched most recently.<hr>
 
+<h2>string currentUser ()</h2>
+
+<br>
+Retrieve the current user's ID. This is most useful within a JavaScript<br>
+object macro to get the ID of the user who invoked the macro (e.g. to<br>
+get/set user variables for them).<br>
+<br>
+This will return undefined if called from outside of a reply context<br>
+(the value is unset at the end of the reply() method).<hr>
+
 <h2>string reply (string username, string message)</h2>
 
 <br>

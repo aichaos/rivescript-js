@@ -43,6 +43,11 @@
 			reply = "[ERR: Error when executing JavaScript object]";
 		}
 
+		// Allow undefined responses.
+		if (reply == undefined) {
+			reply = "";
+		}
+
 		return reply;
 	};
 
@@ -96,6 +101,9 @@
 		this._topics   = {}; // main reply structure
 		this._thats    = {}; // %Previous reply structure
 		this._sorted   = {}; // Sorted buffers
+
+		// "Current transaction" variables.
+		this._current_user = undefined; // Current user ID
 
 		// Given any options?
 		if (typeof(opts) == "object") {
@@ -418,8 +426,6 @@
 		for (var lp = 0, ll = lines.length; lp < ll; lp++) {
 			var line = lines[lp];
 			lineno = lp + 1;
-
-//			this.say("Line: " + line + " (topic: " + topic + ") incomment: " + inobj);
 
 			// Strip the line.
 			line = this._strip(line);
@@ -1523,6 +1529,23 @@
 		return undefined;
 	};
 
+	/**
+	 * string currentUser ()
+	 *
+	 * Retrieve the current user's ID. This is most useful within a JavaScript
+	 * object macro to get the ID of the user who invoked the macro (e.g. to
+	 * get/set user variables for them).
+	 *
+	 * This will return undefined if called from outside of a reply context
+	 * (the value is unset at the end of the reply() method).
+	 */
+	RiveScript.prototype.currentUser = function () {
+		if (this._current_user == undefined) {
+			this.warn("currentUser() is intended to be called from within a JS object macro!");
+		}
+		return this._current_user;
+	};
+
 	////////////////////////////////////////////////////////////////////////////
 	// Reply Fetching Methods                                                 //
 	////////////////////////////////////////////////////////////////////////////
@@ -1538,6 +1561,9 @@
 	 */
 	RiveScript.prototype.reply = function (user, msg, scope) {
 		this.say("Asked to reply to [" + user + "] " + msg);
+
+		// Store the current user's ID.
+		this._current_user = user;
 
 		// Format their message.
 		msg = this._format_message(msg);
@@ -1565,6 +1591,9 @@
 		this._users[user]["__history__"]["input"].unshift(msg);
 		this._users[user]["__history__"]["reply"].pop();
 		this._users[user]["__history__"]["reply"].unshift(reply);
+
+		// Unset the current user's ID.
+		this._current_user = undefined;
 
 		return reply;
 	};
