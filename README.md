@@ -18,19 +18,19 @@ USAGE
 
 	var bot = new RiveScript();
 
-	// Load a directory full of RiveScript documents (.rs files). This is for
+	// Load a directory full of RiveScript documents (.rive files). This is for
 	// Node.JS only: it doesn't work on the web!
 	bot.loadDirectory("brain", loading_done, loading_error);
 
 	// Load an individual file.
-	bot.loadFile("brain/testsuite.rs", loading_done, loading_error);
+	bot.loadFile("brain/testsuite.rive", loading_done, loading_error);
 
 	// Load a list of files all at once (the best alternative to loadDirectory
 	// for the web!)
 	bot.loadFile([
-		"brain/begin.rs",
-		"brain/admin.rs",
-		"brain/clients.rs"
+		"brain/begin.rive",
+		"brain/admin.rive",
+		"brain/clients.rive"
 	], loading_done, loading_error);
 
 	// All file loading operations are asynchronous, so you need handlers

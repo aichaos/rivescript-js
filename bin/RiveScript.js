@@ -56,7 +56,7 @@
 	////////////////////////////////////////////////////////////////////////////
 	
 	// Constants.
-	var VERSION    = "1.01";
+	var VERSION    = "1.02";
 	var RS_VERSION = "2.0";
 
 	/**
@@ -365,7 +365,7 @@
 
 			var to_load = [];
 			for (var i = 0, iend = files.length; i < iend; i++) {
-				if (files[i].match(/\.rs$/i)) {
+				if (files[i].match(/\.(rive|rs)$/i)) {
 					// Keep track of the file's status.
 					RS._pending[loadcount][path+"/"+files[i]] = 1;
 					to_load.push(path + "/" + files[i]);

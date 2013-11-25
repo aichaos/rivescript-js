@@ -10,7 +10,7 @@ var RiveScript = require("../bin/RiveScript.js");
 // Create the bot.
 var bot = new RiveScript({ debug: false });
 bot.loadDirectory("../eg/brain", success_handler, error_handler);
-//bot.loadFile("../eg/brain/testsuite.rs", success_handler, error_handler);
+//bot.loadFile("../eg/brain/testsuite.rive", success_handler, error_handler);
 
 function success_handler (loadcount) {
 	console.log("Load #" + loadcount + " completed!");
