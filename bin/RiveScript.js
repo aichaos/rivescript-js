@@ -2793,7 +2793,6 @@
 
 	// Create Object.keys() because it doesn't exist.
 	RiveScript.prototype._shim_keys = function () {
-		window.alert("Creating Object.keys!");
 		if (!Object.keys) {
 			Object.keys = (function () {
 				var hasOwnProperty = Object.prototype.hasOwnProperty,
