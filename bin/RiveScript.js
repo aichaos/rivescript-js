@@ -56,7 +56,7 @@
 	////////////////////////////////////////////////////////////////////////////
 	
 	// Constants.
-	var VERSION    = "1.02";
+	var VERSION    = "1.03";
 	var RS_VERSION = "2.0";
 
 	/**
@@ -1439,11 +1439,11 @@
 	RiveScript.prototype.getUservars = function (user) {
 		if (user == undefined) {
 			// All the users! Return a cloned object to break refs.
-			return $.extend(true, {}, this._users);
+			return this._clone(this._users);
 		} else {
 			// Exists?
 			if (this._users[user]) {
-				return $.extend(true, {}, this._users[user]);
+				return this._clone(this._users[user]);
 			} else {
 				return undefined;
 			}
@@ -1474,7 +1474,7 @@
 	RiveScript.prototype.freezeUservars = function (user) {
 		if (this._users[user]) {
 			// Freeze them.
-			this._freeze[user] = $.extend(true, {}, this._users[user]);
+			this._freeze[user] = this._clone(this._users[user]);
 		} else {
 			this.warn("Can't freeze vars for user " + user + ": not found!");
 		}
@@ -1503,7 +1503,7 @@
 		if (action == "thaw") {
 			// Thawing them out.
 			this.clearUservars(user);
-			this._users[user] = $.extend(true, {}, this._freeze[user]);
+			this._users[user] = this._clone(this._freeze[user]);
 			delete this._freeze[user];
 		} else if (action == "discard") {
 			// Just throw it away.
@@ -1511,7 +1511,7 @@
 		} else if (action == "keep") {
 			// Copy them back, but keep them.
 			this.clearUservars(user);
-			this._users[user] = $.extend(true, {}, this._freeze[user]);
+			this._users[user] = this._clone(this._freeze[user]);
 		} else {
 			this.warn("Unsupported thaw action");
 		}
@@ -2775,6 +2775,20 @@
 		string = string.replace(/>/g, "&gt;");
 		string = string.replace(/"/g, "&quot;");
 		return string;
+	};
+
+	// Clone an object.
+	RiveScript.prototype._clone = function (obj) {
+		if (obj === null || typeof(obj) != "object") {
+			return obj;
+		}
+
+		var copy = obj.constructor();
+		for (var key in obj) {
+			copy[key] = this._clone(obj[key]);
+		}
+
+		return copy;
 	};
 
 	// Create Object.keys() because it doesn't exist.
