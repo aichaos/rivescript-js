@@ -5,7 +5,7 @@
 // Run this and then telnet to localhost:2001 and chat with the bot!
 
 var net        = require("net");
-var RiveScript = require("../bin/RiveScript.js");
+var RiveScript = require("../lib/rivescript.js");
 
 // Create the bot.
 var bot = new RiveScript({ debug: false });

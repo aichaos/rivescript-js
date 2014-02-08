@@ -6,7 +6,7 @@
 my $inJavadoc = 0;
 my @blocks = { type => "text", text => [] };
 
-open (my $fh, "<", "bin/RiveScript.js");
+open (my $fh, "<", "lib/rivescript.js");
 while (my $line = <$fh>) {
 	chomp $line;
 	$line =~ s/^[\s\t]+//g;

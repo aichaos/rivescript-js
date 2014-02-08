@@ -4,8 +4,8 @@ use strict;
 use warnings;
 use JavaScript::Minifier qw(minify);
 
-open (my $in,  "<", "./bin/RiveScript.js");
-open (my $out, ">", "./bin/RiveScript.min.js");
+open (my $in,  "<", "./lib/rivescript.js");
+open (my $out, ">", "./lib/rivescript.min.js");
 minify(input => $in, outfile => $out);
 close ($in);
 close ($out);
