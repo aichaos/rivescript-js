@@ -13,6 +13,16 @@ This library can be used both in a web browser or as a Node.JS
 module. See the `eg/` folder for a web browser example. There's
 a `node/` folder with a Node.JS example.
 
+INSTALLATION
+------------
+
+For nodejs and other similar JavaScript engines, you can install this module
+through npm:
+
+	npm install rivescript
+
+To use on the web, just load `rivescript.js` with a `<script>` tag like usual.
+
 USAGE
 -----
 
