@@ -384,11 +384,15 @@ exports.test_embedded_tags = function(test) {
         \n\
         + what is my name\n\
         - Your name is <get name>, right?\n\
+        \n\
+        + html test\n\
+        - <set name=<b>Name</b>>This has some non-RS <em>tags</em> in it.\n\
     ");
     bot.reply("What is my name?", "Your name is undefined, right?");
     bot.reply("My name is Alice.", "OK.");
     bot.reply("My name is Bob.", "I thought your name was Alice?");
     bot.reply("What is my name?", "Your name is Bob, right?");
+    bot.reply("HTML Test", "This has some non-RS <em>tags</em> in it.");
     test.done();
 };
 
