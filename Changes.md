@@ -1,5 +1,10 @@
 # Changes
 
+* 1.0.5 TBD
+  - Add experimental support for UTF-8.
+  - Fix various bugs and port over unit tests from Perl/Python versions.
+  - New tag processing algorithm allows for <set> tag to contain <get> tags.
+
 * 1.0.4 2014-11-25
   - Relicense project under the MIT License.
 

@@ -374,12 +374,10 @@ exports.test_conditionals = function(test) {
 };
 
 exports.test_embedded_tags = function(test) {
-    test.done();
-    return;
     /* TODO: when fix is implemented */
     var bot = new TestCase(test, "\
         + my name is *\n\
-        * <get name> != undefined => <set oldname=<get name>>I thought\s\n\
+        * <get name> != undefined => <set oldname=<get name>>I thought\\s\n\
           ^ your name was <get oldname>?\n\
           ^ <set name=<formal>>\n\
         - <set name=<formal>>OK.\n\

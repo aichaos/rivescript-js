@@ -61,6 +61,29 @@ function loading_error (batch_num, error) {
 }
 ```
 
+## UTF-8 SUPPORT
+
+Version 1.0.5 adds experimental support for UTF-8 in RiveScript documents.
+It is disabled by default. Enable it by passing a `true` value for the `utf8`
+option in the constructor.
+
+By default (without UTF-8 mode on), triggers may only contain basic ASCII
+characters (no foreign characters), and the user's message is stripped of all
+characters except letters/numbers and spaces. This means that, for example,
+you can't capture a user's e-mail address in a RiveScript reply, because of the
+@ and . characters.
+
+When UTF-8 mode is enabled, these restrictions are lifted. Triggers are only
+limited to not contain certain metacharacters like the backslash, and the user's
+message is only stripped of backslashes and HTML angled brackets (to protect
+from obvious XSS if you use RiveScript in a web application). The `<star>`` tags
+in RiveScript will capture the user's "raw" input, so you can write replies to
+get the user's e-mail address or store foreign characters in their name.
+
+This has so far only been tested when run under Node. When served through a
+web server, take extra care that your server sends the correct content encoding
+with the RiveScript source files (`Content-Type: text/plain; charset=utf-8`).
+
 ## LICENSE
 
 ```
