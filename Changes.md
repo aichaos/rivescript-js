@@ -4,6 +4,8 @@
   - Add experimental support for UTF-8.
   - Fix various bugs and port over unit tests from Perl/Python versions.
   - New tag processing algorithm allows for <set> tag to contain <get> tags.
+  - Fix trigger sorting, so that triggers with matching word lengths get
+    sorted by length of trigger (longest to shortest).
 
 * 1.0.4 2014-11-25
   - Relicense project under the MIT License.
