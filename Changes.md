@@ -6,6 +6,7 @@
   - New tag processing algorithm allows for <set> tag to contain <get> tags.
   - Fix trigger sorting, so that triggers with matching word lengths get
     sorted by length of trigger (longest to shortest).
+  - Fix <bot> tag matching in triggers.
 
 * 1.0.4 2014-11-25
   - Relicense project under the MIT License.
