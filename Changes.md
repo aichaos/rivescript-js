@@ -8,6 +8,8 @@
     sorted by length of trigger (longest to shortest).
   - Fix <bot> tag matching in triggers.
   - Allow <bot> interpolation in triggers to support UTF-8.
+  - Use Grunt for minification (instead of the Perl minify.pl script), JS
+    linting, and for running a simple web server for demoing RiveScript.
 
 * 1.0.4 2014-11-25
   - Relicense project under the MIT License.

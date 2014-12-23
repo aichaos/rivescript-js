@@ -2,14 +2,13 @@
 
 ## INTRODUCTION
 
-This is a RiveScript interpreter library for JavaScript.
-RiveScript is a scripting language for chatterbots, making it
-easy to write trigger/response pairs for building up a bot's
-intelligence.
+This is a RiveScript interpreter library for JavaScript. RiveScript is a
+scripting language for chatterbots, making it easy to write trigger/response
+pairs for building up a bot's intelligence.
 
-This library can be used both in a web browser or as a Node.JS
-module. See the `eg/` folder for a web browser example. There's
-a `node/` folder with a Node.JS example.
+This library can be used both in a web browser or as a Node.JS module.
+See the `eg/` folder for a web browser example. There's a `node/` folder with
+a Node.JS example.
 
 ## INSTALLATION
 
@@ -19,6 +18,19 @@ through npm:
 `npm install rivescript`
 
 To use on the web, just load `rivescript.js` with a `<script>` tag like usual.
+
+## GRUNT CONNECT
+
+This project uses [Grunt](http://gruntjs.com) for compiling to minified JS and
+also includes a simple web server for local testing and demoing for RiveScript.
+
+Install `nodejs` and `npm` and then:
+
+```bash
+$ npm install -g grunt # If you don't already have it
+$ npm install          # Install dev dependencies
+$ grunt connect:server # Will start a local web server and open eg/chat.html
+```
 
 ## USAGE
 
@@ -76,13 +88,25 @@ you can't capture a user's e-mail address in a RiveScript reply, because of the
 When UTF-8 mode is enabled, these restrictions are lifted. Triggers are only
 limited to not contain certain metacharacters like the backslash, and the user's
 message is only stripped of backslashes and HTML angled brackets (to protect
-from obvious XSS if you use RiveScript in a web application). The `<star>`` tags
+from obvious XSS if you use RiveScript in a web application). The `<star>` tags
 in RiveScript will capture the user's "raw" input, so you can write replies to
 get the user's e-mail address or store foreign characters in their name.
 
 This has so far only been tested when run under Node. When served through a
 web server, take extra care that your server sends the correct content encoding
 with the RiveScript source files (`Content-Type: text/plain; charset=utf-8`).
+
+## BUILDING
+
+Grunt options:
+
+* `grunt` - Builds the minified `lib/rivescript.min.js`
+* `grunt jshint` - Runs JS linting on `rivescript.js`
+* `grunt watch` - For development - watches `rivescript.js` for changes and
+  automatically minifies it.
+* `grunt connect:server` - Starts a local web server and opens `eg/chat.html`
+  for local testing and demoing.
+* `grunt nodeunit` - Run unit tests.
 
 ## LICENSE
 
