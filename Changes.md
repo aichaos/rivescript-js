@@ -7,6 +7,7 @@
   - Fix trigger sorting, so that triggers with matching word lengths get
     sorted by length of trigger (longest to shortest).
   - Fix <bot> tag matching in triggers.
+  - Allow <bot> interpolation in triggers to support UTF-8.
 
 * 1.0.4 2014-11-25
   - Relicense project under the MIT License.
