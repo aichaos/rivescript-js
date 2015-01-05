@@ -39,7 +39,7 @@ At this point you're waiting on me. I'm usually pretty quick to comment on pull
 requests (within a few days) and I may suggest some changes or improvements
 or alternatives.
 
-Some things that will increase the change that your pull request is accepted:
+Some things that will increase the chance that your pull request is accepted:
 
 * Follow the style guide at <http://www.rivescript.com/contributing>
 * Write a [good commit message](http://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html).
