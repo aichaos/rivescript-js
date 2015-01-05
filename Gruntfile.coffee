@@ -62,3 +62,4 @@ module.exports = (grunt) ->
 
 	# Tasks
 	grunt.registerTask "default", ["uglify"]
+	grunt.registerTask "test", ["nodeunit"]

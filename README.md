@@ -106,7 +106,7 @@ Grunt options:
   automatically minifies it.
 * `grunt connect:server` - Starts a local web server and opens `eg/chat.html`
   for local testing and demoing.
-* `grunt nodeunit` - Run unit tests.
+* `grunt test` - Run unit tests.
 
 ## LICENSE
 
