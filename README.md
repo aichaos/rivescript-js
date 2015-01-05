@@ -27,9 +27,9 @@ also includes a simple web server for local testing and demoing for RiveScript.
 Install `nodejs` and `npm` and then:
 
 ```bash
-$ npm install -g grunt # If you don't already have it
-$ npm install          # Install dev dependencies
-$ grunt connect:server # Will start a local web server and open eg/chat.html
+$ npm install -g grunt-cli # If you don't already have it
+$ npm install              # Install dev dependencies
+$ grunt connect:server     # Will start a local web server and open eg/chat.html
 ```
 
 ## USAGE
@@ -113,7 +113,7 @@ Grunt options:
 ```
 The MIT License (MIT)
 
-Copyright (c) 2014 Noah Petherbridge
+Copyright (c) 2015 Noah Petherbridge
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
