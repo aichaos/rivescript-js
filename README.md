@@ -19,20 +19,21 @@ through npm:
 
 To use on the web, just load `rivescript.js` with a `<script>` tag like usual.
 
-## GRUNT CONNECT
+## USAGE
 
-This project uses [Grunt](http://gruntjs.com) for compiling to minified JS and
-also includes a simple web server for local testing and demoing for RiveScript.
-
-Install `nodejs` and `npm` and then:
+The distribution of RiveScript.js includes an interactive shell for testing your
+RiveScript bot, `shell.js`. Run it with Node and point it to a folder where you
+have your RiveScript documents. Example:
 
 ```bash
-$ npm install -g grunt-cli # If you don't already have it
-$ npm install              # Install dev dependencies
-$ grunt connect:server     # Will start a local web server and open eg/chat.html
+node shell.js eg/brain
 ```
 
-## USAGE
+Once inside the shell you can chat with the bot using the RiveScript files in
+that directory. For simple debugging you can type `/eval` to run single lines
+of JavaScript code. See `/help` for more.
+
+When using RiveScript.js as a library, the synopsis is as follows:
 
 ```javascript
 var bot = new RiveScript();
@@ -107,6 +108,19 @@ Grunt options:
 * `grunt connect:server` - Starts a local web server and opens `eg/chat.html`
   for local testing and demoing.
 * `grunt test` - Run unit tests.
+
+## GRUNT CONNECT
+
+This project uses [Grunt](http://gruntjs.com) for compiling to minified JS and
+also includes a simple web server for local testing and demoing for RiveScript.
+
+Install `nodejs` and `npm` and then:
+
+```bash
+$ npm install -g grunt-cli # If you don't already have it
+$ npm install              # Install dev dependencies
+$ grunt connect:server     # Will start a local web server and open eg/chat.html
+```
 
 ## LICENSE
 
