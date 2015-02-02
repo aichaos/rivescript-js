@@ -374,7 +374,6 @@ exports.test_conditionals = function(test) {
 };
 
 exports.test_embedded_tags = function(test) {
-    /* TODO: when fix is implemented */
     var bot = new TestCase(test, "\
         + my name is *\n\
         * <get name> != undefined => <set oldname=<get name>>I thought\\s\n\
@@ -393,6 +392,23 @@ exports.test_embedded_tags = function(test) {
     bot.reply("My name is Bob.", "I thought your name was Alice?");
     bot.reply("What is my name?", "Your name is Bob, right?");
     bot.reply("HTML Test", "This has some non-RS <em>tags</em> in it.");
+    test.done();
+};
+
+exports.test_set_uservars = function(test) {
+    var bot = new TestCase(test, "\
+        + what is my name\n\
+        - Your name is <get name>.\n\
+        \n\
+        + how old am i\n\
+        - You are <get age>.\n\
+    ");
+    bot.rs.setUservars(bot.username, {
+        "name": "Aiden",
+        "age": 5,
+    });
+    bot.reply("What is my name?", "Your name is Aiden.");
+    bot.reply("How old am I?", "You are 5.");
     test.done();
 };
 

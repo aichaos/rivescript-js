@@ -10,6 +10,10 @@
   - Allow <bot> interpolation in triggers to support UTF-8.
   - Use Grunt for minification (instead of the Perl minify.pl script), JS
     linting, and for running a simple web server for demoing RiveScript.
+  - Add setUservars() function to set multiple variables at once using an
+    object.
+  - Fix getting user variables by adding type checking, so variables can contain
+    a falsy value and not be mistaken as being undefined (bug #17).
 
 * 1.0.4 2014-11-25
   - Relicense project under the MIT License.
