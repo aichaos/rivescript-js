@@ -1,0 +1,9 @@
+#!/usr/bin/env sh
+
+## do this once:
+# git remote add upstream git@github.com:aichaos/rivescript-js.git
+
+git fetch origin -v
+git fetch upstream -v
+git pull upstream master
+git merge upstream/master
