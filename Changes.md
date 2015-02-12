@@ -16,6 +16,8 @@
     a falsy value and not be mistaken as being undefined (bug #17).
   - Add shell.js, an interactive command line shell for testing a RiveScript
     bot.
+  - Add support for `! local concat` option to override concatenation mode
+    (file scoped)
 
 * 1.0.4 2014-11-25
   - Relicense project under the MIT License.
