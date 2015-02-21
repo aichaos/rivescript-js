@@ -4,7 +4,18 @@ module.exports = (grunt) ->
 		pkg: grunt.file.readJSON("package.json")
 		watch:
 			files: ["lib/<%= pkg.name %>.js"]
-			tasks: ["uglify"]
+			tasks: ["coffee"]
+		coffee:
+			options:
+				bare: true # Compile without top-level function safety wrapper
+			compile:
+				files: [
+					expand: true
+					cwd: "./src"
+					src: "**/*.coffee"
+					dest: "./lib"
+					ext: ".js"
+				]
 		uglify:
 			options:
 				banner: "/* <%= pkg.name %> <%= pkg.version %> -- built on " \
@@ -55,11 +66,12 @@ module.exports = (grunt) ->
 
 	# Grunt plugins
 	grunt.loadNpmTasks("grunt-contrib-connect")  # Simple web server
+	grunt.loadNpmTasks("grunt-contrib-coffee")   # CoffeeScript compiler
 	grunt.loadNpmTasks("grunt-contrib-uglify")   # Minify JS
 	grunt.loadNpmTasks("grunt-contrib-jshint")   # JSLint
 	grunt.loadNpmTasks("grunt-contrib-watch")    # Watch JS for live changes
 	grunt.loadNpmTasks("grunt-contrib-nodeunit") # Unit testing
 
 	# Tasks
-	grunt.registerTask "default", ["uglify"]
+	grunt.registerTask "default", ["coffee"]
 	grunt.registerTask "test", ["nodeunit"]
