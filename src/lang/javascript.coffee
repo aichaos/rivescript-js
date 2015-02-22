@@ -1,34 +1,59 @@
-# JavaScript Language Support for RiveScript Macros
+# RiveScript.js
+#
+# This code is released under the MIT License.
+# See the "LICENSE" file for more information.
+#
+# http://www.rivescript.com/
+"use strict"
 
+##
+# JSObjectHandler (RiveScript master)
+#
+# JavaScript Language Support for RiveScript Macros. This support is enabled by
+# default in RiveScript.js; if you don't want it, override the `javascript`
+# language handler to null, like so:
+#
+#    $bot->setHandler("javascript", null);
+##
 class JSObjectHandler
-    constructor: (master) ->
-        @_master  = master
-        @_objects = {}
+  constructor: (master) ->
+    @_master  = master
+    @_objects = {}
 
-    load: (name, code) ->
-        # We need to make a dynamic JavaScript function.
-        source = "this._objects[\"" + name + "\"] = function(rs, args) {\n" \
-            + code.join("\n") \
-            + "}\n"
+  ##
+  # void load (string name, string[] code)
+  #
+  # Called by the RiveScript object to load JavaScript code.
+  ##
+  load: (name, code) ->
+    # We need to make a dynamic JavaScript function.
+    source = "this._objects[\"" + name + "\"] = function(rs, args) {\n" \
+      + code.join("\n") \
+      + "}\n"
 
-        try
-            eval source
-        catch e
-            @_master.warn "Error evaluating JavaScript object: " + e.message
+    try
+      eval source
+    catch e
+      @_master.warn "Error evaluating JavaScript object: " + e.message
 
-    call: (rs, name, fields, scope) ->
-        # Call the dynamic method.
-        func = @_objects[name]
-        reply = ""
-        try
-            reply = func.call(scope, rs, fields)
-        catch
-            reply = "[ERR: Error when executing JavaScript object]"
+  ##
+  # string call (RiveScript rs, string name, string[] fields)
+  #
+  # Called by the RiveScript object to execute JavaScript code.
+  ##
+  call: (rs, name, fields, scope) ->
+    # Call the dynamic method.
+    func = @_objects[name]
+    reply = ""
+    try
+      reply = func.call(scope, rs, fields)
+    catch
+      reply = "[ERR: Error when executing JavaScript object]"
 
-        # Allow undefined responses.
-        if reply is undefined
-            reply = ""
+    # Allow undefined responses.
+    if reply is undefined
+      reply = ""
 
-        return reply
+    return reply
 
 module.exports = JSObjectHandler
