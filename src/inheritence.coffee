@@ -16,6 +16,7 @@
 # with an {inherits} tag to signify inheritence depth.
 #
 # topic: The name of the topic
+# thats: Boolean, are we getting replies with %Previous or not?
 # triglvl: reference to this._topics or this._thats
 # depth: recursion depth counter
 #
@@ -23,8 +24,10 @@
 # 0 is the trigger text and index 1 is the pointer to the trigger's data within
 # the original topic structure.
 ##
-getTopicTriggers = (rs, topic, depth, inheritence, inherited) ->
+getTopicTriggers = (rs, topic, thats, depth, inheritence, inherited) ->
   # Initialize default triggers.
+  if not thats?
+    thats = false
   if not depth?
     depth = 0
   if not inheritence?
@@ -72,9 +75,17 @@ getTopicTriggers = (rs, topic, depth, inheritence, inherited) ->
 
   # Get those that exist in this topic directly.
   inThisTopic = []
-  if rs._topics[topic]?
-    for trigger in rs._topics[topic]
-      inThisTopic.push [trigger.trigger, trigger]
+  if not thats
+    # The non-that structure is: {topics}->[ array of triggers ]
+    if rs._topics[topic]?
+      for trigger in rs._topics[topic]
+        inThisTopic.push [trigger.trigger, trigger]
+  else
+    # The 'that' structure is: {topic}->{cur trig}->{prev trig}->{trigger info}
+    if rs._thats[topic]?
+      for curTrig of rs._thats[topic]
+        for previous of rs._thats[topic][curTrig]
+          inThisTopic.push [previous, rs._thats[topic][curTrig][previous]]
 
   # Does this topic include others?
   if Object.keys(rs._includes[topic]).length > 0
@@ -82,7 +93,7 @@ getTopicTriggers = (rs, topic, depth, inheritence, inherited) ->
     for includes of rs._includes[topic]
       rs.say "Topic #{topic} includes #{includes}"
       triggers.push.apply(triggers, getTopicTriggers(
-        rs, includes, depth+1, inheritence+1, false
+        rs, includes, thats, depth+1, inheritence+1, false
       ))
 
   # Does this topic inherit others?
@@ -91,7 +102,7 @@ getTopicTriggers = (rs, topic, depth, inheritence, inherited) ->
     for inherits of rs._inherits[topic]
       rs.say "Topic #{topic} inherits #{inherits}"
       triggers.push.apply(triggers, getTopicTriggers(
-        rs, inherits, depth+1, inheritence+1, true
+        rs, inherits, thats, depth+1, inheritence+1, true
       ))
 
   # Collect the triggers for *this* topic. If this topic inherits any other

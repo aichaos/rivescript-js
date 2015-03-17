@@ -30,7 +30,7 @@ utils = require("./utils")
 exports.sortTriggerSet = (triggers, exclude_previous, say) ->
   if not say?
     say = (what) ->
-      console.log what
+      #console.log what
       return
 
   if not exclude_previous?
