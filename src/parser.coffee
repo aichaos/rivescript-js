@@ -141,6 +141,7 @@ class Parser
           objBuf = []
         else
           objBuf.push line
+        continue
 
       #------------------
       # Look for comments

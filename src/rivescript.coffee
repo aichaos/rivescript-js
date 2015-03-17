@@ -357,6 +357,7 @@ class RiveScript
   sortReplies: () ->
     # (Re)initialize the sort cache.
     @_sorted.topics = {}
+    @_sorted.thats  = {}
     @say "Sorting triggers..."
 
     # Loop through all the topics.
@@ -369,10 +370,12 @@ class RiveScript
       allTriggers = inherit_utils.getTopicTriggers(@, topic)
 
       # Sort these triggers.
-      running = sorting.sortTriggerSet(allTriggers)
+      running = sorting.sortTriggerSet(allTriggers, true)
 
       # Save this topic's sorted list.
       @_sorted.topics[topic] = running
+
+      # Get all of the %Previous triggers for this topic.
 
     # Sort the substitution lists.
     @_sorted.sub    = sorting.sortList Object.keys(@_sub)

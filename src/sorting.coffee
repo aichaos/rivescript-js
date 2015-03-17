@@ -10,16 +10,35 @@
 utils = require("./utils")
 
 ##
-# string[] sortTriggerSet (string[] triggers[, func say])
+# string[] sortTriggerSet (string[] triggers[, exclude_previous[, func say]])
 #
 # Sort a group of triggers in an optimal sorting order. The `say` parameter is
 # a reference to RiveScript.say() or provide your own function (or not) for
 # debug logging from within this function.
+#
+# This function has two use cases:
+# 1) create a sort buffer for "normal" (matchable) triggers, which are triggers
+#    which are NOT accompanied by a %Previous tag.
+# 2) create a sort buffer for triggers that had %Previous tags.
+#
+# Use the `exclude_previous` parameter to control which one is being done.
+# This function will return a list of items in the format of
+# `[ "trigger text", trigger pointer ]` and it's intended to have no duplicate
+# trigger patterns (unless the source RiveScript code explicitly uses the
+# same duplicate pattern twice, which is a user error).
 ##
-exports.sortTriggerSet = (triggers, say) ->
+exports.sortTriggerSet = (triggers, exclude_previous, say) ->
   if not say?
-    say = ->
+    say = (what) ->
+      console.log what
       return
+
+  if not exclude_previous?
+    exclude_previous = true
+
+  # KEEP IN MIND: the `triggers` array is composed of array elements of the form
+  # ["trigger text", pointer to trigger data]
+  # So this code will use e.g. `trig[0]` when referring to the trigger text.
 
   # Create a priority map.
   prior =
@@ -27,7 +46,11 @@ exports.sortTriggerSet = (triggers, say) ->
 
   # Sort triggers by their weights.
   for trig in triggers
-    match = trig.match(/\{weight=(\d+)\}/i)
+    # If we're excluding triggers with "previous" values, skip them here.
+    if exclude_previous and trig[1].previous?
+      continue
+
+    match = trig[0].match(/\{weight=(\d+)\}/i)
     weight = 0
     if match and match[1]
       weight = match[1]
@@ -55,17 +78,19 @@ exports.sortTriggerSet = (triggers, say) ->
     track[inherits] = initSortTrack()
 
     for trig in prior[p]
-      say "Looking at trigger: #{trig}"
+      pattern = trig[0]
+      say "Looking at trigger: #{pattern}"
 
       # See if it has an inherits tag.
-      match = trig.match(/\{inherits=(\d+)\}/i)
+      match = pattern.match(/\{inherits=(\d+)\}/i)
       if match
         inherits = parseInt(match[1])
         if inherits > highest_inherits
           highest_inherits = inherits
         say "Trigger belongs to a topic that inherits other topics.
               Level=#{inherits}"
-        trig = trig.replace(/\{inherits=\d+\}/ig, "")
+        pattern = pattern.replace(/\{inherits=\d+\}/ig, "")
+        trig[0] = pattern
       else
         inherits = -1
 
@@ -75,46 +100,46 @@ exports.sortTriggerSet = (triggers, say) ->
         track[inherits] = initSortTrack()
 
       # Start inspecting the trigger's contents.
-      if trig.indexOf("_") > -1
+      if pattern.indexOf("_") > -1
         # Alphabetic wildcard included.
-        cnt = utils.word_count trig
+        cnt = utils.word_count pattern
         say "Has a _ wildcard with #{cnt} words."
-        if cnt > 1
+        if cnt > 0
           if not track[inherits].alpha[cnt]?
             track[inherits].alpha[cnt] = []
           track[inherits].alpha[cnt].push trig
         else
           track[inherits].under.push trig
-      else if trig.indexOf("#") > -1
+      else if pattern.indexOf("#") > -1
         # Numeric wildcard included.
-        cnt = utils.word_count trig
+        cnt = utils.word_count pattern
         say "Has a # wildcard with #{cnt} words."
-        if cnt > 1
+        if cnt > 0
           if not track[inherits].number[cnt]?
             track[inherits].number[cnt] = []
           track[inherits].number[cnt].push trig
         else
           track[inherits].pound.push trig
-      else if trig.indexOf("*") > -1
+      else if pattern.indexOf("*") > -1
         # Wildcard included.
-        cnt = utils.word_count trig
+        cnt = utils.word_count pattern
         say "Has a * wildcard with #{cnt} words."
-        if cnt > 1
+        if cnt > 0
           if not track[inherits].wild[cnt]?
             track[inherits].wild[cnt] = []
           track[inherits].wild[cnt].push trig
         else
           track[inherits].star.push trig
-      else if trig.indexOf("[") > -1
+      else if pattern.indexOf("[") > -1
         # Optionals included.
-        cnt = utils.word_count trig
+        cnt = utils.word_count pattern
         say "Has optionals with #{cnt} words."
         if not track[inherits].option[cnt]?
           track[inherits].option[cnt] = []
         track[inherits].option[cnt].push trig
       else
         # Totally atomic
-        cnt = utils.word_count trig
+        cnt = utils.word_count pattern
         say "Totally atomic trigger with #{cnt} words."
         if not track[inherits].atomic[cnt]?
           track[inherits].atomic[cnt] = []

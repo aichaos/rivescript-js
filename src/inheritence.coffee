@@ -18,6 +18,10 @@
 # topic: The name of the topic
 # triglvl: reference to this._topics or this._thats
 # depth: recursion depth counter
+#
+# Each "trigger" returned from this function is actually an array, where index
+# 0 is the trigger text and index 1 is the pointer to the trigger's data within
+# the original topic structure.
 ##
 getTopicTriggers = (rs, topic, depth, inheritence, inherited) ->
   # Initialize default triggers.
@@ -70,7 +74,7 @@ getTopicTriggers = (rs, topic, depth, inheritence, inherited) ->
   inThisTopic = []
   if rs._topics[topic]?
     for trigger in rs._topics[topic]
-      inThisTopic.push trigger.trigger
+      inThisTopic.push [trigger.trigger, trigger]
 
   # Does this topic include others?
   if Object.keys(rs._includes[topic]).length > 0
@@ -96,7 +100,9 @@ getTopicTriggers = (rs, topic, depth, inheritence, inherited) ->
   if Object.keys(rs._inherits[topic]).length > 0 or inherited
     for trigger in inThisTopic
       rs.say "Prefixing trigger with {inherits=#{inheritence}} #{trigger}"
-      triggers.push.apply(triggers, ["{inherits=#{inheritence}}#{trigger}"])
+      triggers.push.apply(triggers, [
+        ["{inherits=#{inheritence}}#{trigger[0]}", trigger]
+      ])
   else
     triggers.push.apply(triggers, inThisTopic)
 
