@@ -11,6 +11,7 @@ VERSION  = "1.0.5"
 
 # Helper modules
 Parser  = require "./parser"
+Brain   = require "./brain"
 utils   = require "./utils"
 sorting = require "./sorting"
 inherit_utils = require "./inheritence"
@@ -46,8 +47,9 @@ class RiveScript
     @_node    = {} # NodeJS objects
     @_runtime = @runtime()
 
-    # Parser helper
+    # Sub-module helpers.
     @parser = new Parser @
+    @brain  = new Brain @
 
     # Loading files in will be asynchronous, so we'll need to abe able to
     # identify when we've finished loading files! This will be an object
@@ -70,9 +72,6 @@ class RiveScript
     @_topics   = {} # main reply structure
     @_thats    = {} # %Previous reply structure (pointers into @_topics)
     @_sorted   = {} # Sorted buffers
-
-    # "Current transaction" variables
-    @_currentUser = null # Current user ID
 
     # Given any options?
     if typeof(opts) is "object"
@@ -392,6 +391,16 @@ class RiveScript
   # Reply Fetching Methods                                                     #
   ##############################################################################
 
-
+  ##
+  # string reply (string username, string message[, scope])
+  #
+  # Fetch a reply from the RiveScript brain. The message doesn't require any
+  # special pre-processing to be done to it, i.e. it's allowed to contain
+  # punctuation and weird symbols. The username is arbitrary and is used to
+  # uniquely identify the user, in the case that you may have multiple
+  # distinct users chatting with your bot.
+  ##
+  reply: (user, msg, scope) ->
+    return @brain.reply(user, msg, scope)
 
 module.exports = RiveScript

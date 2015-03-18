@@ -48,3 +48,41 @@ exports.word_count = (trigger, all) ->
       wc++
 
   return wc
+
+##
+# string stripNasties (string, bool utf8)
+#
+# Stip special characters out of a string.
+##
+exports.stripNasties = (string, utf8) ->
+  if utf8
+    # Allow most things in UTF8 mode.
+    string = string.replace(/[\\<>]+/g, "")
+    return string
+  string = string.replace(/[^A-Za-z0-9 ]/g, "")
+  return string
+
+##
+# string quotemeta (string)
+#
+# Escape a string for a regexp.
+##
+exports.quotemeta = (string) ->
+  unsafe = "\\.+*?[^]$(){}=!<>|:".split("")
+  for char in unsafe
+    string = string.replace(new RegExp("\\#{char}", "g"), "\\#{char}")
+  return string
+
+##
+# bool isAtomic (string trigger)
+#
+# Determine whether a trigger is atomic.
+##
+exports.isAtomic = (trigger) ->
+  # Atomic triggers don't contain any wildcards or parenthesis or anything of
+  # the sort. We don't need to test the full character set, just left brackets
+  # will do.
+  for special in ["*", "#", "_", "(", "[", "<" ]
+    if trigger.indexOf(special) > -1
+      return false
+  return true

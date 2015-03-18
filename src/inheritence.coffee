@@ -119,4 +119,32 @@ getTopicTriggers = (rs, topic, thats, depth, inheritence, inherited) ->
 
   return triggers
 
+##
+# string[] getTopicTree (RiveScript rs, string topic, int depth)
+#
+# Given a topic, this returns an array of every topic related to it (all the
+# topics it includes or inherits, plus all the topics included or inherited
+# by those topics, and so on). The array includes the original topic, too.
+getTopicTree = (rs, topic, depth) ->
+  # Default depth
+  if not depth?
+    depth = 0
+
+  # Break if we're in too deep.
+  if depth > rs._depth
+    rs.warn "Deep recursion while scanning topic tree!"
+    return []
+
+  # Collect an array of all topics.
+  topics = [topic]
+
+  for includes of rs._topics[topic].includes
+    topics.push.apply(topics, getTopicTree(rs, includes, depth+1))
+
+  for inherits of rs._topics[topic].inherits
+    topics.push.apply(topics, getTopicTree(rs, inherits, depth+1))
+
+  return topics
+
 exports.getTopicTriggers = getTopicTriggers
+exports.getTopicTree     = getTopicTree
