@@ -606,6 +606,60 @@ exports.test_topic_inheritence = function(test) {
 };
 
 /******************************************************************************
+ * Parser option tests
+ ******************************************************************************/
+
+exports.test_concat = function(test) {
+    var bot = new TestCase(test, "\
+        // Default concat mode = none\n\
+        + test concat default\n\
+        - Hello\n\
+        ^ world!\n\
+        \n\
+        ! local concat = space\n\
+        + test concat space\n\
+        - Hello\n\
+        ^ world!\n\
+        \n\
+        ! local concat = none\n\
+        + test concat none\n\
+        - Hello\n\
+        ^ world!\n\
+        \n\
+        ! local concat = newline\n\
+        + test concat newline\n\
+        - Hello\n\
+        ^ world!\n\
+        \n\
+        // invalid concat setting is equivalent to 'none'\n\
+        ! local concat = foobar\n\
+        + test concat foobar\n\
+        - Hello\n\
+        ^ world!\n\
+        \n\
+        // the option is file scoped so it can be left at\n\
+        // any setting and won't affect subsequent parses\n\
+        ! local concat = newline\n\
+    ");
+    bot.extend("\
+        // concat mode should be restored to the default in a\n\
+        // separate file/stream parse\n\
+        + test concat second file\n\
+        - Hello\n\
+        ^ world!\n\
+    ");
+
+    bot.reply("test concat default", "Helloworld!");
+    bot.reply("test concat space", "Hello world!");
+    bot.reply("test concat none", "Helloworld!");
+    bot.reply("test concat newline", "Hello\nworld!");
+    bot.reply("test concat foobar", "Helloworld!");
+    bot.reply("test concat second file", "Helloworld!");
+
+    test.done();
+};
+
+/******************************************************************************
  * Unicode Tests
  ******************************************************************************/
 
