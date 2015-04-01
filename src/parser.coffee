@@ -343,12 +343,12 @@ class Parser
 
           # Handle the label types.
           switch type
-            when "begin"
-              @say "Found the BEGIN block."
-              type = "topic"
-              name = "__begin__"
+            when "begin", "topic"
+              if type is "begin"
+                @say "Found the BEGIN block."
+                type = "topic"
+                name = "__begin__"
 
-            when "topic"
               # Starting a new topic.
               @say "Set topic to #{name}"
               curTrig = null

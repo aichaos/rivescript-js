@@ -6,7 +6,8 @@ RiveScript = require "./lib/rivescript"
 brain = "eg/brain"
 
 bot = new RiveScript({ debug: false })
-bot.loadDirectory(brain, (batch_num) ->
+bot.loadFile("eg/testsuite.rive", (batch_num) ->
+#bot.loadDirectory(brain, (batch_num) ->
   bot._debug = true
   bot.sortReplies()
 

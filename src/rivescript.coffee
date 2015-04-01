@@ -36,6 +36,9 @@ class RiveScript
   ##############################################################################
 
   constructor: (opts) ->
+    if not opts?
+      opts = {}
+
     # Default parameters
     @_debug   = if opts.debug then opts.debug else false
     @_strict  = if opts.strict then opts.strict else true
@@ -344,7 +347,7 @@ class RiveScript
             @_thats[topic][trigger.trigger] = {}
           @_thats[topic][trigger.trigger][trigger.previous] = trigger
 
-    console.log JSON.stringify(@_inherits, null, 2)
+    #console.log JSON.stringify(@_topics, null, 2)
 
   ##
   # void sortReplies()
@@ -386,6 +389,37 @@ class RiveScript
   ##############################################################################
 
   # TODO: setHandler, etc.
+  setUservar: (user, name, value) ->
+    # Initialize the user?
+    if not @_users[user]
+      @_users[user] = {topic: "random"}
+
+    if value is undefined
+      delete @_users[user][name]
+    else
+      @_users[user][name] = value
+
+  setUservars: (user, data) ->
+    # Initialize the user?
+    if not @_users[user]
+      @_users[user] = {topic: "random"}
+
+    for key of data
+      if data[key] is undefined
+        delete @_users[user][key]
+      else
+        @_users[user][key] = data[key]
+
+  getUservar: (user, name) ->
+    # No user?
+    if not @_users[user]
+      return "undefined"
+
+    # The var exists?
+    if typeof(@_users[user][name]) isnt "undefined"
+      return @_users[user][name]
+    else
+      return "undefined"
 
   ##############################################################################
   # Reply Fetching Methods                                                     #

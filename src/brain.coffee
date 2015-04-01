@@ -53,10 +53,17 @@ class Brain
       if begin.indexOf("{ok}") > -1
         reply = @_getReply(user, msg, "normal", 0, scope)
         begin = begin.replace(/\{ok\}/g, reply)
+
+      reply = begin
+      reply = @processTags(user, msg, reply, [], [], 0, scope)
     else
       reply = @_getReply(user, msg, "normal", 0, scope)
 
-    # Save their reply history TODO
+    # Save their reply history
+    @master._users[user].__history__.input.pop()
+    @master._users[user].__history__.input.unshift(msg)
+    @master._users[user].__history__.reply.pop()
+    @master._users[user].__history__.reply.unshift(reply)
 
     # Unset the current user ID.
     @_currentUser = undefined
@@ -132,13 +139,66 @@ class Brain
     if step is 0
       allTopics = [topic]
       if @master._topics[topic].includes or @master._topics[topic].inherits
-        # Get ALL the topics! TODO
+        # Get ALL the topics!
         allTopics = inherit_utils.getTopicTree(@master, topic)
 
       # Scan them all.
       for top in allTopics
         @say "Checking topic #{top} for any %Previous's"
-        # TODO
+
+        if @master._sorted.thats[top]
+          # There's one here!
+          @say "There's a %Previous in this topic!"
+
+          # Do we have history yet?
+          lastReply = @master._users[user].__history__.reply[0]
+
+          # Format the bot's last reply the same way as the human's.
+          lastReply = @formatMessage(lastReply, true)
+          @say "Last reply: #{lastReply}"
+
+          # See if it's a match
+          for trig in @master._sorted.thats[top]
+            pattern = trig[0]
+            botside = @triggerRegexp(user, pattern)
+            @say "Try to match lastReply (#{lastReply}) to #{botside}"
+
+            # Match?
+            match = lastReply.match(new RegExp("^#{botside}$"))
+            if match
+              # Huzzah! See if OUR message is right too.
+              @say "Bot side matched!"
+              thatstars = match # Collect the bot stars in case we need them
+              thatstars.shift()
+
+              # Compare the triggers to the user's message.
+              userSide = trig[1]
+              regexp = @triggerRegexp(user, userSide.trigger)
+              @say "Try to match \"#{msg}\" against #{userSide.trigger} (#{regexp})"
+
+              # If the trigger is atomic, we don't need to bother with the regexp engine.
+              isAtomic = utils.isAtomic(userSide.trigger)
+              isMatch  = false
+              if isAtomic
+                if msg is regexp
+                  isMatch = true
+              else
+                match = msg.match(new RegExp("^#{regexp}$"))
+                if match
+                  isMatch = true
+
+                  # Get the stars
+                  stars = match
+                  if stars.length >= 1
+                    stars.shift()
+
+              # Was it a match?
+              if isMatch
+                # Keep the trigger pointer.
+                matched = userSide
+                foundMatch = true
+                matchedTrigger = userSide.trigger
+                break
 
     # Search their topic for a match to their trigger.
     if not foundMatch
@@ -187,8 +247,7 @@ class Brain
         # See if there are any hard redirects.
         if matched.redirect?
           @say "Redirecting us to #{matched.redirect}"
-          # TODO: redirect = @processTags
-          redirect = matched.redirect
+          redirect = @processTags(user, msg, matched.redirect, stars, thatstars, step, scope)
           @say "Pretend user said: #{redirect}"
           reply = @_getReply(user, redirect, context, step+1, scope)
           break
@@ -204,7 +263,46 @@ class Brain
               right = utils.strip(condition[3])
               potreply = utils.strip(halves[1])
 
-              # TODO
+              # Process tags all around
+              left  = @processTags(user, msg, left, stars, thatstars, step, scope)
+              right = @processTags(user, msg, right, stars, thatstars, step, scope)
+
+              # Defaults?
+              if left.length is 0
+                left = "undefined"
+              if right.length is 0
+                right = "undefined"
+
+              @say "Check if #{left} #{eq} #{right}"
+
+              # Validate it
+              passed = false
+              if eq is "eq" or eq is "=="
+                if left is right
+                  passed = true
+              else if eq is "ne" or eq is "!=" or eq is "<>"
+                if left isnt right
+                  passed = true
+              else
+                # Dealing with numbers here
+                try
+                  left = parseInt left
+                  right = parseInt right
+                  if eq is "<" and left < right
+                    passed = true
+                  else if eq is "<=" and left <= right
+                    passed = true
+                  else if eq is ">" and left > right
+                    passed = true
+                  else if eq is ">=" and left >= right
+                    passed = true
+                catch e
+                  @warn "Failed to evaluate numeric condition!"
+
+              # OK?
+              if passed
+                reply = potreply
+                break
 
         # Have our reply yet?
         if reply isnt undefined and reply.length > 0
@@ -239,11 +337,37 @@ class Brain
 
     # Process tags for the BEGIN block.
     if context is "begin"
+      # The BEGIN block can set {topic} and user vars.
+
+      # Topic setter
+      match = reply.match(/\{topic=(.+?)\}/i)
       giveup = 0
-      # TODO
+      while match
+        giveup++
+        if giveup >= 50
+          @warn "Infinite loop looking for topic tag!"
+          break
+        name = match[1]
+        @master._users[user].topic = name
+        reply = reply.replace(new RegExp("{topic=" + utils.quotemeta(name) + "}", "ig"), "")
+        match = reply.match(/\{topic=(.+?)\}/i)
+
+      # Set user vars
+      match = reply.match(/<set (.+?)=(.+?)>/i)
+      giveup = 0
+      while match
+        giveup++
+        if giveup >= 50
+          @warn "Infinite loop looking for set tag!"
+          break
+        name = match[1]
+        value = match[2]
+        @master._users[user][name] = value
+        reply = reply.replace(new RegExp("<set " + utils.quotemeta(name) + "=" + utils.quotemeta(value) + ">", "ig"), "")
+        match = reply.match(/<set (.+?)=(.+?)>/i)
     else
-      # TODO: process tags
-      giveup = 0
+      # Process all the tags.
+      reply = @processTags(user, msg, reply, stars, thatstars, step, scope)
 
     return reply
 
@@ -408,6 +532,10 @@ class Brain
     reply = reply.replace(/\{weight=\d+\}/ig, "") # Remove {weight}s
     reply = reply.replace(/<star>/ig, stars[1])
     reply = reply.replace(/<botstar>/ig, botstars[1])
+    for i in [1..stars.length]
+      reply = reply.replace(new RegExp("<star#{i}>", "ig"), stars[i])
+    for i in [1..botstars.length]
+      reply = reply.replace(new RegExp("<botstar#{i}>", "ig"), botstars[i])
 
     # <input> and <reply>
     reply = reply.replace(/<input>/ig, @master._users[user].__history__.input[0])
@@ -447,7 +575,173 @@ class Brain
         output)
       match = reply.match(/\{random\}(.+?)\{\/random\}/i)
 
-    # TODO: more tags...
+    # Person substitutions & string formatting
+    formats = ["person", "formal", "sentence", "uppercase", "lowercase"]
+    for type in formats
+      match = reply.match(new RegExp("{#{type}}(.+?){/#{type}}", "i"))
+      giveup = 0
+      while match
+        giveup++
+        if giveup >= 50
+          @warn "Infinite loop looking for #{type} tag!"
+          break
+
+        content = match[1]
+        if type is "person"
+          replace = @substitute content, "person"
+        else
+          replace = utils.stringFormat type, content
+
+        reply = reply.replace(new RegExp("{#{type}}" + utils.quotemeta(content) + "{/#{type}}", "ig"), replace)
+        match = reply.match(new RegExp("{#{type}}(.+?){/#{type}}", "i"))
+
+    # Handle all variable-related tags with an iterative regexp approach, to
+    # allow for nesting of tags in arbitrary ways (think <set a=<get b>>)
+    # Dummy out the <call> tags first, because we don't handle them right here.
+    reply = reply.replace(/<call>/ig, "{__call__}")
+    reply = reply.replace(/<\/call>/ig, "{/__call__}")
+    while true
+      # This regexp will match a <tag> which contains no other tag inside it,
+      # i.e. in the case of <set a=<get b>> it will match <get b> but not the
+      # <set> tag, on the first pass. The second pass will get the <set> tag,
+      # and so on.
+      match = reply.match(/<([^<]+?)>/)
+      if not match
+        break # No remaining tags!
+
+      match = match[1]
+      parts = match.split(" ", 2)
+      tag   = parts[0].toLowerCase()
+      data  = ""
+      if parts.length > 1
+        data = parts[1]
+      insert = ""
+
+      # Handle the tags.
+      if tag is "bot" or tag is "env"
+        # <bot> and <env> tags are similar
+        target = if tag is "bot" then @master._var else @master._global
+        if data.indexOf("=") > -1
+          # Assigning a variable
+          parts = data.split("=", 2)
+          @say "Set #{tag} variable #{parts[0]} = #{parts[1]}"
+          target[parts[0]] = parts[1]
+        else
+          # Getting a bot/env variable
+          insert = target[data] or "undefined"
+      else if tag is "set"
+        # <set> user vars
+        parts = data.split("=", 2)
+        @say "Set uservar #{parts[0]} = #{parts[1]}"
+        @master._users[user][parts[0]] = parts[1]
+      else if tag is "add" or tag is "sub" or tag is "mult" or tag is "div"
+        # Math operator tags
+        parts = data.split("=")
+        name  = parts[0]
+        value = parts[1]
+
+        # Initialize the variable?
+        if typeof(@master._users[user][name]) isnt "undefined"
+          @master._users[user][name] = 0
+
+        # Sanity check
+        value = parseInt(value)
+        if isNaN(value)
+          insert = "[ERR: Math can't '#{tag}' non-numeric value '#{value}']"
+        else if isNaN(parseInt(@master._users[user][name]))
+          insert = "[ERR: Math can't '#{tag}' non-numeric user variable '#{name}']"
+        else
+          result = parseInt(@master._users[user][name])
+          if tag is "add"
+            result += value
+          else if tag is "sub"
+            result -= value
+          else if tag is "mult"
+            result *= value
+          else if tag is "div"
+            if value is 0
+              insert = "[ERR: Can't Divide By Zero]"
+            else
+              result /= value
+
+          # No errors?
+          if insert is ""
+            @master._users[user][name] = result
+      else if tag is "get"
+        insert = if typeof(@master._users[user][data] isnt "undefined") \
+          then @master._users[user][data] \
+          else "undefined"
+      else
+        # Unrecognized tag, preserve it
+        insert = "\x00#{match}\x01"
+
+      reply = reply.replace(new RegExp("<#{match}>"), insert)
+
+    # Recover mangled HTML-like tags
+    reply = reply.replace(/\x00/g, "<")
+    reply = reply.replace(/\x01/g, ">")
+
+    # Topic setter
+    match = reply.match(/\{topic=(.+?)\}/i)
+    giveup = 0
+    while match
+      giveup++
+      if giveup >= 50
+        @warn "Infinite loop looking for topic tag!"
+        break
+
+      name = match[1]
+      @master._users[user].topic = name
+      reply = reply.replace(new RegExp("{topic=" + utils.quotemeta(name) + "}", "ig"), "")
+      match = reply.match(/\{topic=(.+?)\}/i) # Look for more
+
+    # Inline redirector
+    match = reply.match(/\{@(.+?)\}/)
+    giveup = 0
+    while match
+      giveup++
+      if giveup >= 50
+        @warn "Infinite loop looking for redirect tag!"
+        break
+
+      target = match[1]
+      @say "Inline redirection to: #{target}"
+      subreply = @_getReply(user, target, "normal", step+1, scope)
+      reply = reply.replace(new RegExp("\\{@" + utils.quotemeta(target) + "\\}", "i"), subreply)
+      match = reply.match(/\{@(.+?)\}/)
+
+    # Object caller
+    reply = reply.replace(/\{__call__\}/g, "<call>")
+    reply = reply.replace(/\{\/__call__\}/g, "</call>")
+    match = reply.match(/<call>(.+?)<\/call>/i)
+    giveup = 0
+    while match
+      giveup++
+      if giveup >= 50
+        @warn "Infinite loop looking for call tag!"
+        break
+
+      text  = utils.strip(match[1])
+      parts = text.split(/\s+/)
+      obj   = parts.unshift()
+      args  = parts
+
+      # Do we know this object?
+      output = ""
+      if @master._objlangs[obj]
+        # We do. Do we have a handler for it?
+        lang = @master._objlangs[obj]
+        if @master._handlers[lang]
+          # We do.
+          output = @master._handlers[lang].call(this, obj, args, scope)
+        else
+          output = "[ERR: No Object Handler]"
+      else
+        output = "[ERR: Object Not Found]"
+
+      reply = reply.replace(new RegExp("<call>" + utils.quotemeta(match[1]) + "</call>", "i"), output)
+      match = reply.match(/<call>(.+?)<\/call>/i)
+
     return reply
 
   ##

@@ -86,3 +86,30 @@ exports.isAtomic = (trigger) ->
     if trigger.indexOf(special) > -1
       return false
   return true
+
+##
+# string stringFormat (string type, string)
+#
+# Formats a string according to one of the following types:
+# - formal
+# - sentence
+# - uppercase
+# - lowercase
+##
+exports.stringFormat = (type, string) ->
+  if type is "uppercase"
+    return string.toUpperCase()
+  else if type is "lowercase"
+    return string.toLowerCase()
+  else if type is "sentence"
+    string += ""
+    first = string.charAt(0).toUpperCase()
+    return first + string.substring(1)
+  else if type is "formal"
+    words = string.split(/\s+/)
+    result = []
+    for word in words
+      first = word.charAt(0).toUpperCase()
+      result.push(first + word.substring(1))
+    return result.join(" ")
+  return content
