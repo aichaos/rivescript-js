@@ -113,3 +113,18 @@ exports.stringFormat = (type, string) ->
       result.push(first + word.substring(1))
     return result.join(" ")
   return content
+
+##
+# object clone (object)
+#
+# Clone an object.
+##
+exports.clone = (obj) ->
+  if obj is null or typeof(obj) isnt "object"
+    return obj
+
+  copy = obj.constructor()
+  for key of obj
+    copy[key] = exports.clone(obj[key])
+
+  return copy

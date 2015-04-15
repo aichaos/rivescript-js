@@ -2,12 +2,14 @@
 
 readline   = require "readline"
 RiveScript = require "./lib/rivescript"
+CoffeeObjectHandler = require "./lib/lang/coffee"
 
 brain = "eg/brain"
 
 bot = new RiveScript({ debug: false })
-bot.loadFile("test.rive", (batch_num) ->
-#bot.loadDirectory(brain, (batch_num) ->
+bot.setHandler("coffee", new CoffeeObjectHandler())
+#bot.loadFile("test.rive", (batch_num) ->
+bot.loadDirectory(brain, (batch_num) ->
   bot._debug = true
   bot.sortReplies()
 

@@ -733,7 +733,7 @@ class Brain
         lang = @master._objlangs[obj]
         if @master._handlers[lang]
           # We do.
-          output = @master._handlers[lang].call(this, obj, args, scope)
+          output = @master._handlers[lang].call(@master, obj, args, scope)
         else
           output = "[ERR: No Object Handler]"
       else

@@ -393,13 +393,86 @@ class RiveScript
   # Public Configuration Methods                                               #
   ##############################################################################
 
-  # TODO: setHandler, etc.
+  ##
+  # void setHandler(string lang, object)
+  #
+  # Set a custom language handler for RiveScript object macros. See the source
+  # for the built-in JavaScript handler (src/lang/javascript.coffee) as an
+  # example.
+  ##
   setHandler: (lang, obj) ->
     if obj is undefined
       delete @_handlers[lang]
     else
       @_handlers[lang] = obj
 
+  ##
+  # void setSubroutine(string name, function)
+  #
+  # Define a JavaScript object macro from your program.
+  #
+  # This is equivalent to having a JS object defined in the RiveScript code,
+  # except your JavaScript code is defining it instead.
+  ##
+  setSubroutine: (name, code) ->
+    # Do we have a JS handler?
+    if @_handlers.javascript
+      @_objlangs[name] = "javascript"
+      @_handlers.javascript.load(name, code)
+
+  ##
+  # void setGlobal (string name, string value)
+  #
+  # Set a global variable. This is equivalent to `! global` in RiveScript.
+  # Set the value to `undefined` to delete a global.
+  ##
+  setGlobal: (name, value) ->
+    if value is undefined
+      delete @_global[name]
+    else
+      @_global[name] = value
+
+  ##
+  # void setVariable (string name, string value)
+  #
+  # Set a bot variable. This is equivalent to `! var` in RiveScript.
+  # Set the value to `undefined` to delete a bot variable.
+  ##
+  setVariable: (name, value) ->
+    if value is undefined
+      delete @_var[name]
+    else
+      @_var[name] = value
+
+  ##
+  # void setSubstitution (string name, string value)
+  #
+  # Set a substitution. This is equivalent to `! sub` in RiveScript.
+  # Set the value to `undefined` to delete a substitution.
+  ##
+  setSubstitution: (name, value) ->
+    if value is undefined
+      delete @_sub[name]
+    else
+      @_sub[name] = value
+
+  ##
+  # void setPerson (string name, string value)
+  #
+  # Set a person substitution. This is equivalent to `! person` in RiveScript.
+  # Set the value to `undefined` to delete a person substitution.
+  ##
+  setPerson: (name, value) ->
+    if value is undefined
+      delete @_person[name]
+    else
+      @_person[name] = value
+
+  ##
+  # void setUservar (string user, string name, string value)
+  #
+  # Set a user variable for a user.
+  ##
   setUservar: (user, name, value) ->
     # Initialize the user?
     if not @_users[user]
@@ -410,6 +483,12 @@ class RiveScript
     else
       @_users[user][name] = value
 
+  ##
+  # void setUservars (string user, object data)
+  #
+  # Set multiple user variables by providing an object of key/value pairs.
+  # Equivalent to calling `setUservar()` for each pair in the object.
+  ##
   setUservars: (user, data) ->
     # Initialize the user?
     if not @_users[user]
@@ -421,6 +500,12 @@ class RiveScript
       else
         @_users[user][key] = data[key]
 
+  ##
+  # string getUservar (string user, string name)
+  #
+  # Get a variable from a user. Returns the string "undefined" if it isn't
+  # defined.
+  ##
   getUservar: (user, name) ->
     # No user?
     if not @_users[user]
@@ -431,6 +516,101 @@ class RiveScript
       return @_users[user][name]
     else
       return "undefined"
+
+  ##
+  # data getUservars ([string user])
+  #
+  # Get all variables about a user. If no user is provided, returns all data
+  # about all users.
+  ##
+  getUservars: (user) ->
+    if user is undefined
+      # All the users! Return a cloned object to break refs.
+      return utils.clone(@_users)
+    else
+      if @_users[user]?
+        return utils.clone(@_users[user])
+      return undefined
+
+  ##
+  # void clearUservars ([string user])
+  #
+  # Clear all a user's variables. If no user is provided, clears all variables
+  # for all users.
+  ##
+  clearUservars: (user) ->
+    if user is undefined
+      @_users = {}
+    else
+      delete @_users[user]
+
+  ##
+  # void freezeUservars (string user)
+  #
+  # Freeze the variable state of a user. This will clone and preserve the user's
+  # entire variable state, so that it can be restored later with
+  # `thatUservars()`
+  ##
+  freezeUservars: (user) ->
+    if @_users[user]?
+      @_freeze[user] = utils.clone(@_users[user])
+    else
+      @warn "Can't freeze vars for user #{user}: not found!"
+
+  ##
+  # void thawUservars (string user[, string action])
+  #
+  # Thaw a user's frozen variables. The action can be one of the following:
+  # * discard: Don't restore the variables, just delete the frozen copy.
+  # * keep: Keep the frozen copy after restoring
+  # * thaw: Restore the variables and delete the frozen copy (default)
+  ##
+  thawUservars: (user, action="thaw") ->
+    if typeof(action) isnt "string"
+      action = "thaw"
+
+    # Frozen?
+    if not @_freeze[user]?
+      @warn "Can't thaw user vars: #{user} wasn't frozen!"
+      return
+
+    # What are we doing?
+    if action is "thaw"
+      @clearUservars(user)
+      @_users[user] = utils.clone(@_freeze[user])
+      delete @_freeze[user]
+    else if action is "discard"
+      delete @_freeze[user]
+    else if action is "keep"
+      @clearUservars(user)
+      @_users[user] = utils.clone(@_freeze[user])
+    else
+      @warn "Unsupported thaw action!"
+
+  ##
+  # string lastMatch (string user)
+  #
+  # Retrieve the trigger that the user matched most recently.
+  ##
+  lastMatch: (user) ->
+    if @_users[user]?
+      return @_users[user].__lastmatch__
+    return undefined
+
+  ##
+  # string currentUser ()
+  #
+  # Retrieve the current user's ID. This is most useful within a JavaScript
+  # object macro to get the ID of the user who invoked the macro (e.g. to
+  # get/set user variables for them).
+  #
+  # This will return undefined if called from outside of a reply context
+  # (the value is unset at the end of the `reply()` method)
+  ##
+  currentUser: () ->
+    if @brain._currentUser is undefined
+      @warn "currentUser() is intended to be called from within a JS object macro!"
+    return @brain._currentUser
 
   ##############################################################################
   # Reply Fetching Methods                                                     #
