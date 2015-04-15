@@ -42,13 +42,17 @@ class JSObjectHandler
   # Called by the RiveScript object to execute JavaScript code.
   ##
   call: (rs, name, fields, scope) ->
+    # We have it?
+    if not @_objects[name]
+      return "[ERR: Object Not Found]"
+
     # Call the dynamic method.
     func = @_objects[name]
     reply = ""
     try
       reply = func.call(scope, rs, fields)
-    catch
-      reply = "[ERR: Error when executing JavaScript object]"
+    catch e
+      reply = "[ERR: Error when executing JavaScript object: #{e.message}]"
 
     # Allow undefined responses.
     if reply is undefined

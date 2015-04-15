@@ -347,7 +347,12 @@ class RiveScript
             @_thats[topic][trigger.trigger] = {}
           @_thats[topic][trigger.trigger][trigger.previous] = trigger
 
-    #console.log JSON.stringify(@_topics, null, 2)
+    # Load all the parsed objects.
+    for object in ast.objects
+      # Have a handler for it?
+      if @_handlers[object.language]
+        @_objlangs[object.name] = object.language
+        @_handlers[object.language].load(object.name, object.code)
 
   ##
   # void sortReplies()
@@ -389,6 +394,12 @@ class RiveScript
   ##############################################################################
 
   # TODO: setHandler, etc.
+  setHandler: (lang, obj) ->
+    if obj is undefined
+      delete @_handlers[lang]
+    else
+      @_handlers[lang] = obj
+
   setUservar: (user, name, value) ->
     # Initialize the user?
     if not @_users[user]

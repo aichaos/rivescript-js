@@ -427,7 +427,8 @@ exports.test_js_objects = function(test) {
         < object\n\
         \n\
         > object reverse javascript\n\
-            msg = args.join(" ");\n\
+            var msg = args.join(" ");\n\
+            console.log(msg)\n\
             return msg.split("").reverse().join("");\n\
         < object\n\
         \n\
@@ -460,7 +461,7 @@ exports.test_js_objects = function(test) {
     bot.reply("Test nolang", "Nolang: Test w/o language.");
     bot.reply("Test wlang", "Wlang: Test w/ language.");
     bot.reply("Reverse hello world.", "dlrow olleh");
-    bot.reply("Test broken", "Broken: [ERR: Error when executing JavaScript object]");
+    bot.reply("Test broken", "Broken: [ERR: Object Not Found]");
     bot.reply("Test fake", "Fake: [ERR: Object Not Found]");
     bot.reply("Test perl", "Perl: [ERR: Object Not Found]");
     test.done();

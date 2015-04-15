@@ -139,6 +139,7 @@ class Parser
               code: objBuf
           objName = objLang = ""
           objBuf = []
+          inobj = false
         else
           objBuf.push line
         continue

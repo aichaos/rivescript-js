@@ -112,7 +112,7 @@ getTopicTriggers = (rs, topic, thats, depth, inheritence, inherited) ->
     for trigger in inThisTopic
       rs.say "Prefixing trigger with {inherits=#{inheritence}} #{trigger}"
       triggers.push.apply(triggers, [
-        ["{inherits=#{inheritence}}#{trigger[0]}", trigger]
+        ["{inherits=#{inheritence}}#{trigger[0]}", trigger[1]]
       ])
   else
     triggers.push.apply(triggers, inThisTopic)

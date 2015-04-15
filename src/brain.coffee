@@ -723,7 +723,7 @@ class Brain
 
       text  = utils.strip(match[1])
       parts = text.split(/\s+/)
-      obj   = parts.unshift()
+      obj   = parts.shift()
       args  = parts
 
       # Do we know this object?

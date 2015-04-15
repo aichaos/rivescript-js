@@ -6,7 +6,7 @@ RiveScript = require "./lib/rivescript"
 brain = "eg/brain"
 
 bot = new RiveScript({ debug: false })
-bot.loadFile("eg/testsuite.rive", (batch_num) ->
+bot.loadFile("test.rive", (batch_num) ->
 #bot.loadDirectory(brain, (batch_num) ->
   bot._debug = true
   bot.sortReplies()
@@ -16,7 +16,7 @@ bot.loadFile("eg/testsuite.rive", (batch_num) ->
   console.log("=== thats ===")
   console.log(JSON.stringify(bot._thats, null, 2));
   console.log("=== sorted ===")
-  #console.log(JSON.stringify(bot._sorted, null, 2));
+  console.log(JSON.stringify(bot._sorted, null, 2));
   for topic of bot._sorted.topics
     console.log "TOPIC: #{topic}"
     for trig in bot._sorted.topics[topic]
