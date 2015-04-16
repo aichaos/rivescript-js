@@ -28,26 +28,20 @@ class CoffeeObjectHandler
   # Called by the RiveScript object to load CoffeeScript code.
   ##
   load: (name, code) ->
-    # We need to make a dynamic JavaScript function.
-    console.log "PROCESS COFFEE:"
-    console.log code
+    # We need to make a dynamic CoffeeScript function.
     source = "this._objects[\"" + name + "\"] = function(rs, args) {\n" \
       + coffee.compile(code.join("\n"), {bare: true}) \
       + "}\n"
 
-    console.log "================="
-    console.log source
-    console.log "================="
-
     try
       eval source
     catch e
-      @_master.warn "Error evaluating JavaScript object: " + e.message
+      @_master.warn "Error evaluating CoffeeScript object: " + e.message
 
   ##
   # string call (RiveScript rs, string name, string[] fields)
   #
-  # Called by the RiveScript object to execute JavaScript code.
+  # Called by the RiveScript object to execute CoffeeScript code.
   ##
   call: (rs, name, fields, scope) ->
     # We have it?
@@ -60,7 +54,7 @@ class CoffeeObjectHandler
     try
       reply = func.call(scope, rs, fields)
     catch e
-      reply = "[ERR: Error when executing JavaScript object: #{e.message}]"
+      reply = "[ERR: Error when executing CoffeeScript object: #{e.message}]"
 
     # Allow undefined responses.
     if reply is undefined

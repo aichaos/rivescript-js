@@ -1,48 +1,74 @@
 #!/usr/bin/env coffee
 
-readline   = require "readline"
-RiveScript = require "./lib/rivescript"
+################################################################################
+# Interactive RiveScript Shell for quickly testing your RiveScript bot.        #
+#                                                                              #
+# This CoffeeScript version of the shell has support for executing object      #
+# macros written in CoffeeScript (see eg/brain/coffee.rive).                   #
+################################################################################
+
+readline = require "readline"
+RiveScript = require "./src/rivescript"
 CoffeeObjectHandler = require "./lib/lang/coffee"
 
-brain = "eg/brain"
+################################################################################
+# Accept command line parameters.
+################################################################################
 
-bot = new RiveScript({ debug: false })
+if process.argv.length < 3
+  console.log "Usage: coffee shell.coffee </path/to/brain>"
+  process.exit 1
+
+brain = process.argv[2]
+
+################################################################################
+# Initialize the RiveScript bot and print the welcome banner.
+################################################################################
+
+bot = new RiveScript()
 bot.setHandler("coffee", new CoffeeObjectHandler())
-#bot.loadFile("test.rive", (batch_num) ->
-bot.loadDirectory(brain, (batch_num) ->
-  bot._debug = true
+bot.loadDirectory brain, (batch_num) ->
   bot.sortReplies()
 
-  console.log("=== topics ===")
-  console.log(JSON.stringify(bot._topics, null, 2));
-  console.log("=== thats ===")
-  console.log(JSON.stringify(bot._thats, null, 2));
-  console.log("=== sorted ===")
-  console.log(JSON.stringify(bot._sorted, null, 2));
-  for topic of bot._sorted.topics
-    console.log "TOPIC: #{topic}"
-    for trig in bot._sorted.topics[topic]
-      console.log "\t- #{trig[0]}"
-  console.log "=== sorted (thats) ==="
-  console.log JSON.stringify(bot._sorted.thats, null, 2)
+  console.log """RiveScript Interpreter (CoffeeScript) -- Interactive Mode
+                ----------------------------------------------------------
+                rivescript version: #{bot.version()}
+                        Reply root: #{brain}
 
-  rl = readline.createInterface({
-    input: process.stdin,
+                You are now chatting with the RiveScript bot. Type a message
+                and press Return to send it. When finished, type '/quit' to
+                exit the program. Type '/help' for other options."""
+
+  ##############################################################################
+  # Drop into the interactive command shell.
+  ##############################################################################
+
+  rl = readline.createInterface
+    input: process.stdin
     output: process.stdout
-  })
 
-  rl.setPrompt("You> ")
+  rl.setPrompt "You> "
   rl.prompt()
   rl.on "line", (cmd) ->
-    if cmd is "help"
-      return
+    if cmd is "/help"
+      help()
+    else if cmd.indexOf("/eval ") is 0
+      eval(cmd.replace("/eval ", ""))
+    else if cmd.indexOf("/log ") is 0
+      console.log(eval(cmd.replace("/log ", "")))
     else if cmd is "/quit"
-      process.exit(0);
+      process.exit 0
     else
-      reply = bot.reply("localuser", cmd);
-      console.log("Bot>", reply);
+      reply = bot.reply "localuser", cmd
+      console.log "Bot> #{reply}"
 
-    rl.prompt();
-  .on "close", ->
-    process.exit(0);
-)
+    rl.prompt()
+  .on "close", () ->
+    process.exit 0
+
+help = () ->
+  console.log """Supported commands:
+                 /help        : Show this text.
+                 /eval <code> : Evaluate JavaScript code.
+                 /log <code>  : Shortcut to /eval console.log(code)
+                 /quit        : Exit the program."""
