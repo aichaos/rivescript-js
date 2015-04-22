@@ -1,6 +1,6 @@
 {
   "name": "rivescript",
-  "version": "1.0.5",
+  "version": "1.1.0",
   "description": "RiveScript is a scripting language for chatterbots, making it easy to write trigger/response pairs for building up a bot's intelligence.",
   "keywords": [
     "bot",
@@ -24,6 +24,11 @@
     "lib/lang/coffee.js",
     "lib/lang/javascript.js"
   ],
+  "directories": {
+      "lib": "lib",
+      "doc": "docs"
+  },
+  "main": "lib/rivescript.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/aichaos/rivescript-js.git"
@@ -54,5 +59,9 @@
     "grunt-contrib-clean": "~0.6.0",
     "coffeelint": "~1.9.3",
     "grunt-coffeelint": "0.0.13"
+  },
+  "scripts": {
+    "prepublish": "grunt dist"
   }
+
 }

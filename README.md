@@ -130,7 +130,7 @@ Grunt options:
 * `grunt lint` - Runs CoffeeScript linting.
 * `grunt watch` - For development - watches CoffeeScript source files and
   automatically builds them on change.
-* `grunt connect:server` - Starts a local web server and opens `eg/chat.html`
+* `grunt server` - Starts a local web server and opens `eg/chat.html`
   for local testing and demoing.
 * `grunt test` - Run unit tests.
 
