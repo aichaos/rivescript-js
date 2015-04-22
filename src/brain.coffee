@@ -415,6 +415,10 @@ class Brain
     regexp = regexp.replace(/\{weight=\d+\}/g, "") # Remove {weight} tags
     regexp = regexp.replace(/<zerowidthstar>/g, "(.*?)")
 
+    # UTF-8 mode special characters.
+    if @utf8
+      regexp = regexp.replace(/\\@/, "\\u0040") # @ symbols conflict w/ arrays
+
     # Optionals.
     match = regexp.match(/\[(.+?)\]/)
     giveup = 0
@@ -500,6 +504,12 @@ class Brain
           if regexp.indexOf("<#{type}#{i}>") > -1
             regexp = regexp.replace(new RegExp("<#{type}#{i}>", "g"),
               @master._users[user].__history__[type][i])
+
+    # Recover escaped Unicode symbols.
+    if @utf8 and regexp.indexOf("\\u") > -1
+      regexp = regexp.replace(/\\u([A-Fa-f0-9]{4})/, (match, grp) ->
+        return String.fromCharCode(parseInt(grp, 16))
+      )
 
     return regexp
 
