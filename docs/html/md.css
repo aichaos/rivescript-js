@@ -1,0 +1,82 @@
+body {
+    background-color: #FFFFFF;
+    font-family: Verdana,Arial,Helvetica,sans-serif;
+    font-size: small;
+    color: #000000;
+}
+
+h1,h2,h3,h4 {
+    color: #000066;
+    font-weight: bold;
+    margin: 20px 0px;
+}
+
+h1 {
+    font-size: 32pt;
+    margin: 40px 0px;
+}
+
+h2 {
+    font-size: 18pt;
+}
+
+a:link, a:visited {
+    color: #0000FF;
+    text-decoration: underline;
+}
+
+pre {
+    font-family: "Lucida Console", "Ubuntu Mono", "DejaVu Sans Mono", "Courier New", Courier, monospace;
+    font-size: small;
+    padding: 10px;
+}
+
+/* Monokai Bright highlight theme, converted from
+ * http://tmtheme-editor.herokuapp.com/#/theme/Monokai%20Bright
+ * Using: https://github.com/davinche/pygments-from-tmtheme
+ */
+.codehilite { background-color: #272822; color: #F8F8F2; }
+.codehilite .ge { font-style: italic; }
+.codehilite .gs { font-weight: bold; }
+.codehilite .c { color: #75715E; }
+.codehilite .cp { color: #75715E; }
+.codehilite .c1 { color: #75715E; }
+.codehilite .cs { color: #75715E; }
+.codehilite .cm { color: #75715E; }
+.codehilite .m { color: #AE81FF; }
+.codehilite .mf { color: #AE81FF; }
+.codehilite .mi { color: #AE81FF; }
+.codehilite .mo { color: #AE81FF; }
+.codehilite .se { color: #AE81FF; }
+.codehilite .kc { color: #AE81FF; }
+.codehilite .k { color: #66D9EF; font-style: italic; }
+.codehilite .kd { color: #66D9EF; font-style: italic; }
+.codehilite .kn { color: #F92672; }
+.codehilite .kt { color: #66D9EF; font-style: italic; }
+.codehilite .s { color: #E6DB74; }
+.codehilite .sb { color: #E6DB74; }
+.codehilite .sc { color: #E6DB74; }
+.codehilite .sd { color: #E6DB74; }
+.codehilite .s2 { color: #E6DB74; }
+.codehilite .sh { color: #E6DB74; }
+.codehilite .si { color: #E6DB74; }
+.codehilite .sx { color: #E6DB74; }
+.codehilite .sr { color: #E6DB74; }
+.codehilite .s1 { color: #E6DB74; }
+.codehilite .ss { color: #E6DB74; }
+.codehilite .na { color: #A6E22E; }
+.codehilite .nc { color: #A6E22E; font-style: italic; text-decoration: underline; }
+.codehilite .no { color: #AE81FF; }
+.codehilite .nd { color: #A6E22E; text-decoration: underline; }
+.codehilite .ne { color: #A6E22E; text-decoration: underline; }
+.codehilite .nf { color: #A6E22E; }
+.codehilite .nt { color: #F92672; }
+.codehilite .nv { color: #F8F8F2; }
+.codehilite .ow { color: #F92672; }
+.codehilite .o { color: #F92672; }
+.codehilite .n { color: #F8F8F2; }
+.codehilite .nl { color: #F8F8F2; }
+.codehilite .nn { color: #F8F8F2; }
+.codehilite .nx { color: #F8F8F2; }
+.codehilite .bp { color: #F8F8F2; }
+.codehilite .p { color: #F8F8F2; }

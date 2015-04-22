@@ -23,11 +23,11 @@ JSObjectHandler = require "./lang/javascript"
 # Create a new RiveScript interpreter. `options` is an object with the
 # following keys:
 #
-# bool debug:    Debug mode            (default false)
-# int  depth:    Recursion depth limit (default 50)
-# bool strict:   Strict mode           (default true)
-# bool utf8:     Enable UTF-8 mode     (default false)
-# func onDebug:  Set a custom handler to catch debug log messages (default null)
+# * bool debug:    Debug mode            (default false)
+# * int  depth:    Recursion depth limit (default 50)
+# * bool strict:   Strict mode           (default true)
+# * bool utf8:     Enable UTF-8 mode     (default false)
+# * func onDebug:  Set a custom handler to catch debug log messages (default null)
 ##
 class RiveScript
 

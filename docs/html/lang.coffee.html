@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>lang.coffee</title>
+<link rel="stylesheet" type="text/css" href="md.css">
+</head>
+<body>
+
+<h1>CoffeeObjectHandler (RiveScript master)</h1>
+<p>CoffeeScript Language Support for RiveScript Macros. This language is not
+enabled by default; to enable CoffeeScript object macros:</p>
+<p>CoffeeObjectHandler = require "rivescript/lang/coffee"
+   $bot-&gt;setHandler("coffee", CoffeeObjectHandler);</p>
+<h2>void load (string name, string[] code)</h2>
+<p>Called by the RiveScript object to load CoffeeScript code.</p>
+<h2>string call (RiveScript rs, string name, string[] fields)</h2>
+<p>Called by the RiveScript object to execute CoffeeScript code.</p>
+
+</body>
+</html>

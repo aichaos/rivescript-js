@@ -36,50 +36,40 @@ class Parser
   # Read and parse a RiveScript document. Returns a data structure that
   # represents all of the useful contents of the document, in this format:
   #
-  # ```json
+  # ```javascript
   # {
-  #   "begin": { # "begin" data
-  #     "global": {}, # ! global vars
-  #     "var": {},    # ! bot vars
-  #     "sub": {},    # ! sub substitutions
-  #     "person": {}, # ! person substitutions
-  #     "array": {},  # ! array lists
+  #   "begin": { // "begin" data
+  #     "global": {}, // ! global vars
+  #     "var": {},    // ! bot vars
+  #     "sub": {},    // ! sub substitutions
+  #     "person": {}, // ! person substitutions
+  #     "array": {},  // ! array lists
   #   },
-  #   "topics": { # main reply data
-  #     "random": { # (topic name)
-  #       "includes": {}, # included topics
-  #       "inherits": {}, # inherited topics
-  #       "triggers": [ # array of triggers
+  #   "topics": { // main reply data
+  #     "random": { // (topic name)
+  #       "includes": {}, // included topics
+  #       "inherits": {}, // inherited topics
+  #       "triggers": [ // array of triggers
   #         {
   #           "trigger": "hello bot",
-  #           "reply": [], # array of replies
-  #           "condition": [], # array of conditions
-  #           "redirect": "",  # @ redirect command
-  #           "previous": null, # % previous command
+  #           "reply": [], // array of replies
+  #           "condition": [], // array of conditions
+  #           "redirect": "",  // @ redirect command
+  #           "previous": null, // % previous command
   #         },
   #         ...
   #       ]
   #     }
   #   },
-  #   "thats": { # %Previous mappings TODO
-  #     "random": { # topic name
-  #       "orig trigger": { # %previous text
-  #         "that trigger": { # trigger with the %previous
-  #           "reply": []
-  #           "condition": []
-  #           "redirect": null
-  #         }
-  #       }
-  #     }
-  #   },
-  #   "objects": [ # parsed object macros
+  #   "objects": [ // parsed object macros
   #     {
-  #       "name": "",     # object name
-  #       "language": "", # programming language
-  #       "code": [],     # object source code (in lines)
+  #       "name": "",     // object name
+  #       "language": "", // programming language
+  #       "code": [],     // object source code (in lines)
   #     }
   #   ]
   # }
+  # ```
   ##
   parse: (filename, code, onError) ->
     # Eventual return structure ("abstract syntax tree" except not really)
