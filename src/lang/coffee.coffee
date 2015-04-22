@@ -14,8 +14,10 @@ coffee = require "coffee-script"
 # CoffeeScript Language Support for RiveScript Macros. This language is not
 # enabled by default; to enable CoffeeScript object macros:
 #
+# ```coffeescript
 #    CoffeeObjectHandler = require "rivescript/lang/coffee"
 #    $bot->setHandler("coffee", CoffeeObjectHandler);
+# ```
 ##
 class CoffeeObjectHandler
   constructor: (master) ->

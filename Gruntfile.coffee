@@ -21,30 +21,21 @@ module.exports = (grunt) ->
         banner: "/* <%= pkg.name %> <%= pkg.version %> -- built on " \
           + "<%= grunt.template.today('yyyy-mm-dd hh:MM:ss') %> */\n"
       build:
-        src: "lib/<%= pkg.name %>.js"
-        dest: "lib/<%= pkg.name %>.min.js"
+        src: "dist/<%= pkg.name %>.js"
+        dest: "dist/<%= pkg.name %>.min.js"
+    browserify:
+      main:
+        options:
+          browserifyOptions:
+            standalone: "RiveScript"
+        src: "lib/rivescript.js",
+        dest: "dist/rivescript.js"
     nodeunit:
       all: ["test/test-*.js"]
       options:
         reporter: "default"
-    jshint:
-      files: [
-        "Gruntfile.js"
-        "lib/<%= pkg.name %>.js"
-      ]
-      options:
-        curly: true
-        eqnull: true
-        eqeqeq: true
-        undef: true
-        laxbreak: true
-        evil: true, # Don't warn about eval in our JS object handler
-        globals:
-          $: true,
-          require: true,
-          module: true,
-          console: true,
-          window: true
+    coffeelint:
+      app: ["src/**/*.coffee"]
     connect:
       server:
         options:
@@ -59,19 +50,26 @@ module.exports = (grunt) ->
             # Allow rivescript.js to be accessed from the web root.
             middlewares.unshift (req, res, next) ->
               if req.url is "/lib/rivescript.js"
-                return res.end(grunt.file.read("lib/rivescript.js"))
+                return res.end(grunt.file.read("dist/rivescript.js"))
               else
                 return next()
             return middlewares
+    clean: ["dist/", "lib/"]
 
   # Grunt plugins
   grunt.loadNpmTasks("grunt-contrib-connect")  # Simple web server
   grunt.loadNpmTasks("grunt-contrib-coffee")   # CoffeeScript compiler
+  grunt.loadNpmTasks("grunt-browserify")       # Browserify
   grunt.loadNpmTasks("grunt-contrib-uglify")   # Minify JS
-  grunt.loadNpmTasks("grunt-contrib-jshint")   # JSLint
+  grunt.loadNpmTasks("grunt-coffeelint")       # CoffeeScript Linter
   grunt.loadNpmTasks("grunt-contrib-watch")    # Watch JS for live changes
   grunt.loadNpmTasks("grunt-contrib-nodeunit") # Unit testing
+  grunt.loadNpmTasks("grunt-contrib-clean")    # Clean up build files
 
   # Tasks
   grunt.registerTask "default", ["coffee"]
+  grunt.registerTask "buildclean", ["clean", "coffee"]
+  grunt.registerTask "dist", ["coffee", "browserify", "uglify"]
+  grunt.registerTask "server", ["dist", "connect:server"]
+  grunt.registerTask "lint", ["coffeelint"]
   grunt.registerTask "test", ["nodeunit"]

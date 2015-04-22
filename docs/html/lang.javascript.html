@@ -10,7 +10,10 @@
 <p>JavaScript Language Support for RiveScript Macros. This support is enabled by
 default in RiveScript.js; if you don't want it, override the <code>javascript</code>
 language handler to null, like so:</p>
-<p>$bot-&gt;setHandler("javascript", null);</p>
+<div class="codehilite"><pre>   <span class="nx">$bot</span><span class="o">-&gt;</span><span class="nx">setHandler</span><span class="p">(</span><span class="s2">&quot;javascript&quot;</span><span class="p">,</span> <span class="kc">null</span><span class="p">);</span>
+</pre></div>
+
+
 <h2>void load (string name, string[] code)</h2>
 <p>Called by the RiveScript object to load JavaScript code.</p>
 <h2>string call (RiveScript rs, string name, string[] fields)</h2>

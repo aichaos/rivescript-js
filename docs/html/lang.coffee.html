@@ -9,8 +9,11 @@
 <h1>CoffeeObjectHandler (RiveScript master)</h1>
 <p>CoffeeScript Language Support for RiveScript Macros. This language is not
 enabled by default; to enable CoffeeScript object macros:</p>
-<p>CoffeeObjectHandler = require "rivescript/lang/coffee"
-   $bot-&gt;setHandler("coffee", CoffeeObjectHandler);</p>
+<div class="codehilite"><pre>   <span class="nv">CoffeeObjectHandler = </span><span class="nx">require</span> <span class="s">&quot;rivescript/lang/coffee&quot;</span>
+   <span class="nx">$bot</span><span class="nf">-&gt;</span><span class="nx">setHandler</span><span class="p">(</span><span class="s">&quot;coffee&quot;</span><span class="p">,</span> <span class="nx">CoffeeObjectHandler</span><span class="p">);</span>
+</pre></div>
+
+
 <h2>void load (string name, string[] code)</h2>
 <p>Called by the RiveScript object to load CoffeeScript code.</p>
 <h2>string call (RiveScript rs, string name, string[] fields)</h2>

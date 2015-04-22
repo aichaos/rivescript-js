@@ -218,7 +218,7 @@ class RiveScript
         if Object.keys(@_pending[loadCount]).length is 0
           if typeof(onSuccess) is "function"
             onSuccess.call undefined, loadCount
-      error (xhr, textStatus, errorThrown) =>
+      error: (xhr, textStatus, errorThrown) =>
         @say "Ajax error! #{textStatus}; #{errorThrown}"
         if typeof(onError) is "function"
           onError.call undefined, textStatus, loadCount

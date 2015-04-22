@@ -4,7 +4,9 @@ JavaScript Language Support for RiveScript Macros. This support is enabled by
 default in RiveScript.js; if you don't want it, override the `javascript`
 language handler to null, like so:
 
+```javascript
    $bot->setHandler("javascript", null);
+```
 
 ## void load (string name, string[] code)
 
