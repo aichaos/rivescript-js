@@ -1,5 +1,8 @@
 # Changes
 
+* 1.1.1 TBD
+  - Fix a space split issue when parsing tags such as <set> and <get>.
+
 * 1.1.0 2015-04-22
   - Add experimental support for UTF-8.
   - Fix various bugs and port over unit tests from Perl/Python versions.
