@@ -527,7 +527,7 @@ class Parser
     return ""
 
   ##
-  # private topics initTopic (object topics, string name)
+  # private void initTopic (object topics, string name)
   #
   # Initialize the topic tree for the parsing phase. Sets up the topic under
   # ast.topics with all its relevant keys and sub-keys, etc.

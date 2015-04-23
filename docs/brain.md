@@ -4,6 +4,8 @@ Create a Brain object which handles the actual process of fetching a reply.
 
 ## string reply (string user, string msg[, scope])
 
+Fetch a reply for the user.
+
 ## string _getReply (string user, string msg, string context, int step, scope)
 
 The internal reply method. DO NOT CALL THIS DIRECTLY.

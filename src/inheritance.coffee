@@ -5,39 +5,43 @@
 #
 # http://www.rivescript.com/
 
-# Topic inheritence functions.
+##
+# Topic inheritance functions.
+#
+# These are helper functions to assist with topic inheritance and includes.
+##
 
 ##
 # string[] getTopicTriggers (RiveScript rs, string topic, object triglvl,
-#                            int depth, int inheritence, int inherited)
+#                            int depth, int inheritance, int inherited)
 #
 # Recursively scan through a topic and retrieve a listing of all triggers in
 # that topic and in all included/inherited topics. Some triggers will come out
-# with an {inherits} tag to signify inheritence depth.
+# with an {inherits} tag to signify inheritance depth.
 #
-# topic: The name of the topic
-# thats: Boolean, are we getting replies with %Previous or not?
-# triglvl: reference to this._topics or this._thats
-# depth: recursion depth counter
+# * topic: The name of the topic
+# * thats: Boolean, are we getting replies with %Previous or not?
+# * triglvl: reference to this._topics or this._thats
+# * depth: recursion depth counter
 #
 # Each "trigger" returned from this function is actually an array, where index
 # 0 is the trigger text and index 1 is the pointer to the trigger's data within
 # the original topic structure.
 ##
-getTopicTriggers = (rs, topic, thats, depth, inheritence, inherited) ->
+getTopicTriggers = (rs, topic, thats, depth, inheritance, inherited) ->
   # Initialize default triggers.
   if not thats?
     thats = false
   if not depth?
     depth = 0
-  if not inheritence?
-    inheritence = 0
+  if not inheritance?
+    inheritance = 0
   if not inherited?
     inherited = 0
 
   # Break if we're in too deep.
   if depth > rs._depth
-    rs.warn "Deep recursion while scanning topic inheritence!"
+    rs.warn "Deep recursion while scanning topic inheritance!"
     return
 
   # Keep in mind here that there is a difference between 'includes' and
@@ -54,9 +58,9 @@ getTopicTriggers = (rs, topic, thats, depth, inheritence, inherited) ->
   # topics that inherit things will have their triggers always be on top of
   # the stack, from inherits=0 to inherits=n.
 
-  # Important info about the depth vs. inheritence params to this function:
+  # Important info about the depth vs. inheritance params to this function:
   # depth increments by 1 each time this function recursively calls itself.
-  # inheritence increments by 1 only when this topic inherits another topic.
+  # inheritance increments by 1 only when this topic inherits another topic.
   #
   # This way, '> topic alpha includes beta inherits gamma' will have this
   # effect:
@@ -68,7 +72,7 @@ getTopicTriggers = (rs, topic, thats, depth, inheritence, inherited) ->
   # the triggers. This only applies when the top topic 'includes' another
   # topic.
   rs.say "Collecting trigger list for topic #{topic} (depth=#{depth};
-        inheritence=#{inheritence}; inherited=#{inherited})"
+        inheritance=#{inheritance}; inherited=#{inherited})"
 
   # Collect an array of triggers to return.
   triggers = []
@@ -93,7 +97,7 @@ getTopicTriggers = (rs, topic, thats, depth, inheritence, inherited) ->
     for includes of rs._includes[topic]
       rs.say "Topic #{topic} includes #{includes}"
       triggers.push.apply(triggers, getTopicTriggers(
-        rs, includes, thats, depth+1, inheritence+1, false
+        rs, includes, thats, depth+1, inheritance+1, false
       ))
 
   # Does this topic inherit others?
@@ -102,7 +106,7 @@ getTopicTriggers = (rs, topic, thats, depth, inheritence, inherited) ->
     for inherits of rs._inherits[topic]
       rs.say "Topic #{topic} inherits #{inherits}"
       triggers.push.apply(triggers, getTopicTriggers(
-        rs, inherits, thats, depth+1, inheritence+1, true
+        rs, inherits, thats, depth+1, inheritance+1, true
       ))
 
   # Collect the triggers for *this* topic. If this topic inherits any other
@@ -110,9 +114,9 @@ getTopicTriggers = (rs, topic, thats, depth, inheritence, inherited) ->
   # those in any inherited topics. Enforce this with an {inherits} tag.
   if Object.keys(rs._inherits[topic]).length > 0 or inherited
     for trigger in inThisTopic
-      rs.say "Prefixing trigger with {inherits=#{inheritence}} #{trigger}"
+      rs.say "Prefixing trigger with {inherits=#{inheritance}} #{trigger}"
       triggers.push.apply(triggers, [
-        ["{inherits=#{inheritence}}#{trigger[0]}", trigger[1]]
+        ["{inherits=#{inheritance}}#{trigger[0]}", trigger[1]]
       ])
   else
     triggers.push.apply(triggers, inThisTopic)

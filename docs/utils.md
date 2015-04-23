@@ -1,3 +1,5 @@
+# Miscellaneous utility functions.
+
 ## string strip (string)
 
 Strip extra whitespace from both ends of the string, and remove
@@ -6,7 +8,7 @@ line breaks anywhere in the string.
 ## void extend (object a, object b)
 
 Combine the properties of both objects into one. The properties from
-object 'b' are insert into 'a'.
+object 'b' are inserted into 'a'.
 
 ## int word_count (string)
 

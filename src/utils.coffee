@@ -5,7 +5,9 @@
 #
 # http://www.rivescript.com/
 
+##
 # Miscellaneous utility functions.
+##
 
 ##
 # string strip (string)
@@ -23,7 +25,7 @@ exports.strip = (text) ->
 # void extend (object a, object b)
 #
 # Combine the properties of both objects into one. The properties from
-# object 'b' are insert into 'a'.
+# object 'b' are inserted into 'a'.
 ##
 exports.extend = (a, b) ->
   for attr, value of b

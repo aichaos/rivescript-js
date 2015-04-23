@@ -17,7 +17,7 @@
   "files": [
     "lib/rivescript.js",
     "lib/brain.js",
-    "lib/inheritence.js",
+    "lib/inheritance.js",
     "lib/parser.js",
     "lib/sorting.js",
     "lib/utils.js",

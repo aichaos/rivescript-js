@@ -516,7 +516,7 @@ exports.test_punishment_topic = function(test) {
     test.done();
 };
 
-exports.test_topic_inheritence = function(test) {
+exports.test_topic_inheritance = function(test) {
     var RS_ERR_MATCH = "ERR: No Reply Matched";
     var bot = new TestCase(test, "\
         > topic colors\n\

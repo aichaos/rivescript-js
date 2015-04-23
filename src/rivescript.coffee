@@ -14,7 +14,7 @@ Parser  = require "./parser"
 Brain   = require "./brain"
 utils   = require "./utils"
 sorting = require "./sorting"
-inherit_utils = require "./inheritence"
+inherit_utils = require "./inheritance"
 JSObjectHandler = require "./lang/javascript"
 
 ##

@@ -8,7 +8,7 @@
 
 # Brain logic for RiveScript
 utils = require("./utils")
-inherit_utils = require("./inheritence")
+inherit_utils = require("./inheritance")
 
 ##
 # Brain (RiveScript master)
@@ -34,6 +34,7 @@ class Brain
   ##
   # string reply (string user, string msg[, scope])
   #
+  # Fetch a reply for the user.
   ##
   reply: (user, msg, scope) ->
     @say "Asked to reply to [#{user}] #{msg}"

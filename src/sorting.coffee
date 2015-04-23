@@ -5,7 +5,9 @@
 #
 # http://www.rivescript.com/
 
+##
 # Data sorting functions
+##
 
 utils = require("./utils")
 
@@ -17,9 +19,10 @@ utils = require("./utils")
 # debug logging from within this function.
 #
 # This function has two use cases:
-# 1) create a sort buffer for "normal" (matchable) triggers, which are triggers
+#
+# 1. create a sort buffer for "normal" (matchable) triggers, which are triggers
 #    which are NOT accompanied by a %Previous tag.
-# 2) create a sort buffer for triggers that had %Previous tags.
+# 2. create a sort buffer for triggers that had %Previous tags.
 #
 # Use the `exclude_previous` parameter to control which one is being done.
 # This function will return a list of items in the format of
@@ -93,7 +96,7 @@ exports.sortTriggerSet = (triggers, exclude_previous, say) ->
       else
         inherits = -1
 
-      # If this is the first time we've seen this inheritence level,
+      # If this is the first time we've seen this inheritance level,
       # initialize its sort track structure.
       if not track[inherits]?
         track[inherits] = initSortTrack()
