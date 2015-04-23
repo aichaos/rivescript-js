@@ -621,11 +621,11 @@ class Brain
         break # No remaining tags!
 
       match = match[1]
-      parts = match.split(" ", 2)
+      parts = match.split(" ")
       tag   = parts[0].toLowerCase()
       data  = ""
       if parts.length > 1
-        data = parts[1]
+        data = parts.slice(1).join(" ")
       insert = ""
 
       # Handle the tags.
