@@ -603,7 +603,7 @@
 
 	+ about this game
 	% what do you need a hint *
-	- This is just a sample RPG game to demonstrate topic inheritence.
+	- This is just a sample RPG game to demonstrate topic inheritance.
 < topic
 
 > topic room1 inherits dungeon

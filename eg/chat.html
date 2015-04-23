@@ -56,8 +56,8 @@ if (window.location.search.indexOf("debug=1") > -1) {
 
 // Create our RiveScript interpreter.
 var rs = new RiveScript({
-	debug_div: "debug",
-	debug:     debugMode
+	debug:   debugMode,
+	onDebug: onDebug
 });
 
 // This won't work on the web!
@@ -112,6 +112,16 @@ function toggleDebug () {
 	} else {
 		window.location = "?debug=1";
 	}
+}
+
+function onDebug(message) {
+	if (debugMode) {
+		$("#debug").append("<div>[RS] " + escapeHtml(message) + "</div>");
+	}
+}
+
+function escapeHtml(text) {
+	return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
 </script>

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>parser</title>
+<link rel="stylesheet" type="text/css" href="md.css">
+</head>
+<body>
+
+<h1>Parser (RiveScript master)</h1>
+<p>Create a parser object to handle parsing RiveScript code.</p>
+<h2>data parse (string filename, string code[, func onError])</h2>
+<p>Read and parse a RiveScript document. Returns a data structure that
+represents all of the useful contents of the document, in this format:</p>
+<div class="codehilite"><pre><span class="p">{</span>
+  <span class="s2">&quot;begin&quot;</span><span class="o">:</span> <span class="p">{</span> <span class="c1">// &quot;begin&quot; data</span>
+    <span class="s2">&quot;global&quot;</span><span class="o">:</span> <span class="p">{},</span> <span class="c1">// ! global vars</span>
+    <span class="s2">&quot;var&quot;</span><span class="o">:</span> <span class="p">{},</span>    <span class="c1">// ! bot vars</span>
+    <span class="s2">&quot;sub&quot;</span><span class="o">:</span> <span class="p">{},</span>    <span class="c1">// ! sub substitutions</span>
+    <span class="s2">&quot;person&quot;</span><span class="o">:</span> <span class="p">{},</span> <span class="c1">// ! person substitutions</span>
+    <span class="s2">&quot;array&quot;</span><span class="o">:</span> <span class="p">{},</span>  <span class="c1">// ! array lists</span>
+  <span class="p">},</span>
+  <span class="s2">&quot;topics&quot;</span><span class="o">:</span> <span class="p">{</span> <span class="c1">// main reply data</span>
+    <span class="s2">&quot;random&quot;</span><span class="o">:</span> <span class="p">{</span> <span class="c1">// (topic name)</span>
+      <span class="s2">&quot;includes&quot;</span><span class="o">:</span> <span class="p">{},</span> <span class="c1">// included topics</span>
+      <span class="s2">&quot;inherits&quot;</span><span class="o">:</span> <span class="p">{},</span> <span class="c1">// inherited topics</span>
+      <span class="s2">&quot;triggers&quot;</span><span class="o">:</span> <span class="p">[</span> <span class="c1">// array of triggers</span>
+        <span class="p">{</span>
+          <span class="s2">&quot;trigger&quot;</span><span class="o">:</span> <span class="s2">&quot;hello bot&quot;</span><span class="p">,</span>
+          <span class="s2">&quot;reply&quot;</span><span class="o">:</span> <span class="p">[],</span> <span class="c1">// array of replies</span>
+          <span class="s2">&quot;condition&quot;</span><span class="o">:</span> <span class="p">[],</span> <span class="c1">// array of conditions</span>
+          <span class="s2">&quot;redirect&quot;</span><span class="o">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>  <span class="c1">// @ redirect command</span>
+          <span class="s2">&quot;previous&quot;</span><span class="o">:</span> <span class="kc">null</span><span class="p">,</span> <span class="c1">// % previous command</span>
+        <span class="p">},</span>
+        <span class="p">...</span>
+      <span class="p">]</span>
+    <span class="p">}</span>
+  <span class="p">},</span>
+  <span class="s2">&quot;objects&quot;</span><span class="o">:</span> <span class="p">[</span> <span class="c1">// parsed object macros</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;name&quot;</span><span class="o">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>     <span class="c1">// object name</span>
+      <span class="s2">&quot;language&quot;</span><span class="o">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="c1">// programming language</span>
+      <span class="s2">&quot;code&quot;</span><span class="o">:</span> <span class="p">[],</span>     <span class="c1">// object source code (in lines)</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<h2>string checkSyntax (char command, string line)</h2>
+<p>Check the syntax of a RiveScript command. <code>command</code> is the single character
+command symbol, and <code>line</code> is the rest of the line after the command.</p>
+<p>Returns an empty string on success, or a description of the error on error.</p>
+<h2>private void initTopic (object topics, string name)</h2>
+<p>Initialize the topic tree for the parsing phase. Sets up the topic under
+ast.topics with all its relevant keys and sub-keys, etc.</p>
+
+</body>
+</html>

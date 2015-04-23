@@ -1,32 +1,67 @@
 {
-	"name"         : "rivescript",
-	"version"      : "1.0.5",
-	"description"  : "RiveScript is a scripting language for chatterbots, making it easy to write trigger/response pairs for building up a bot's intelligence.",
-	"keywords"     : [ "bot", "chatbot", "chatterbot", "aiml", "artificial intelligence", "chatscript", "buddyscript" ],
-	"homepage"     : "http://www.rivescript.com/",
-	"author"       : "Noah Petherbridge <root@kirsle.net> (http://www.kirsle.net/)",
-	"main"         : "lib/rivescript.js",
-	"files"        : [ "lib/rivescript.js", "lib/rivescript.min.js" ],
-	"repository"   : { "type": "git", "url": "https://github.com/kirsle/rivescript-js.git" },
-	"contributors" : [
-		"Mike Rombout <mike.rombout1@gmail.com> (http://www.mikero.nl/)"
-	],
-	"licenses": [
-		{
-			"type": "MIT",
-			"url": "https://github.com/kirsle/rivescript-js/blob/master/LICENSE"
-		}
-	],
-	"bugs": {
-		"url": "https://github.com/kirsle/rivescript-js/issues",
-		"email": "root@kirsle.net"
-	},
-	"devDependencies": {
-		"grunt": "~0.4.5",
-		"grunt-contrib-uglify": "~0.6.0",
-		"grunt-contrib-jshint": "~0.10.0",
-		"grunt-contrib-watch": "~0.6.1",
-		"grunt-contrib-connect": "~0.9.0",
-		"grunt-contrib-nodeunit": "~0.4.1"
-	}
+  "name": "rivescript",
+  "version": "1.1.0",
+  "description": "RiveScript is a scripting language for chatterbots, making it easy to write trigger/response pairs for building up a bot's intelligence.",
+  "keywords": [
+    "bot",
+    "chatbot",
+    "chatterbot",
+    "aiml",
+    "artificial intelligence",
+    "chatscript",
+    "buddyscript"
+  ],
+  "homepage": "http://www.rivescript.com/",
+  "author": "Noah Petherbridge <root@kirsle.net> (http://www.kirsle.net/)",
+  "main": "lib/rivescript.js",
+  "files": [
+    "lib/rivescript.js",
+    "lib/brain.js",
+    "lib/inheritance.js",
+    "lib/parser.js",
+    "lib/sorting.js",
+    "lib/utils.js",
+    "lib/lang/coffee.js",
+    "lib/lang/javascript.js"
+  ],
+  "directories": {
+      "lib": "lib",
+      "doc": "docs"
+  },
+  "main": "lib/rivescript.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/aichaos/rivescript-js.git"
+  },
+  "contributors": [
+    "dc <dc@biz.pikkle.com> (https://github.com/dcsan)",
+    "Mike Rombout <mike.rombout1@gmail.com> (http://www.mikero.nl/)"
+  ],
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "https://github.com/aichaos/rivescript-js/blob/master/LICENSE"
+    }
+  ],
+  "bugs": {
+    "url": "https://github.com/aichaos/rivescript-js/issues",
+    "email": "root@kirsle.net"
+  },
+  "devDependencies": {
+    "grunt": "~0.4.5",
+    "grunt-contrib-uglify": "~0.6.0",
+    "grunt-contrib-watch": "~0.6.1",
+    "grunt-contrib-connect": "~0.9.0",
+    "grunt-contrib-nodeunit": "~0.4.1",
+    "coffee-script": "~1.9.1",
+    "grunt-contrib-coffee": "~0.13.0",
+    "grunt-browserify": "~3.7.0",
+    "grunt-contrib-clean": "~0.6.0",
+    "coffeelint": "~1.9.3",
+    "grunt-coffeelint": "0.0.13"
+  },
+  "scripts": {
+    "prepublish": "grunt dist"
+  }
+
 }

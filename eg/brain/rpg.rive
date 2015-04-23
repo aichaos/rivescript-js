@@ -1,6 +1,6 @@
 ! version = 2.00
 
-// This file tests topic inclusions and inheritence:
+// This file tests topic inclusions and inheritance:
 //
 // includes: this means that the topic "includes" the triggers present
 //           in another topic. Matching triggers in the source and included

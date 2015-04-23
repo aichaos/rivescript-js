@@ -6,9 +6,9 @@ This is a RiveScript interpreter library for JavaScript. RiveScript is a
 scripting language for chatterbots, making it easy to write trigger/response
 pairs for building up a bot's intelligence.
 
-This library can be used both in a web browser or as a Node.JS module.
+This library can be used both in a web browser or as a Node module.
 See the `eg/` folder for a web browser example. There's a `node/` folder with
-a Node.JS example.
+an example Node TCP server.
 
 ## INSTALLATION
 
@@ -27,6 +27,14 @@ have your RiveScript documents. Example:
 
 ```bash
 node shell.js eg/brain
+```
+
+There is also a CoffeeScript version of `shell.js` which works the same way. The
+key difference is that when running the Coffee version, RiveScript object macros
+written in CoffeeScript may be used (for example, see `eg/brain/coffee.rive`).
+
+```bash
+coffee shell.coffee eg/brain
 ```
 
 Once inside the shell you can chat with the bot using the RiveScript files in
@@ -74,15 +82,22 @@ function loading_error (batch_num, error) {
 }
 ```
 
+## DOCUMENTATION
+
+There is generated Markdown and HTML documentation of the modules in the
+[docs](https://github.com/aichaos/rivescript-js/tree/master/docs) folder.
+The main module is at
+[rivescript](https://github.com/aichaos/rivescript-js/blob/master/docs/rivescript.md).
+
 ## UTF-8 SUPPORT
 
-Version 1.0.5 adds experimental support for UTF-8 in RiveScript documents.
+Version 1.0.5 adds **experimental** support for UTF-8 in RiveScript documents.
 It is disabled by default. Enable it by passing a `true` value for the `utf8`
 option in the constructor.
 
 By default (without UTF-8 mode on), triggers may only contain basic ASCII
 characters (no foreign characters), and the user's message is stripped of all
-characters except letters/numbers and spaces. This means that, for example,
+characters except letters, numbers and spaces. This means that, for example,
 you can't capture a user's e-mail address in a RiveScript reply, because of the
 @ and . characters.
 
@@ -97,15 +112,25 @@ This has so far only been tested when run under Node. When served through a
 web server, take extra care that your server sends the correct content encoding
 with the RiveScript source files (`Content-Type: text/plain; charset=utf-8`).
 
+One caveat to watch out for in UTF-8 mode is that punctuation characters are not
+removed from a user's message, so if they include commas or exclamation marks
+it can impact the matching ability of your triggers (you should *absolutely
+not* write an explicit punctuation mark on your trigger's side. Triggers should
+NOT contain symbols like `?` or `,` even with UTF-8 mode enabled, and while that
+may work right now, a future update will probably rigidly enforce this).
+
 ## BUILDING
 
 Grunt options:
 
-* `grunt` - Builds the minified `lib/rivescript.min.js`
-* `grunt jshint` - Runs JS linting on `rivescript.js`
-* `grunt watch` - For development - watches `rivescript.js` for changes and
-  automatically minifies it.
-* `grunt connect:server` - Starts a local web server and opens `eg/chat.html`
+* `grunt` - Compiles the CoffeeScript in the `src/` folder into JavaScript in
+  the `lib/` folder.
+* `grunt clean` - Cleans the `lib/` and `dist/` directories.
+* `grunt buildclean` - Cleans and rebuilds the project.
+* `grunt lint` - Runs CoffeeScript linting.
+* `grunt watch` - For development - watches CoffeeScript source files and
+  automatically builds them on change.
+* `grunt server` - Starts a local web server and opens `eg/chat.html`
   for local testing and demoing.
 * `grunt test` - Run unit tests.
 
@@ -119,7 +144,7 @@ Install `nodejs` and `npm` and then:
 ```bash
 $ npm install -g grunt-cli # If you don't already have it
 $ npm install              # Install dev dependencies
-$ grunt connect:server     # Will start a local web server and open eg/chat.html
+$ grunt server             # Will start a local web server and open eg/chat.html
 ```
 
 ## LICENSE

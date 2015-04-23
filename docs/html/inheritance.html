@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>inheritance</title>
+<link rel="stylesheet" type="text/css" href="md.css">
+</head>
+<body>
+
+<h1>Topic inheritance functions.</h1>
+<p>These are helper functions to assist with topic inheritance and includes.</p>
+<h2>string[] getTopicTriggers (RiveScript rs, string topic, object triglvl, int depth, int inheritance, int inherited)</h2>
+<p>Recursively scan through a topic and retrieve a listing of all triggers in
+that topic and in all included/inherited topics. Some triggers will come out
+with an {inherits} tag to signify inheritance depth.</p>
+<ul>
+<li>topic: The name of the topic</li>
+<li>thats: Boolean, are we getting replies with %Previous or not?</li>
+<li>triglvl: reference to this._topics or this._thats</li>
+<li>depth: recursion depth counter</li>
+</ul>
+<p>Each "trigger" returned from this function is actually an array, where index
+0 is the trigger text and index 1 is the pointer to the trigger's data within
+the original topic structure.</p>
+<h2>string[] getTopicTree (RiveScript rs, string topic, int depth)</h2>
+<p>Given a topic, this returns an array of every topic related to it (all the
+topics it includes or inherits, plus all the topics included or inherited
+by those topics, and so on). The array includes the original topic, too.</p>
+
+</body>
+</html>
