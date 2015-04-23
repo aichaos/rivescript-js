@@ -31,7 +31,7 @@ module.exports = (grunt) ->
         src: "lib/rivescript.js",
         dest: "dist/rivescript.js"
     nodeunit:
-      all: ["test/test-*.js"]
+      all: ["test/test-*.coffee"]
       options:
         reporter: "default"
     coffeelint:
