@@ -501,6 +501,22 @@ class RiveScript
         @_users[user][key] = data[key]
 
   ##
+  # void getGlobal (string name)
+  #
+  # Gets a global variable. This is equivalent to `<bot name>` in RiveScript.
+  ##
+  getGlobal: (user, name) ->
+    # No user?
+    if not @_users[user]
+      return "undefined"
+
+    # The var exists?
+    if typeof(@_global[user][name]) isnt "undefined"
+      return @_global[user][name]
+    else
+      return "undefined"
+
+  ##
   # string getUservar (string user, string name)
   #
   # Get a variable from a user. Returns the string "undefined" if it isn't
