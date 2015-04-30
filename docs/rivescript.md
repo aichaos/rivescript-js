@@ -126,6 +126,10 @@ Set a user variable for a user.
 Set multiple user variables by providing an object of key/value pairs.
 Equivalent to calling `setUservar()` for each pair in the object.
 
+## void getVariable (string name)
+
+Gets a variable. This is equivalent to `<bot name>` in RiveScript.
+
 ## string getUservar (string user, string name)
 
 Get a variable from a user. Returns the string "undefined" if it isn't
