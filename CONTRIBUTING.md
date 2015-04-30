@@ -29,7 +29,7 @@ by running `grunt connect:server`.
 Make sure the unit tests still pass (`grunt test`), and add new unit tests if
 necessary for your change.
 
-Run JS linting with `grunt jshint` and fix any issues that occur.
+Run JS linting with `grunt lint` and fix any issues that occur.
 
 When finished, run `grunt` to create the minified JS file.
 
