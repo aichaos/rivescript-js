@@ -501,6 +501,18 @@ class RiveScript
         @_users[user][key] = data[key]
 
   ##
+  # void getVariable (string name)
+  #
+  # Gets a variable. This is equivalent to `<bot name>` in RiveScript.
+  ##
+  getVariable: (user, name) ->
+    # The var exists?
+    if typeof(@_var[name]) isnt "undefined"
+      return @_var[name]
+    else
+      return "undefined"
+
+  ##
   # string getUservar (string user, string name)
   #
   # Get a variable from a user. Returns the string "undefined" if it isn't

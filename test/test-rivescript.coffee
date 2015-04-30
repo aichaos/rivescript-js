@@ -454,6 +454,22 @@ exports.test_disabled_js_language = (test) ->
     bot.reply("test", "Result: [ERR: No Object Handler]")
     test.done()
 
+exports.test_get_variable = (test) ->
+    bot = new TestCase(test, """
+        ! var test_var = test
+
+        > object test_get_var javascript
+            var uid   = rs.currentUser();
+            var name  = "test_var";
+            return rs.getVariable(uid, name);
+        < object
+
+        + show me var
+        - <call> test_get_var </call>
+    """)
+    bot.reply("show me var", "test")
+    test.done()
+
 ################################################################################
 #  Topic Tests
 ################################################################################
