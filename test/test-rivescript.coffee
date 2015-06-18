@@ -386,6 +386,16 @@ exports.test_set_uservars = (test) ->
     bot.reply("How old am I?", "You are 5.")
     test.done()
 
+exports.test_questionmark = (test) ->
+  bot = new TestCase(test, """
+    + google *
+    - <a href="https://www.google.com/search?q=<star>">Results are here</a>
+  """)
+  bot.reply("google coffeescript",
+    '<a href="https://www.google.com/search?q=coffeescript">Results are here</a>'
+  )
+  test.done()
+
 ################################################################################
 #  Object Macro Tests
 ################################################################################

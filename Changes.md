@@ -1,7 +1,9 @@
 # Changes
 
-* 1.1.1 TBD
+* 1.1.2 2015-06-18
   - Fix a space split issue when parsing tags such as <set> and <get>.
+  - Fix quotemeta issue that caused an infinite loop when tags contained a
+    question mark character.
 
 * 1.1.0 2015-04-22
   - Add experimental support for UTF-8.

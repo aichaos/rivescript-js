@@ -686,7 +686,7 @@ class Brain
         # Unrecognized tag, preserve it
         insert = "\x00#{match}\x01"
 
-      reply = reply.replace(new RegExp("<#{match}>"), insert)
+      reply = reply.replace(new RegExp("<#{utils.quotemeta(match)}>"), insert)
 
     # Recover mangled HTML-like tags
     reply = reply.replace(/\x00/g, "<")
