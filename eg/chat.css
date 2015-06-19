@@ -36,3 +36,20 @@ span.bot {
 	font-weight: bold;
 	color: #FF0000;
 }
+table.input-table {
+	border: 0px;
+	border-collapse: separate;
+	border-spacing: 4px;
+	width: 100%;
+}
+table.input-table td.text-box {
+	padding: 4px; 
+	text-align: left;
+	vertical-align: middle; 
+}
+table.input-table td.send-button {
+	padding: 4px; 
+	text-align: center;
+	vertical-align: middle; 
+	width: 10px;
+}
