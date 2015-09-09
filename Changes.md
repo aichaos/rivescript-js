@@ -1,5 +1,10 @@
 # Changes
 
+* 1.1.4 TBD
+  - Fix a crash if a topic tries to inherit or include a topic which doesn't
+    exist. Instead, a warning is given to the console when this case is
+    detected.
+
 * 1.1.2 2015-06-18
   - Fix a space split issue when parsing tags such as <set> and <get>.
   - Fix quotemeta issue that caused an infinite loop when tags contained a

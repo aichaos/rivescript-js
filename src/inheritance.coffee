@@ -42,7 +42,7 @@ getTopicTriggers = (rs, topic, thats, depth, inheritance, inherited) ->
   # Break if we're in too deep.
   if depth > rs._depth
     rs.warn "Deep recursion while scanning topic inheritance!"
-    return
+    return []
 
   # Keep in mind here that there is a difference between 'includes' and
   # 'inherits' -- topics that inherit other topics are able to OVERRIDE
@@ -71,8 +71,14 @@ getTopicTriggers = (rs, topic, thats, depth, inheritance, inherited) ->
   # that inherits other topics. This forces the {inherits} tag to be added to
   # the triggers. This only applies when the top topic 'includes' another
   # topic.
-  rs.say "Collecting trigger list for topic #{topic} (depth=#{depth};
-        inheritance=#{inheritance}; inherited=#{inherited})"
+  rs.say "Collecting trigger list for topic #{topic} (depth=#{depth}; " \
+        + "inheritance=#{inheritance}; inherited=#{inherited})"
+
+  # Topic doesn't exist?
+  if not rs._topics[topic]?
+    rs.warn "Inherited or included topic '#{topic}' doesn't exist or " \
+      + "has no triggers"
+    return []
 
   # Collect an array of triggers to return.
   triggers = []

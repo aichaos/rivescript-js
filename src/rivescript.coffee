@@ -7,7 +7,7 @@
 "use strict"
 
 # Constants
-VERSION  = "1.1.2"
+VERSION  = "1.1.3"
 
 # Helper modules
 Parser  = require "./parser"
