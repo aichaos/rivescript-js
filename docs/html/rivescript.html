@@ -16,6 +16,17 @@ following keys:</p>
 <li>bool utf8:     Enable UTF-8 mode     (default false)</li>
 <li>func onDebug:  Set a custom handler to catch debug log messages (default null)</li>
 </ul>
+<h2>UTF-8 Mode</h2>
+<p>In UTF-8 mode, most characters in a user's message are left intact, except for
+certain metacharacters like backslashes and common punctuation characters like
+<code>/[.,!?;:]/</code>.</p>
+<p>If you want to override the punctuation regexp, you can provide a new one by
+assigning the <code>unicodePunctuation</code> attribute of the bot object after
+initialization. Example:</p>
+<pre class="codehilite"><code class="language-javascript">var bot = new RiveScript({utf8: true});
+bot.unicodePunctuation = new RegExp(/[.,!?;:]/g);</code></pre>
+
+
 <h1>Constructor and Debug Methods</h1>
 <h2>string version ()</h2>
 <p>Returns the version number of the RiveScript.js library.</p>

@@ -9,6 +9,21 @@ following keys:
 * bool utf8:     Enable UTF-8 mode     (default false)
 * func onDebug:  Set a custom handler to catch debug log messages (default null)
 
+## UTF-8 Mode
+
+In UTF-8 mode, most characters in a user's message are left intact, except for
+certain metacharacters like backslashes and common punctuation characters like
+`/[.,!?;:]/`.
+
+If you want to override the punctuation regexp, you can provide a new one by
+assigning the `unicodePunctuation` attribute of the bot object after
+initialization. Example:
+
+```javascript
+var bot = new RiveScript({utf8: true});
+bot.unicodePunctuation = new RegExp(/[.,!?;:]/g);
+```
+
 # Constructor and Debug Methods
 
 ## string version ()

@@ -1,6 +1,6 @@
 # Changes
 
-* 1.1.4 TBD
+* 1.1.4 2015-09-09
   - Fix a crash if a topic tries to inherit or include a topic which doesn't
     exist. Instead, a warning is given to the console when this case is
     detected.
