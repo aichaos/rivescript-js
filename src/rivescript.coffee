@@ -28,6 +28,21 @@ JSObjectHandler = require "./lang/javascript"
 # * bool strict:   Strict mode           (default true)
 # * bool utf8:     Enable UTF-8 mode     (default false)
 # * func onDebug:  Set a custom handler to catch debug log messages (default null)
+#
+# ## UTF-8 Mode
+#
+# In UTF-8 mode, most characters in a user's message are left intact, except for
+# certain metacharacters like backslashes and common punctuation characters like
+# `/[.,!?;:]/`.
+#
+# If you want to override the punctuation regexp, you can provide a new one by
+# assigning the `unicodePunctuation` attribute of the bot object after
+# initialization. Example:
+#
+# ```javascript
+# var bot = new RiveScript({utf8: true});
+# bot.unicodePunctuation = new RegExp(/[.,!?;:]/g);
+# ```
 ##
 class RiveScript
 
@@ -45,6 +60,9 @@ class RiveScript
     @_depth   = if opts.depth then parseInt(opts.depth) else 50
     @_utf8    = if opts.utf8 then opts.utf8 else false
     @_onDebug = if opts.onDebug then opts.onDebug else null
+
+    # UTF-8 punctuation, overridable by the user.
+    @unicodePunctuation = new RegExp(/[.,!?;:]/g)
 
     # Identify our runtime environment. Web, or node?
     @_node    = {} # NodeJS objects

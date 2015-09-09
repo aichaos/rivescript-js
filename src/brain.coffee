@@ -389,6 +389,8 @@ class Brain
     # against obvious XSS attacks).
     if @utf8
       msg = msg.replace(/[\\<>]+/, "")
+      if @master.unicodePunctuation?
+        msg = msg.replace(@master.unicodePunctuation, "")
 
       # For the bot's reply, also strip common punctuation.
       if botreply?

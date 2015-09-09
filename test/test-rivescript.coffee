@@ -708,3 +708,19 @@ exports.test_unicode = (test) ->
     bot.reply("more", "Hë fëll öff ä döck, änd sänk lïkë ä röck")
     bot.reply("more", "Änd thät wäs thë ënd öf hïm.")
     test.done()
+
+exports.test_punctuation = (test) ->
+  bot = new TestCase(test, """
+    + hello bot
+    - Hello human!
+  """, {"utf8": true})
+
+  bot.reply("Hello bot", "Hello human!")
+  bot.reply("Hello, bot!", "Hello human!")
+  bot.reply("Hello: Bot", "Hello human!")
+  bot.reply("Hello... bot?", "Hello human!")
+
+  bot.rs.unicodePunctuation = new RegExp(/xxx/g)
+  bot.reply("Hello bot", "Hello human!")
+  bot.reply("Hello, bot!", "ERR: No Reply Matched")
+  test.done()

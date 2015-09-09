@@ -104,9 +104,23 @@ you can't capture a user's e-mail address in a RiveScript reply, because of the
 When UTF-8 mode is enabled, these restrictions are lifted. Triggers are only
 limited to not contain certain metacharacters like the backslash, and the user's
 message is only stripped of backslashes and HTML angled brackets (to protect
-from obvious XSS if you use RiveScript in a web application). The `<star>` tags
-in RiveScript will capture the user's "raw" input, so you can write replies to
-get the user's e-mail address or store foreign characters in their name.
+from obvious XSS if you use RiveScript in a web application). Additionally,
+common punctuation characters are stripped out, with the default set being
+`/[.,!?;:]/g`. This can be overridden by providing a new `RegExp` object as the
+`rs.unicodePunctuation` attribute. Example:
+
+```javascript
+// Make a new bot with UTF-8 mode enabled.
+var bot = new RiveScript({utf8: true});
+
+// Override the punctuation characters that get stripped from the
+// user's message.
+bot.unicodePunctuation = new RegExp(/[.,!?;:]/g);
+```
+
+The `<star>` tags in RiveScript will capture the user's "raw" input, so you
+can write replies to get the user's e-mail address or store foreign characters
+in their name.
 
 This has so far only been tested when run under Node. When served through a
 web server, take extra care that your server sends the correct content encoding
