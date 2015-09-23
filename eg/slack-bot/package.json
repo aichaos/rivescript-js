@@ -1,0 +1,14 @@
+{
+  "name": "slack-bot",
+  "version": "1.0.0",
+  "description": "Slack bot example for RiveScript-JS",
+  "main": "slackbot.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Noah Petherbridge",
+  "license": "MIT",
+  "dependencies": {
+    "slack-client": "~1.4.1"
+  }
+}

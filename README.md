@@ -19,6 +19,14 @@ through npm:
 
 To use on the web, just load `rivescript.js` with a `<script>` tag like usual.
 
+## EXAMPLES
+
+There are examples available in the
+[eg/](https://github.com/aichaos/rivescript-js/tree/master/eg) directory of
+this project on GitHub that show how to interface with a RiveScript bot in
+a variety of ways--such as through a web browser or a telnet server--and other
+code snippets and useful tricks.
+
 ## USAGE
 
 The distribution of RiveScript.js includes an interactive shell for testing your
