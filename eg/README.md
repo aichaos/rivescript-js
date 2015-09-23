@@ -16,6 +16,8 @@ RiveScript-js.
 * [telnet-server](telnet-server/) - A simple telnet server that listens on port
   2001 and chats with connected users. It's like the `shell.js` except over a
   TCP socket.
+* [slack-bot](slack-bot/) - Example of connecting a RiveScript bot to the
+  Slack chat platform.
 
 ## Code Snippets
 
