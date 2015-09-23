@@ -42,8 +42,8 @@ module.exports = (grunt) ->
           protocol: "http"
           hostname: "127.0.0.1"
           port: 8000
-          base: "eg"
-          directory: "eg"
+          base: "eg/web-client"
+          directory: "eg/web-client"
           keepalive: true
           open: "http://localhost:8000/chat.html"
           middleware: (connect, options, middlewares) ->
@@ -51,6 +51,8 @@ module.exports = (grunt) ->
             middlewares.unshift (req, res, next) ->
               if req.url is "/lib/rivescript.js"
                 return res.end(grunt.file.read("dist/rivescript.js"))
+              else if req.url.indexOf("/brain") == 0
+                return res.end(grunt.file.read("eg" + req.url))
               else
                 return next()
             return middlewares

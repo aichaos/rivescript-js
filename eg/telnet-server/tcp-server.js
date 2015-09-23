@@ -5,12 +5,11 @@
 // Run this and then telnet to localhost:2001 and chat with the bot!
 
 var net        = require("net");
-var RiveScript = require("../lib/rivescript.js");
+var RiveScript = require("../../lib/rivescript.js");
 
 // Create the bot.
 var bot = new RiveScript({ debug: false });
-bot.loadDirectory("../eg/brain", success_handler, error_handler);
-//bot.loadFile("../eg/brain/testsuite.rive", success_handler, error_handler);
+bot.loadDirectory("../brain", success_handler, error_handler);
 
 function success_handler (loadcount) {
 	console.log("Load #" + loadcount + " completed!");
