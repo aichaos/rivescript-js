@@ -7,7 +7,7 @@ var readline = require("readline");
 
 // This would just be require("rivescript") if not for running this
 // example from within the RiveScript project.
-var RiveScript = require("../../../lib/rivescript");
+var RiveScript = require("../../lib/rivescript");
 
 // Create a prototypical class for our own chatbot.
 var AsyncBot = function(onReady) {

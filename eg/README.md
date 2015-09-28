@@ -21,6 +21,9 @@ RiveScript-js.
 
 ## Code Snippets
 
+* [persistence](persistence/) - Demonstrates persistence for user variables;
+  the bot can be shut down and restarted and it can remember where it left off
+  with its users.
 * [async-object](async-object/) - Demonstrates a JavaScript object macro in
   RiveScript that asynchronously sends the user a second message at some point
   in the future, asynchronously from the immediately requested message.
