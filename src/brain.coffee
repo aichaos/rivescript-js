@@ -430,11 +430,24 @@ class Brain
         @warn "Infinite loop when trying to process optionals in a trigger!"
         return ""
 
+      # The resulting regexp needs to work in two scenarios:
+      # 1) The user included the optional word(s) in which case they must be
+      #    in the message surrounded by a space or a word boundary (e.g. the
+      #    end or beginning of their message)
+      # 2) The user did not include the word, meaning the whole entire set of
+      #    words should be "OR'd" with a word boundary or one or more spaces.
+      #
+      # The resulting regexp ends up looking like this, for a given input
+      # trigger of: what is your [home|office] number
+      #
+      # what is your(?:(?:\s|\b)+home(?:\s|\b)+|(?:\s|\b)+office(?:\s|\b)+|(?:\b|\s)+)number
+      #
+      # See https://github.com/aichaos/rivescript-js/issues/48
+
       parts = match[1].split("|")
       opts  = []
       for p in parts
-        opts.push "\\s*#{p}\\s*"
-      opts.push "\\s*"
+        opts.push "(?:\\s|\\b)+#{p}(?:\\s|\\b)+"
 
       # If this optional had a star or anything in it, make it non-matching.
       pipes = opts.join("|")
@@ -442,9 +455,16 @@ class Brain
       pipes = pipes.replace(new RegExp(utils.quotemeta("(\\d+?)"), "g"), "(?:\\d+?)")
       pipes = pipes.replace(new RegExp(utils.quotemeta("(\\w+?)"), "g"), "(?:\\w+?)")
 
+      # Temporarily dummy out the literal square brackets so we don't loop forever
+      # thinking that the [\s\b] part is another optional.
+      pipes = pipes.replace(/\[/g, "__lb__").replace(/\]/g, "__rb__")
+
       regexp = regexp.replace(new RegExp("\\s*\\[" + utils.quotemeta(match[1]) + "\\]\\s*"),
-        "(?:#{pipes})")
+        "(?:#{pipes}|(?:\\b|\\s)+)")
       match = regexp.match(/\[(.+?)\]/)
+
+    # Restore the literal square brackets.
+    regexp = regexp.replace(/__lb__/g, "[").replace(/__rb__/g, "]")
 
     # _ wildcards can't match numbers! Quick note on why I did it this way:
     # the initial replacement above (_ => (\w+?)) needs to be \w because the
