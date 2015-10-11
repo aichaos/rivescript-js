@@ -1,5 +1,9 @@
 # Changes
 
+* 1.1.6 2015-10-10
+  - Fix the regexp used when matching optionals so that the triggers don't match
+    on inputs where they shouldn't. (RiveScript-JS issue #46)
+
 * 1.1.4 2015-09-09
   - Fix a crash if a topic tries to inherit or include a topic which doesn't
     exist. Instead, a warning is given to the console when this case is
