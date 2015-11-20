@@ -84,7 +84,7 @@ exports.isAtomic = (trigger) ->
   # Atomic triggers don't contain any wildcards or parenthesis or anything of
   # the sort. We don't need to test the full character set, just left brackets
   # will do.
-  for special in ["*", "#", "_", "(", "[", "<" ]
+  for special in ["*", "#", "_", "(", "[", "<", "@" ]
     if trigger.indexOf(special) > -1
       return false
   return true

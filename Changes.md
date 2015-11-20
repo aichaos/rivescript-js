@@ -1,5 +1,9 @@
 # Changes
 
+* 1.1.7 2015-11-19
+  - Add `@` to the list of characters that disqualifies a trigger from being
+    considered "atomic"
+
 * 1.1.6 2015-10-10
   - Fix the regexp used when matching optionals so that the triggers don't match
     on inputs where they shouldn't. (RiveScript-JS issue #46)
