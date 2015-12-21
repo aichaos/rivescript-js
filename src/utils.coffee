@@ -130,3 +130,12 @@ exports.clone = (obj) ->
     copy[key] = exports.clone(obj[key])
 
   return copy
+
+# cut leading and trailings blanks 
+ 
+exports.trimWhitespace = (value) ->
+    result = value.match(/^\s*(.*\S)\s*$/);
+    if (result != null && result.length == 2)
+        return result[1]
+    else
+        return value

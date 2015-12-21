@@ -398,7 +398,8 @@ class Brain
     else
       # For everything else, strip all non-alphanumerics
       msg = utils.stripNasties(msg, @utf8)
-
+	# cut leading and trailing blanks
+	msg = utils.trimWhitespace(msg);
     return msg
 
   ##
