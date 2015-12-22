@@ -398,7 +398,9 @@ class Brain
     else
       # For everything else, strip all non-alphanumerics
       msg = utils.stripNasties(msg, @utf8)
-
+	
+	# cut leading and trailing blanks once punctuation dropped office
+    msg = msg.trim()
     return msg
 
   ##
