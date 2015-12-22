@@ -674,7 +674,8 @@ class Brain
         value = parts[1]
 
         # Initialize the variable?
-        if typeof(@master._users[user][name]) isnt "undefined"
+        if typeof(@master._users[user][name]) is "undefined"
+          @warn "Initialize var", name
           @master._users[user][name] = 0
 
         # Sanity check
