@@ -675,7 +675,6 @@ class Brain
 
         # Initialize the variable?
         if typeof(@master._users[user][name]) is "undefined"
-          @warn "Initialize var", name
           @master._users[user][name] = 0
 
         # Sanity check
