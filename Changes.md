@@ -1,5 +1,11 @@
 # Changes
 
+* 1.1.8 2015-12-28
+  - Trim leading and trailing whitespace from the user's message at the end of
+    `formatMessage()` (bug #53)
+  - Fix `<add>` and `<sub>` tags using inverted logic and not actually adding or
+    subtracting numbers (bug #55)
+
 * 1.1.7 2015-11-19
   - Add `@` to the list of characters that disqualifies a trigger from being
     considered "atomic"
