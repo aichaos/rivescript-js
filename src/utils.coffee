@@ -29,8 +29,8 @@ exports.strip = (text) ->
 ##
 exports.extend = (a, b) ->
   for attr, value of b
+    continue unless b.hasOwnProperty attr
     a[attr] = value
-    continue
 
 ##
 # int word_count (string)
@@ -127,6 +127,7 @@ exports.clone = (obj) ->
 
   copy = obj.constructor()
   for key of obj
+    continue unless obj.hasOwnProperty key
     copy[key] = exports.clone(obj[key])
 
   return copy

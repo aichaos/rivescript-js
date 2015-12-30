@@ -7,7 +7,7 @@
 "use strict"
 
 # Constants
-VERSION  = "1.1.8"
+VERSION  = "1.2.0"
 
 # Helper modules
 Parser  = require "./parser"
@@ -332,8 +332,10 @@ class RiveScript
 
     # Get all of the "begin" type variables: global, var, sub, person, array..
     for type, vars of ast.begin
+      continue unless ast.begin.hasOwnProperty type
       internal = "_#{type}" # so "global" maps to this._global
       for name, value of vars
+        continue unless vars.hasOwnProperty name
         if value is "<undef>"
           delete @[internal][name]
         else
@@ -341,6 +343,7 @@ class RiveScript
 
     # Consume all the parsed triggers.
     for topic, data of ast.topics
+      continue unless ast.topics.hasOwnProperty topic
       # Keep a map of the topics that are included/inherited under this topic.
       if not @_includes[topic]?
         @_includes[topic] = {}
@@ -387,6 +390,7 @@ class RiveScript
 
     # Loop through all the topics.
     for topic of @_topics
+      continue unless @_topics.hasOwnProperty topic
       @say "Analyzing topic #{topic}..."
 
       # Collect a list of all the triggers we're going to worry about. If this
@@ -513,6 +517,7 @@ class RiveScript
       @_users[user] = {topic: "random"}
 
     for key of data
+      continue unless data.hasOwnProperty key
       if data[key] is undefined
         delete @_users[user][key]
       else

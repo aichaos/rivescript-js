@@ -94,13 +94,16 @@ getTopicTriggers = (rs, topic, thats, depth, inheritance, inherited) ->
     # The 'that' structure is: {topic}->{cur trig}->{prev trig}->{trigger info}
     if rs._thats[topic]?
       for curTrig of rs._thats[topic]
+        continue unless rs._thats[topic].hasOwnProperty curTrig
         for previous of rs._thats[topic][curTrig]
+          continue unless rs._thats[topic][curTrig].hasOwnProperty previous
           inThisTopic.push [previous, rs._thats[topic][curTrig][previous]]
 
   # Does this topic include others?
   if Object.keys(rs._includes[topic]).length > 0
     # Check every included topic.
     for includes of rs._includes[topic]
+      continue unless rs._includes[topic].hasOwnProperty includes
       rs.say "Topic #{topic} includes #{includes}"
       triggers.push.apply(triggers, getTopicTriggers(
         rs, includes, thats, depth+1, inheritance+1, false
@@ -110,6 +113,7 @@ getTopicTriggers = (rs, topic, thats, depth, inheritance, inherited) ->
   if Object.keys(rs._inherits[topic]).length > 0
     # Check every inherited topic
     for inherits of rs._inherits[topic]
+      continue unless rs._inherits[topic].hasOwnProperty inherits
       rs.say "Topic #{topic} inherits #{inherits}"
       triggers.push.apply(triggers, getTopicTriggers(
         rs, inherits, thats, depth+1, inheritance+1, true
@@ -149,9 +153,11 @@ getTopicTree = (rs, topic, depth) ->
   topics = [topic]
 
   for includes of rs._topics[topic].includes
+    continue unless rs._topics[topic].includes.hasOwnProperty includes
     topics.push.apply(topics, getTopicTree(rs, includes, depth+1))
 
   for inherits of rs._topics[topic].inherits
+    continue unless rs._topics[topic].inherits.hasOwnProperty inherits
     topics.push.apply(topics, getTopicTree(rs, inherits, depth+1))
 
   return topics
