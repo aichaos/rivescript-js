@@ -97,6 +97,39 @@ After you have finished loading your RiveScript code, call this method to
 populate the various sort buffers. This is absolutely necessary for reply
 matching to work efficiently!
 
+## data deparse()
+
+Translate the in-memory representation of the loaded RiveScript documents
+into a JSON-serializable data structure. This may be useful for developing
+a user interface to edit RiveScript replies without having to edit the
+RiveScript code manually, in conjunction with the `write()` method.
+
+## string stringify([data deparsed])
+
+Translate the in-memory representation of the RiveScript brain back into
+RiveScript source code. This is like `write()`, but it returns the text of
+the source code as a string instead of writing it to a file.
+
+You can optionally pass the parameter `deparsed`, which should be a data
+structure of the same format that the `deparse()` method returns. If not
+provided, the current internal data is used (this function calls `deparse()`
+itself and uses that).
+
+Warning: the output of this function won't be pretty. For example, no word
+wrapping will be done for your longer replies. The only guarantee is that
+what comes out of this function is valid RiveScript code that can be loaded
+back in later.
+
+## void write (string filename[, data deparsed])
+
+Write the in-memory RiveScript data into a RiveScript text file. This
+method can not be used on the web; it requires filesystem access and can
+only run from a Node environment.
+
+This calls the `stringify()` method and writes the output into the filename
+specified. You can provide your own deparse-compatible data structure,
+or else the current state of the bot's brain is used instead.
+
 # Public Configuration Methods
 
 ## void setHandler(string lang, object)

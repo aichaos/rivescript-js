@@ -42,6 +42,12 @@ represents all of the useful contents of the document, in this format:
 }
 ```
 
+## string stringify (data deparsed)
+
+Translate deparsed data into the source code of a RiveScript document.
+See the `stringify()` method on the parent RiveScript class; this is its
+implementation.
+
 ## string checkSyntax (char command, string line)
 
 Check the syntax of a RiveScript command. `command` is the single character
