@@ -417,6 +417,83 @@ class RiveScript
     @_sorted.sub    = sorting.sortList Object.keys(@_sub)
     @_sorted.person = sorting.sortList Object.keys(@_person)
 
+  ##
+  # data deparse()
+  #
+  # Translate the in-memory representation of the loaded RiveScript documents
+  # into a JSON-serializable data structure. This may be useful for developing
+  # a user interface to edit RiveScript replies without having to edit the
+  # RiveScript code manually, in conjunction with the `write()` method.
+  ##
+  deparse: ->
+    # Data to return from this function.
+    result =
+      begin:
+        global: utils.clone(@_global)
+        var: utils.clone(@_var)
+        sub: utils.clone(@_sub)
+        person: utils.clone(@_person)
+        array: utils.clone(@_array)
+        triggers: []
+      topics: utils.clone(@_topics)
+      inherits: utils.clone(@_inherits)
+      includes: utils.clone(@_includes)
+
+    # Begin topic.
+    if result.topics.__begin__?
+      result.begin.triggers = result.topics.__begin__
+      delete result.topics.__begin__
+
+    # Populate config fields if they differ from the defaults.
+    if @_debug
+      result.begin.global.debug = @_debug
+    if @_depth isnt 50
+      result.begin.global.depth = @_depth
+
+    return result
+
+  ##
+  # string stringify([data deparsed])
+  #
+  # Translate the in-memory representation of the RiveScript brain back into
+  # RiveScript source code. This is like `write()`, but it returns the text of
+  # the source code as a string instead of writing it to a file.
+  #
+  # You can optionally pass the parameter `deparsed`, which should be a data
+  # structure of the same format that the `deparse()` method returns. If not
+  # provided, the current internal data is used (this function calls `deparse()`
+  # itself and uses that).
+  #
+  # Warning: the output of this function won't be pretty. For example, no word
+  # wrapping will be done for your longer replies. The only guarantee is that
+  # what comes out of this function is valid RiveScript code that can be loaded
+  # back in later.
+  ##
+  stringify: (deparsed) ->
+    return @parser.stringify deparsed
+
+  ##
+  # void write (string filename[, data deparsed])
+  #
+  # Write the in-memory RiveScript data into a RiveScript text file. This
+  # method can not be used on the web; it requires filesystem access and can
+  # only run from a Node environment.
+  #
+  # This calls the `stringify()` method and writes the output into the filename
+  # specified. You can provide your own deparse-compatible data structure,
+  # or else the current state of the bot's brain is used instead.
+  ##
+  write: (filename, deparsed) ->
+    # Can't be done on the web!
+    if @_runtime is "web"
+      @warn "write() can't be used on the web!"
+      return
+
+    @_node.fs.writeFile(filename, @stringify(deparsed), (err) ->
+      if err
+        @warn "Error writing to file #{filename}: #{err}"
+    )
+
   ##############################################################################
   # Public Configuration Methods                                               #
   ##############################################################################

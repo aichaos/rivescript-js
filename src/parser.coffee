@@ -440,6 +440,132 @@ class Parser
     return ast
 
   ##
+  # string stringify (data deparsed)
+  #
+  # Translate deparsed data into the source code of a RiveScript document.
+  # See the `stringify()` method on the parent RiveScript class; this is its
+  # implementation.
+  ##
+  stringify: (deparsed) ->
+    if not deparsed?
+      deparsed = @master.deparse()
+
+    # Helper function to write out the contents of triggers.
+    _writeTriggers = (triggers, indent) ->
+      id = if indent then "\t" else ""
+      output = []
+
+      for t in triggers
+        output.push "#{id}+ #{t.trigger}"
+
+        if t.previous
+          output.push "#{id}% #{t.previous}"
+
+        if t.condition
+          for c in t.condition
+            output.push "#{id}* #{c}"
+
+        if t.redirect
+          output.push "#{id}@ #{t.redirect}"
+
+        if t.reply
+          for r in t.reply
+            output.push "#{id}- #{r}"
+
+        output.push ""
+
+      return output
+
+
+    # Lines of code to return.
+    source = [
+      "! version = 2.0",
+      "! local concat = none",
+      ""]
+
+    # Stringify begin-like data first.
+    for begin in ["global", "var", "sub", "person", "array"]
+      if deparsed.begin[begin]? and Object.keys(deparsed.begin[begin]).length
+        for key, value of deparsed.begin[begin]
+          continue unless deparsed.begin[begin].hasOwnProperty key
+
+          # Arrays need special treatment, all others are simple.
+          if begin isnt "array"
+            source.push "! #{begin} #{key} = #{value}"
+          else
+            # Array elements need to be joined by either spaces or pipes.
+            pipes = " "
+            for test in value
+              if test.match(/\s+/)
+                pipes = "|"
+                break
+
+            source.push "! #{begin} #{key} = " + value.join(pipes)
+        source.push ""
+
+    # Begin block triggers.
+    if deparsed.begin.triggers?.length
+      source.push "> begin\n"
+      source.push.apply source, _writeTriggers(deparsed.begin.triggers, "indent")
+      source.push "< begin\n"
+
+    # Do the topics. Random first!
+    topics = Object.keys(deparsed.topics).sort (a, b) ->
+      a - b
+    topics.unshift "random"
+    doneRandom = false
+
+    for topic in topics
+      continue unless deparsed.topics.hasOwnProperty topic
+      continue if topic is "random" and doneRandom
+      doneRandom = 1 if topic is "random"
+
+      tagged = false  # Use `> topic` tag; not for random, usually
+      tagline = []
+
+      if topic isnt "random" or \
+        (Object.keys(deparsed.inherits[topic]).length > 0 or \
+         Object.keys(deparsed.includes[topic]).length > 0)
+
+        # Topics other than "random" are *always* tagged. Otherwise (for random)
+        # it's only tagged if it's found to have includes or inherits. But we
+        # wait to see if this is the case because those things are kept in JS
+        # objects and third party JS libraries like to inject junk into the root
+        # Object prototype...
+        if topic isnt "random"
+          tagged = true
+
+        # Start building the tag line.
+        inherits = []
+        includes = []
+        for i of deparsed.inherits[topic]
+          continue unless deparsed.inherits[topic].hasOwnProperty i
+          inherits.push i
+        for i of deparsed.includes[topic]
+          continue unless deparsed.includes[topic].hasOwnProperty i
+          includes.push i
+
+        if includes.length > 0
+          includes.unshift("includes")
+          tagline.push.apply tagline, includes
+          tagged = true
+
+        if inherits.length > 0
+          inherits.unshift("inherits")
+          tagline.push.apply tagline, inherits
+          tagged = true
+
+      if tagged
+        source.push "> topic #{topic} " + tagline.join(" ") + "\n"
+
+      source.push.apply source, _writeTriggers(deparsed.topics[topic], tagged)
+
+      if tagged
+        source.push "< topic\n"
+
+    return source.join "\n"
+
+  ##
   # string checkSyntax (char command, string line)
   #
   # Check the syntax of a RiveScript command. `command` is the single character

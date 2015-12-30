@@ -8,6 +8,8 @@
     to prevent issues with matching triggers (bug #57)
   - Fix a bug where `! global debug = true` in RiveScript code wouldn't actually
     adjust the debug mode. Also do the same for `! global depth` (bug #54)
+  - Add methods `deparse()`, `stringify()` and `write()` to assist with user
+    interface development (bug #61)
 
 * 1.1.8 2015-12-28
   - Trim leading and trailing whitespace from the user's message at the end of
