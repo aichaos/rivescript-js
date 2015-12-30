@@ -6,6 +6,8 @@
     prototype and breaking RiveScript (bug #60)
   - Consolidate multiple spaces in a user's input message into just one space
     to prevent issues with matching triggers (bug #57)
+  - Fix a bug where `! global debug = true` in RiveScript code wouldn't actually
+    adjust the debug mode. Also do the same for `! global depth` (bug #54)
 
 * 1.1.8 2015-12-28
   - Trim leading and trailing whitespace from the user's message at the end of

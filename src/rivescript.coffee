@@ -341,6 +341,12 @@ class RiveScript
         else
           @[internal][name] = value
 
+      # Let the scripts set the debug mode and other internals.
+      if @_global.debug?
+        @_debug = if @_global.debug is "true" then true else false
+      if @_global.depth?
+        @_depth = parseInt(@_global.depth) or 50
+
     # Consume all the parsed triggers.
     for topic, data of ast.topics
       continue unless ast.topics.hasOwnProperty topic
