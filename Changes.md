@@ -1,5 +1,12 @@
 # Changes
 
+* 1.2.0 2015-12-29
+  - Fix looping over object keys by adding a check for `hasOwnProperty()`, to
+    prevent third party JavaScript libraries from modifying the root `Object`
+    prototype and breaking RiveScript (bug #60)
+  - Consolidate multiple spaces in a user's input message into just one space
+    to prevent issues with matching triggers (bug #57)
+
 * 1.1.8 2015-12-28
   - Trim leading and trailing whitespace from the user's message at the end of
     `formatMessage()` (bug #53)

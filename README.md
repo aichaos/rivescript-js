@@ -17,7 +17,15 @@ through npm:
 
 `npm install rivescript`
 
-To use on the web, just load `rivescript.js` with a `<script>` tag like usual.
+The GitHub repository for this project only includes the CoffeeScript sources.
+To download a compiled JavaScript release of this library, check the
+[Releases](https://github.com/aichaos/rivescript-js/releases) tab. The compiled
+distribution includes a `lib/` directory with JavaScript sources to use with
+node, and a `dist/` directory containing a "browserified" script that can be
+used on a web page.
+
+To use on the web, just load `dist/rivescript.min.js` with a `<script>` tag
+like usual.
 
 ## EXAMPLES
 
