@@ -742,6 +742,15 @@ class RiveScript
   # punctuation and weird symbols. The username is arbitrary and is used to
   # uniquely identify the user, in the case that you may have multiple
   # distinct users chatting with your bot.
+  #
+  # The optional `scope` parameter will be passed down into any JavaScript
+  # object macros that the RiveScript code executes. If you pass the special
+  # variable `this` as the scope parameter, then `this` in the context of an
+  # object macro will refer to the very same `this` as the one you passed in,
+  # so for example the object macro will have access to any local functions
+  # or attributes that your code has access to, from the location that `reply()`
+  # was called. For an example of this, refer to the `eg/scope` directory in
+  # the source distribution of RiveScript-JS.
   ##
   reply: (user, msg, scope) ->
     return @brain.reply(user, msg, scope)

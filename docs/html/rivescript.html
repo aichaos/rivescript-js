@@ -159,6 +159,14 @@ special pre-processing to be done to it, i.e. it's allowed to contain
 punctuation and weird symbols. The username is arbitrary and is used to
 uniquely identify the user, in the case that you may have multiple
 distinct users chatting with your bot.</p>
+<p>The optional <code>scope</code> parameter will be passed down into any JavaScript
+object macros that the RiveScript code executes. If you pass the special
+variable <code>this</code> as the scope parameter, then <code>this</code> in the context of an
+object macro will refer to the very same <code>this</code> as the one you passed in,
+so for example the object macro will have access to any local functions
+or attributes that your code has access to, from the location that <code>reply()</code>
+was called. For an example of this, refer to the <code>eg/scope</code> directory in
+the source distribution of RiveScript-JS.</p>
 
 </body>
 </html>

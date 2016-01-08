@@ -1,0 +1,22 @@
+// Example of an asynchronous object macro.
+
++ *
+- No reply for that. Type "scope test" to test the scope functionality.
+
++ scope test
+- Testing the scope!\n<call>scopeTest</call>
+
+> object scopeTest javascript
+	// Call a function
+	var result = this.PrivateFunction();
+
+	// Get a variable
+	var hello = this.hello;
+
+	// Modify a variable.
+	this.counter++;
+
+	return "Function result: " + result + "\n" +
+		"this.hello: " + hello + "\n" +
+		"this.counter: " + this.counter;
+< object

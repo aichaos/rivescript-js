@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import print_function
 
 """Generate documentation from the RiveScript source files."""
 
@@ -43,7 +44,7 @@ def main():
         fh.close()
 
         # Write the Markdown file.
-        print "Write docs for module: {}".format(mod["name"])
+        print("Write docs for module: {}".format(mod["name"]))
         fh = open("docs/{}.md".format(mod["name"]), "w")
         fh.write("\n\n".join(md))
         fh.close()

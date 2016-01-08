@@ -27,3 +27,6 @@ RiveScript-js.
 * [async-object](async-object/) - Demonstrates a JavaScript object macro in
   RiveScript that asynchronously sends the user a second message at some point
   in the future, asynchronously from the immediately requested message.
+* [scope](scope/) - Demonstrates the usage of the `scope` parameter to the
+  `reply()` function for passing the parent scope down into JavaScript object
+  macros.
