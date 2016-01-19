@@ -13,6 +13,8 @@ RiveScript-js.
 
 * [web-client](web-client/) - Demonstrates embedding a RiveScript bot into a
   web page (i.e. to be served through a web server like Apache or nginx).
+* [json-server](json-server/) - A minimal ExpressJS web server that makes a
+  RiveScript bot available at a JSON POST endpoint.
 * [telnet-server](telnet-server/) - A simple telnet server that listens on port
   2001 and chats with connected users. It's like the `shell.js` except over a
   TCP socket.
