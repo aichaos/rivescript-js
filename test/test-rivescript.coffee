@@ -790,3 +790,46 @@ exports.test_punctuation = (test) ->
   bot.reply("Hello bot", "Hello human!")
   bot.reply("Hello, bot!", "ERR: No Reply Matched")
   test.done()
+
+exports.test_js_string_in_setSubroutine = (test) ->
+  bot = new TestCase(test, """
+    + hello
+    - hello <call>helper <star></call>
+  """)
+
+  input = "hello there"
+
+  bot.rs.setSubroutine("helper", ["return 'person';"])
+  bot.reply("hello", "hello person")
+  test.done()
+
+exports.test_function_in_setSubroutine = (test) ->
+  bot = new TestCase(test, """
+    + *
+    - hello person<call>helper <star></call>
+  """)
+
+  input = "hello there"
+
+  bot.rs.setSubroutine("helper", (rs, args) ->
+    test.ok(args.length is 2)
+    test.equal(rs, bot.rs)
+    test.equal(args[0], "hello")
+    test.equal(args[1], "there")
+    test.done()
+  )
+
+  bot.reply(input, "hello person")
+
+exports.test_function_in_setSubroutine_return_value = (test) ->
+  bot = new TestCase(test, """
+    + hello
+    - hello <call>helper <star></call>
+  """)
+
+  bot.rs.setSubroutine("helper", (rs, args) ->
+    "person"
+  )
+
+  bot.reply("hello", "hello person")
+  test.done()
