@@ -74,6 +74,12 @@ rs.loadFile([
 	"brain/javascript.rive"
 	], on_load_success, on_load_error);
 
+// You can register objects that can then be called 
+// using <call></call> syntax
+rs.setSubroutine('fancyJSObject', function(rs, args){
+	// doing complex stuff here
+});
+
 function on_load_success () {
 	$("#message").removeAttr("disabled");
 	$("#message").attr("placeholder", "Send message");

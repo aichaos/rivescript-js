@@ -23,20 +23,24 @@ class JSObjectHandler
     @_objects = {}
 
   ##
-  # void load (string name, string[] code)
+  # void load (string name, string[]|Function code)
   #
   # Called by the RiveScript object to load JavaScript code.
   ##
   load: (name, code) ->
-    # We need to make a dynamic JavaScript function.
-    source = "this._objects[\"" + name + "\"] = function(rs, args) {\n" \
-      + code.join("\n") \
-      + "}\n"
+    if typeof code is "function"
+      # If code is just a js function, store the reference as is
+      @_objects[name] = code
+    else
+      # We need to make a dynamic JavaScript function.
+      source = "this._objects[\"" + name + "\"] = function(rs, args) {\n" \
+        + code.join("\n") \
+        + "}\n"
 
-    try
-      eval source
-    catch e
-      @_master.warn "Error evaluating JavaScript object: " + e.message
+      try
+        eval source
+      catch e
+        @_master.warn "Error evaluating JavaScript object: " + e.message
 
   ##
   # string call (RiveScript rs, string name, string[] fields)
