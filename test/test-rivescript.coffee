@@ -806,17 +806,16 @@ exports.test_js_string_in_setSubroutine = (test) ->
 
 exports.test_function_in_setSubroutine = (test) ->
   bot = new TestCase(test, """
-    + *
+    + my name is *
     - hello person<call>helper <star></call>
   """)
 
-  input = "hello there"
+  input = "my name is Rive"
 
   bot.rs.setSubroutine("helper", (rs, args) ->
-    test.ok(args.length is 2)
+    test.ok(args.length is 1)
     test.equal(rs, bot.rs)
-    test.equal(args[0], "hello")
-    test.equal(args[1], "there")
+    test.equal(args[0], "rive")
     test.done()
   )
 
@@ -837,19 +836,22 @@ exports.test_function_in_setSubroutine_return_value = (test) ->
 
 exports.test_promises_in_objects = (test) ->
   bot = new TestCase(test, """
-    + *
-    - hello there <call>helper <star></call> with a <call>anotherHelper</call>
+    + my name is *
+    - hello there <call>helperWithPromise <star></call> with a <call>anotherHelperWithPromise</call>
   """)
 
-  input = "hello there"
+  input = "my name is Rive"
 
-  bot.rs.setSubroutine("helper", (rs, args) ->
+  bot.rs.setSubroutine("helperWithPromise", (rs, args) ->
+    console.error('args are', args);
+    test.ok(args.length is 1)
+    test.equal(args[0], "rive")
     return new Promise((resolve, reject) -> 
       resolve("stranger")
     )
   )
 
-  bot.rs.setSubroutine("anotherHelper", (rs, args) ->
+  bot.rs.setSubroutine("anotherHelperWithPromise", (rs, args) ->
     return new Promise((resolve, reject) -> 
       setTimeout () ->
         resolve("delay")
@@ -857,6 +859,6 @@ exports.test_promises_in_objects = (test) ->
     )
   )
 
-  bot.rs.reply(input).then (reply) ->
+  bot.rs.reply(bot.username, input).then (reply) ->
     test.equal(reply, "hello there stranger with a delay")
     test.done()
