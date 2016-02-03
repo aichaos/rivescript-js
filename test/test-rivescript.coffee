@@ -1,4 +1,5 @@
 TestCase = require("./test-base")
+Promise = require("rsvp").Promise;
 
 ################################################################################
 # BEGIN Block Tests
@@ -833,3 +834,29 @@ exports.test_function_in_setSubroutine_return_value = (test) ->
 
   bot.reply("hello", "hello person")
   test.done()
+
+exports.test_promises_in_objects = (test) ->
+  bot = new TestCase(test, """
+    + *
+    - hello there <call>helper <star></call> with a <call>anotherHelper</call>
+  """)
+
+  input = "hello there"
+
+  bot.rs.setSubroutine("helper", (rs, args) ->
+    return new Promise((resolve, reject) -> 
+      resolve("stranger")
+    )
+  )
+
+  bot.rs.setSubroutine("anotherHelper", (rs, args) ->
+    return new Promise((resolve, reject) -> 
+      setTimeout () ->
+        resolve("delay")
+      , 1000
+    )
+  )
+
+  bot.rs.reply(input).then (reply) ->
+    test.equal(reply, "hello there stranger with a delay")
+    test.done()

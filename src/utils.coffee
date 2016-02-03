@@ -131,3 +131,9 @@ exports.clone = (obj) ->
     copy[key] = exports.clone(obj[key])
 
   return copy
+
+exports.isAPromise = (obj) ->
+  return obj and obj.then and obj.catch and obj.finally and 
+  typeof obj.then is 'function' and 
+  typeof obj.catch is 'function' and
+  typeof obj.finally is 'function' 

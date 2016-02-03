@@ -9,6 +9,7 @@
 # Brain logic for RiveScript
 utils = require("./utils")
 inherit_utils = require("./inheritance")
+RSVP = require("rsvp")
 
 ##
 # Brain (RiveScript master)
@@ -60,6 +61,15 @@ class Brain
     else
       reply = @_getReply(user, msg, "normal", 0, scope)
 
+    if not utils.isAPromise(reply)
+      @onAfterReply(msg, user, reply)
+    else
+      reply.then (result) =>
+        @onAfterReply(msg, user, result)
+
+    return reply
+
+  onAfterReply: (msg, user, reply) ->
     # Save their reply history
     @master._users[user].__history__.input.pop()
     @master._users[user].__history__.input.unshift(msg)
@@ -69,7 +79,93 @@ class Brain
     # Unset the current user ID.
     @_currentUser = undefined
 
-    return reply
+  processCallTags: (reply, scope) ->
+    reply = reply.replace(/\{__call__\}/g, "<call>")
+    reply = reply.replace(/\{\/__call__\}/g, "</call>")
+    callRe = /<call>(.+?)<\/call>/ig
+    
+
+    #match = reply.match(/<call>(.+?)<\/call>/i)
+    giveup = 0
+    usePromise = false
+    # callSignature -> handler
+    matches = {}
+
+    while true
+      giveup++
+      if giveup >= 50
+        @warn "Infinite loop looking for call tag!"
+        break
+
+      match = callRe.exec(reply)
+
+      if not match
+        break
+
+      text  = utils.strip(match[1])
+      parts = text.split(/\s+/)
+      obj   = parts.shift()
+      args  = parts
+
+      matches[match[1]] =
+        text: text
+        obj: obj
+        args: args
+
+
+    console.error("matches are", matches)
+
+    promises = []
+
+    # go through all the object calls and run functions
+    for k,data of matches
+      output = ""
+      if @master._objlangs[data.obj]
+        # We do. Do we have a handler for it?
+        lang = @master._objlangs[data.obj]
+        if @master._handlers[lang]
+          # We do.
+          output = @master._handlers[lang].call(@master, data.obj, data.args, scope)
+        else
+          output = "[ERR: No Object Handler]"
+      else
+        output = "[ERR: Object Not Found]"
+
+      if not utils.isAPromise(output)
+        # if it's not a promise, plug the value in directly  
+        console.error('replacing', "<call>" + utils.quotemeta(k) + "</call>", "with", output,"in",reply);
+        reply = reply.replace(new RegExp("<call>" + utils.quotemeta(k) + "</call>", "i"), output)
+      else
+        # output = new RSVP.Promise (resolve) ->
+        #   resolve(output)
+        promises.push
+          promise: output
+          text: k
+
+      #reply = reply.replace(new RegExp("<call>" + utils.quotemeta(k) + "</call>", "i"), output)
+      #match = reply.match(/<call>(.+?)<\/call>/i)  
+
+    if promises.length is 0
+      return reply
+
+    promisedReply = new RSVP.Promise (resolve, reject) ->
+
+      ps = []
+
+      for p in promises
+        ps.push(p.promise)
+
+      RSVP.all(ps).then (results) =>
+        for i in [0...results.length]
+          t = promises[i].text
+          v = results[i]
+          console.error('replacing', "<call>" + utils.quotemeta(t) + "</call>", "with", v,"in",reply);
+          reply = reply.replace(new RegExp("<call>" + utils.quotemeta(t) + "</call>", "i"), v)
+        resolve(reply)
+      .catch (reason) =>
+        reject(reason)
+
+    return promisedReply
 
   ##
   # string _getReply (string user, string msg, string context, int step, scope)
@@ -369,6 +465,9 @@ class Brain
     else
       # Process all the tags.
       reply = @processTags(user, msg, reply, stars, thatstars, step, scope)
+
+    # process call tags separately
+    reply = @processCallTags(reply, scope)
 
     return reply
 
@@ -745,38 +844,6 @@ class Brain
       subreply = @_getReply(user, target, "normal", step+1, scope)
       reply = reply.replace(new RegExp("\\{@" + utils.quotemeta(target) + "\\}", "i"), subreply)
       match = reply.match(/\{@(.+?)\}/)
-
-    # Object caller
-    reply = reply.replace(/\{__call__\}/g, "<call>")
-    reply = reply.replace(/\{\/__call__\}/g, "</call>")
-    match = reply.match(/<call>(.+?)<\/call>/i)
-    giveup = 0
-    while match
-      giveup++
-      if giveup >= 50
-        @warn "Infinite loop looking for call tag!"
-        break
-
-      text  = utils.strip(match[1])
-      parts = text.split(/\s+/)
-      obj   = parts.shift()
-      args  = parts
-
-      # Do we know this object?
-      output = ""
-      if @master._objlangs[obj]
-        # We do. Do we have a handler for it?
-        lang = @master._objlangs[obj]
-        if @master._handlers[lang]
-          # We do.
-          output = @master._handlers[lang].call(@master, obj, args, scope)
-        else
-          output = "[ERR: No Object Handler]"
-      else
-        output = "[ERR: Object Not Found]"
-
-      reply = reply.replace(new RegExp("<call>" + utils.quotemeta(match[1]) + "</call>", "i"), output)
-      match = reply.match(/<call>(.+?)<\/call>/i)
 
     return reply
 
