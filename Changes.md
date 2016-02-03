@@ -1,5 +1,8 @@
 # Changes
 
+* 1.2.1 2016-02-03
+  - Fix `setSubroutine()` not accepting a function object as an argument.
+
 * 1.2.0 2015-12-29
   - Fix looping over object keys by adding a check for `hasOwnProperty()`, to
     prevent third party JavaScript libraries from modifying the root `Object`
