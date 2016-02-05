@@ -1,5 +1,4 @@
 TestCase = require("./test-base")
-Promise = require("rsvp").Promise;
 
 ################################################################################
 # BEGIN Block Tests
@@ -843,16 +842,15 @@ exports.test_promises_in_objects = (test) ->
   input = "my name is Rive"
 
   bot.rs.setSubroutine("helperWithPromise", (rs, args) ->
-    console.error('args are', args);
     test.ok(args.length is 1)
     test.equal(args[0], "rive")
-    return new Promise((resolve, reject) -> 
+    return new rs.Promise((resolve, reject) -> 
       resolve("stranger")
     )
   )
 
   bot.rs.setSubroutine("anotherHelperWithPromise", (rs, args) ->
-    return new Promise((resolve, reject) -> 
+    return new rs.Promise((resolve, reject) -> 
       setTimeout () ->
         resolve("delay")
       , 1000
@@ -872,7 +870,7 @@ exports.test_replyAsync_supports_callbacks = (test) ->
   input = "my name is Rive"
 
   bot.rs.setSubroutine("asyncHelper", (rs, args) ->
-    return new Promise((resolve, reject) -> 
+    return new rs.Promise((resolve, reject) -> 
       resolve("stranger")
     )
   )
@@ -890,7 +888,7 @@ exports.test_use_reply_with_async_subroutines = (test) ->
   """)
 
   bot.rs.setSubroutine("asyncHelper", (rs, args) ->
-    return new Promise((resolve, reject) -> 
+    return new rs.Promise((resolve, reject) -> 
       resolve("stranger")
     )
   )
@@ -907,7 +905,7 @@ exports.test_errors_in_async_subroutines_with_callbacks = (test) ->
   errorMessage = "Something went terribly wrong"
 
   bot.rs.setSubroutine("asyncHelper", (rs, args) ->
-    return new Promise((resolve, reject) -> 
+    return new rs.Promise((resolve, reject) -> 
       reject(new Error(errorMessage))
     )
   )
@@ -928,7 +926,7 @@ exports.test_errors_in_async_subroutines_with_promises = (test) ->
   errorMessage = "Something went terribly wrong"
 
   bot.rs.setSubroutine("asyncHelper", (rs, args) ->
-    return new Promise((resolve, reject) -> 
+    return new rs.Promise((resolve, reject) -> 
       reject(new Error(errorMessage))
     )
   )
@@ -950,7 +948,7 @@ exports.test_async_and_sync_subroutines_together = (test) ->
   )
 
   bot.rs.setSubroutine("asyncHelper", (rs, args) ->
-    return new Promise((resolve, reject) -> 
+    return new rs.Promise((resolve, reject) -> 
       resolve("stranger")
     )
   )

@@ -132,6 +132,11 @@ exports.clone = (obj) ->
 
   return copy
 
+##
+# boolean isAPromise (object)
+#
+# Determines if obj looks like a promise
+##
 exports.isAPromise = (obj) ->
   return obj and obj.then and obj.catch and obj.finally and 
   typeof obj.then is 'function' and 

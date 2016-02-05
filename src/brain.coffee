@@ -118,9 +118,6 @@ class Brain
         obj: obj
         args: args
 
-
-    console.error("matches are", matches)
-
     # go through all the object calls and run functions
     for k,data of matches
       output = ""
@@ -157,17 +154,14 @@ class Brain
       # return a resulting promise with the final reply
       return new RSVP.Promise (resolve, reject) =>
         RSVP.all(p.promise for p in promises).then (results) =>
-          console.error('all resolved', results)
           for i in [0...results.length]
             reply = @_replaceCallTags(promises[i].text, results[i], reply)
             
           resolve(reply)
         .catch (reason) =>
-          console.error('got rejected', reason);
           reject(reason)
 
   _replaceCallTags: (callSignature, callResult, reply) ->
-    console.error('replacing', "<call>" + utils.quotemeta(callSignature) + "</call>", "with", callResult,"in",reply);
     return reply.replace(new RegExp("<call>" + utils.quotemeta(callSignature) + "</call>", "i"), callResult)
 
   ##
