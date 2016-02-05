@@ -859,6 +859,102 @@ exports.test_promises_in_objects = (test) ->
     )
   )
 
-  bot.rs.reply(bot.username, input).then (reply) ->
+  bot.rs.replyAsync(bot.username, input).then (reply) ->
     test.equal(reply, "hello there stranger with a delay")
+    test.done()
+
+exports.test_replyAsync_supports_callbacks = (test) ->
+  bot = new TestCase(test, """
+    + my name is *
+    - hello there <call>asyncHelper</call>
+  """)
+
+  input = "my name is Rive"
+
+  bot.rs.setSubroutine("asyncHelper", (rs, args) ->
+    return new Promise((resolve, reject) -> 
+      resolve("stranger")
+    )
+  )
+
+  bot.rs.replyAsync(bot.username, input, {}, (error, reply) -> 
+    test.ok(!error)
+    test.equal(reply, "hello there stranger")
+    test.done()
+  )
+
+exports.test_use_reply_with_async_subroutines = (test) ->
+  bot = new TestCase(test, """
+    + my name is *
+    - hello there <call>asyncHelper</call>
+  """)
+
+  bot.rs.setSubroutine("asyncHelper", (rs, args) ->
+    return new Promise((resolve, reject) -> 
+      resolve("stranger")
+    )
+  )
+
+  bot.reply("my name is Rive", "hello there [ERR: Using async routine with reply: use replyAsync instead]")
+  test.done()
+
+exports.test_errors_in_async_subroutines_with_callbacks = (test) ->
+  bot = new TestCase(test, """
+    + my name is *
+    - hello there <call>asyncHelper</call>
+  """)
+
+  errorMessage = "Something went terribly wrong"
+
+  bot.rs.setSubroutine("asyncHelper", (rs, args) ->
+    return new Promise((resolve, reject) -> 
+      reject(new Error(errorMessage))
+    )
+  )
+
+  bot.rs.replyAsync(bot.username, "my name is Rive", {}, (error, reply) -> 
+    test.ok(error)
+    test.equal(error.message, errorMessage)
+    test.ok(!reply)
+    test.done()
+  )
+
+exports.test_errors_in_async_subroutines_with_promises = (test) ->
+  bot = new TestCase(test, """
+    + my name is *
+    - hello there <call>asyncHelper</call>
+  """)
+
+  errorMessage = "Something went terribly wrong"
+
+  bot.rs.setSubroutine("asyncHelper", (rs, args) ->
+    return new Promise((resolve, reject) -> 
+      reject(new Error(errorMessage))
+    )
+  )
+
+  bot.rs.replyAsync(bot.username, "my name is Rive").catch (error) -> 
+    test.ok(error)
+    test.equal(error.message, errorMessage)
+    test.done()
+
+exports.test_async_and_sync_subroutines_together = (test) ->
+  bot = new TestCase(test, """
+    + my name is *
+    - hello there <call>asyncHelper</call><call>exclaim</call>
+  """)
+
+  
+  bot.rs.setSubroutine("exclaim", (rs, args) ->
+    return "!"
+  )
+
+  bot.rs.setSubroutine("asyncHelper", (rs, args) ->
+    return new Promise((resolve, reject) -> 
+      resolve("stranger")
+    )
+  )
+
+  bot.rs.replyAsync(bot.username, "my name is Rive").then (reply) ->
+    test.equal(reply, "hello there stranger!")
     test.done()

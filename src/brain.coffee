@@ -37,7 +37,7 @@ class Brain
   #
   # Fetch a reply for the user.
   ##
-  reply: (user, msg, scope) ->
+  reply: (user, msg, scope, async) ->
     @say "Asked to reply to [#{user}] #{msg}"
 
     # Store the current user's ID.
@@ -61,12 +61,14 @@ class Brain
     else
       reply = @_getReply(user, msg, "normal", 0, scope)
 
+    reply = @processCallTags(reply, scope, async)
+    
     if not utils.isAPromise(reply)
       @onAfterReply(msg, user, reply)
     else
-      reply.then (result) =>
+      reply.then (result) => 
         @onAfterReply(msg, user, result)
-
+    
     return reply
 
   onAfterReply: (msg, user, reply) ->
@@ -79,17 +81,21 @@ class Brain
     # Unset the current user ID.
     @_currentUser = undefined
 
-  processCallTags: (reply, scope) ->
+  ##
+  # string|Promise processCallTags (string reply, Object scope, bool async)
+  #
+  # Process <call> tags in the preprocessed reply string. 
+  # If async is true, processCallTags can handle asynchronous subroutines
+  # and it returns a promise, other wise a string is returned
+  ##
+  processCallTags: (reply, scope, async) ->
     reply = reply.replace(/\{__call__\}/g, "<call>")
     reply = reply.replace(/\{\/__call__\}/g, "</call>")
     callRe = /<call>(.+?)<\/call>/ig
-    
 
-    #match = reply.match(/<call>(.+?)<\/call>/i)
     giveup = 0
-    usePromise = false
-    # callSignature -> handler
     matches = {}
+    promises = []
 
     while true
       giveup++
@@ -115,8 +121,6 @@ class Brain
 
     console.error("matches are", matches)
 
-    promises = []
-
     # go through all the object calls and run functions
     for k,data of matches
       output = ""
@@ -131,41 +135,40 @@ class Brain
       else
         output = "[ERR: Object Not Found]"
 
-      if not utils.isAPromise(output)
-        # if it's not a promise, plug the value in directly  
-        console.error('replacing', "<call>" + utils.quotemeta(k) + "</call>", "with", output,"in",reply);
-        reply = reply.replace(new RegExp("<call>" + utils.quotemeta(k) + "</call>", "i"), output)
-      else
-        # output = new RSVP.Promise (resolve) ->
-        #   resolve(output)
-        promises.push
-          promise: output
-          text: k
+      # if we get a promise back and we are not in the async mode,
+      # leave an error message to suggest using an async version of rs
+      # otherwise, keep promises tucked into a list where we can check on
+      # them later
+      if utils.isAPromise(output)
+        if async
+          promises.push
+            promise: output
+            text: k
+          continue
+        else
+          output = "[ERR: Using async routine with reply: use replyAsync instead]"
 
-      #reply = reply.replace(new RegExp("<call>" + utils.quotemeta(k) + "</call>", "i"), output)
-      #match = reply.match(/<call>(.+?)<\/call>/i)  
+      reply = @._replaceCallTags(k, output, reply)
 
-    if promises.length is 0
+    if not async
       return reply
+    else
+      # wait for all the promises to be resolved and 
+      # return a resulting promise with the final reply
+      return new RSVP.Promise (resolve, reject) =>
+        RSVP.all(p.promise for p in promises).then (results) =>
+          console.error('all resolved', results)
+          for i in [0...results.length]
+            reply = @_replaceCallTags(promises[i].text, results[i], reply)
+            
+          resolve(reply)
+        .catch (reason) =>
+          console.error('got rejected', reason);
+          reject(reason)
 
-    promisedReply = new RSVP.Promise (resolve, reject) ->
-
-      ps = []
-
-      for p in promises
-        ps.push(p.promise)
-
-      RSVP.all(ps).then (results) =>
-        for i in [0...results.length]
-          t = promises[i].text
-          v = results[i]
-          console.error('replacing', "<call>" + utils.quotemeta(t) + "</call>", "with", v,"in",reply);
-          reply = reply.replace(new RegExp("<call>" + utils.quotemeta(t) + "</call>", "i"), v)
-        resolve(reply)
-      .catch (reason) =>
-        reject(reason)
-
-    return promisedReply
+  _replaceCallTags: (callSignature, callResult, reply) ->
+    console.error('replacing', "<call>" + utils.quotemeta(callSignature) + "</call>", "with", callResult,"in",reply);
+    return reply.replace(new RegExp("<call>" + utils.quotemeta(callSignature) + "</call>", "i"), callResult)
 
   ##
   # string _getReply (string user, string msg, string context, int step, scope)
@@ -466,9 +469,6 @@ class Brain
       # Process all the tags.
       reply = @processTags(user, msg, reply, stars, thatstars, step, scope)
 
-    # process call tags separately
-    reply = @processCallTags(reply, scope)
-
     return reply
 
   ##
@@ -643,6 +643,8 @@ class Brain
   #                     string[] botstars, int step, scope)
   #
   # Process tags in a reply element.
+  # XX: All the tags get processed here except for <call> tags that have 
+  # a separate subroutine (refer to processCallTags for more info)
   ##
   processTags: (user, msg, reply, st, bst, step, scope) ->
     # Prepare the stars and botstars.

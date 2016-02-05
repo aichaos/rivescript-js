@@ -755,4 +755,13 @@ class RiveScript
   reply: (user, msg, scope) ->
     return @brain.reply(user, msg, scope)
 
+  replyAsync: (user, msg, scope, callback) ->
+    reply = @brain.reply(user, msg, scope, true)
+    if callback
+      reply.then (result) =>
+        callback.call @, null, result
+      .catch (error) =>
+        callback.call @, error, null
+    return reply
+
 module.exports = RiveScript
