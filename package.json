@@ -1,6 +1,6 @@
 {
   "name": "rivescript",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "RiveScript is a scripting language for chatterbots, making it easy to write trigger/response pairs for building up a bot's intelligence.",
   "keywords": [
     "bot",
@@ -33,8 +33,12 @@
     "url": "https://github.com/aichaos/rivescript-js.git"
   },
   "contributors": [
+    "Chris Taylor <christhebaron@gmail.com> (https://github.com/ChrisTheBaron)",
     "dc <dc@biz.pikkle.com> (https://github.com/dcsan)",
-    "Mike Rombout <mike.rombout1@gmail.com> (http://www.mikero.nl/)"
+    "Gerrit (https://github.com/pyrox777)",
+    "Mike Rombout <mike.rombout1@gmail.com> (http://www.mikero.nl/)",
+    "Philip Nuzhnyi (https://github.com/callmephilip)",
+    "pirelaurent (https://github.com/pirelaurent)"
   ],
   "licenses": [
     {
@@ -60,7 +64,8 @@
     "grunt-coffeelint": "0.0.13"
   },
   "scripts": {
-    "prepublish": "grunt dist"
+    "prepublish": "grunt dist",
+    "test": "grunt test"
   },
   "dependencies": {
     "rsvp": "^3.1.0"
