@@ -768,6 +768,28 @@ class RiveScript
   #
   # Asyncronous version of reply. Use replyAsync if at least one of the subroutines
   # used with <call> tag returns a promise
+  # 
+  # Example: using promises
+  #
+  # ```javascript
+  # rs.replyAsync(user, message).then(function(reply) {
+  #   console.log("Bot>", reply);
+  # }).catch(function(error) {
+  #   console.error("Error: ", error);
+  # });
+  # ```
+  #
+  # Example: using the callback
+  #
+  # ```javascript
+  # rs.replyAsync(username, msg, this, function(error, reply) {
+  #   if (!error) {
+  #     console.log("Bot>", reply);
+  #   } else {
+  #     console.error("Error: ", error);
+  #   }
+  # });
+  # ```
   ##
   replyAsync: (user, msg, scope, callback) ->
     reply = @brain.reply(user, msg, scope, true)
