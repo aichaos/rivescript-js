@@ -120,6 +120,16 @@ class RiveScript
   # Promise Promise
   #
   # Alias for RSVP.Promise
+  # 
+  # You can use shortcut in your async subroutines
+  # 
+  # ```javascript
+  # rs.setSubroutine("asyncHelper", function (rs, args) {
+  #  return new rs.Promise(function (resolve, reject) { 
+  #    resolve(42);
+  #  });
+  # });
+  # ```
   ##
   Promise: RSVP.Promise
 
