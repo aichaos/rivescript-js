@@ -875,7 +875,7 @@ exports.test_replyAsync_supports_callbacks = (test) ->
     )
   )
 
-  bot.rs.replyAsync(bot.username, input, {}, (error, reply) -> 
+  bot.rs.replyAsync(bot.username, input, null, (error, reply) -> 
     test.ok(!error)
     test.equal(reply, "hello there stranger")
     test.done()
@@ -910,7 +910,7 @@ exports.test_errors_in_async_subroutines_with_callbacks = (test) ->
     )
   )
 
-  bot.rs.replyAsync(bot.username, "my name is Rive", {}, (error, reply) -> 
+  bot.rs.replyAsync(bot.username, "my name is Rive", null, (error, reply) -> 
     test.ok(error)
     test.equal(error.message, errorMessage)
     test.ok(!reply)
