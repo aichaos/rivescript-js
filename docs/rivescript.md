@@ -30,7 +30,7 @@ bot.unicodePunctuation = new RegExp(/[.,!?;:]/g);
 
 Returns the version number of the RiveScript.js library.
 
-# Promise Promise
+## Promise Promise
 
 Alias for RSVP.Promise
 
@@ -252,7 +252,7 @@ or attributes that your code has access to, from the location that `reply()`
 was called. For an example of this, refer to the `eg/scope` directory in
 the source distribution of RiveScript-JS.
 
-# Promise replyAsync (string username, string message [[, scope], callback])
+## Promise replyAsync (string username, string message [[, scope], callback])
 
 Asyncronous version of reply. Use replyAsync if at least one of the subroutines
 used with <call> tag returns a promise

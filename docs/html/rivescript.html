@@ -30,7 +30,7 @@ bot.unicodePunctuation = new RegExp(/[.,!?;:]/g);</code></pre>
 <h1>Constructor and Debug Methods</h1>
 <h2>string version ()</h2>
 <p>Returns the version number of the RiveScript.js library.</p>
-<h1>Promise Promise</h1>
+<h2>Promise Promise</h2>
 <p>Alias for RSVP.Promise</p>
 <p>You can use shortcut in your async subroutines</p>
 <pre class="codehilite"><code class="language-javascript">rs.setSubroutine(&quot;asyncHelper&quot;, function (rs, args) {
@@ -177,7 +177,7 @@ so for example the object macro will have access to any local functions
 or attributes that your code has access to, from the location that <code>reply()</code>
 was called. For an example of this, refer to the <code>eg/scope</code> directory in
 the source distribution of RiveScript-JS.</p>
-<h1>Promise replyAsync (string username, string message [[, scope], callback])</h1>
+<h2>Promise replyAsync (string username, string message [[, scope], callback])</h2>
 <p>Asyncronous version of reply. Use replyAsync if at least one of the subroutines
 used with &lt;call&gt; tag returns a promise</p>
 <p>Example: using promises</p>
