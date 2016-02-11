@@ -37,3 +37,7 @@ Formats a string according to one of the following types:
 ## object clone (object)
 
 Clone an object.
+
+## boolean isAPromise (object)
+
+Determines if obj looks like a promise

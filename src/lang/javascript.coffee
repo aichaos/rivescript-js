@@ -23,7 +23,7 @@ class JSObjectHandler
     @_objects = {}
 
   ##
-  # void load (string name, string[]|Function code)
+  # void load (string name, string[]|function code)
   #
   # Called by the RiveScript object to load JavaScript code.
   ##

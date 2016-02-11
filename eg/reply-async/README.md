@@ -1,32 +1,35 @@
 # Reply-async
 
-This example demonstrates using replyAsync function. You should use **replyAsync** instead of **reply** if you have subroutines that return promises.
+This example demonstrates using replyAsync function. You should use
+**replyAsync** instead of **reply** if you have subroutines that return
+promises.
 
 ## Running the example
 
 ```bash
 npm install && node weatherman.js
-``` 
+```
 
-Refer to weatherman.rive for the list of supported commmands
+Refer to weatherman.rive for the list of supported commands
 
 ## Using async subroutines
 
-Whenever you have a subroutine that needs to call some sort of asynchronous function in order to return a value back to the script, you should use promises:
+Whenever you have a subroutine that needs to call some sort of asynchronous
+function in order to return a value back to the script, you should use promises:
 
 ```javascript
 var rs = new RiveScript();
 rs.setSubroutine("asyncHelper", function(rs, args) {
-  // Rivescript comes bundled with RSVP.js which you can
+  // RiveScript comes bundled with RSVP.js which you can
   // access through RiveScript.Promise alias
   // but you are free to use your own Promise implementation
-  return new rs.Promise(function(resolve, reject) { 
+  return new rs.Promise(function(resolve, reject) {
     resolve('hello there');
   });
 })
 ```
 
-Async reponses in Rive come in 2 flavors:
+Async responses in RiveScript come in 2 flavors:
 
 ```javascript
 // using promises

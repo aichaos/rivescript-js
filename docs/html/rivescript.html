@@ -30,6 +30,16 @@ bot.unicodePunctuation = new RegExp(/[.,!?;:]/g);</code></pre>
 <h1>Constructor and Debug Methods</h1>
 <h2>string version ()</h2>
 <p>Returns the version number of the RiveScript.js library.</p>
+<h1>Promise Promise</h1>
+<p>Alias for RSVP.Promise</p>
+<p>You can use shortcut in your async subroutines</p>
+<pre class="codehilite"><code class="language-javascript">rs.setSubroutine(&quot;asyncHelper&quot;, function (rs, args) {
+ return new rs.Promise(function (resolve, reject) {
+   resolve(42);
+ });
+});</code></pre>
+
+
 <h2>private void runtime ()</h2>
 <p>Detect the runtime environment of this module, to determine if we're
 running in a web browser or from node.</p>
@@ -167,6 +177,25 @@ so for example the object macro will have access to any local functions
 or attributes that your code has access to, from the location that <code>reply()</code>
 was called. For an example of this, refer to the <code>eg/scope</code> directory in
 the source distribution of RiveScript-JS.</p>
+<h1>Promise replyAsync (string username, string message [[, scope], callback])</h1>
+<p>Asyncronous version of reply. Use replyAsync if at least one of the subroutines
+used with &lt;call&gt; tag returns a promise</p>
+<p>Example: using promises</p>
+<pre class="codehilite"><code class="language-javascript">rs.replyAsync(user, message).then(function(reply) {
+  console.log(&quot;Bot&gt;&quot;, reply);
+}).catch(function(error) {
+  console.error(&quot;Error: &quot;, error);
+});</code></pre>
+
+
+<p>Example: using the callback</p>
+<pre class="codehilite"><code class="language-javascript">rs.replyAsync(username, msg, this, function(error, reply) {
+  if (!error) {
+    console.log(&quot;Bot&gt;&quot;, reply);
+  } else {
+    console.error(&quot;Error: &quot;, error);
+  }
+});</code></pre>
 
 </body>
 </html>

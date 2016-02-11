@@ -62,13 +62,13 @@ class Brain
       reply = @_getReply(user, msg, "normal", 0, scope)
 
     reply = @processCallTags(reply, scope, async)
-    
+
     if not utils.isAPromise(reply)
       @onAfterReply(msg, user, reply)
     else
-      reply.then (result) => 
+      reply.then (result) =>
         @onAfterReply(msg, user, result)
-    
+
     return reply
 
   onAfterReply: (msg, user, reply) ->
@@ -82,11 +82,11 @@ class Brain
     @_currentUser = undefined
 
   ##
-  # string|Promise processCallTags (string reply, Object scope, bool async)
+  # string|Promise processCallTags (string reply, object scope, bool async)
   #
-  # Process <call> tags in the preprocessed reply string. 
-  # If async is true, processCallTags can handle asynchronous subroutines
-  # and it returns a promise, other wise a string is returned
+  # Process <call> tags in the preprocessed reply string.
+  # If `async` is true, processCallTags can handle asynchronous subroutines
+  # and it returns a promise, otherwise a string is returned
   ##
   processCallTags: (reply, scope, async) ->
     reply = reply.replace(/\{__call__\}/g, "<call>")
@@ -150,13 +150,13 @@ class Brain
     if not async
       return reply
     else
-      # wait for all the promises to be resolved and 
+      # wait for all the promises to be resolved and
       # return a resulting promise with the final reply
       return new RSVP.Promise (resolve, reject) =>
         RSVP.all(p.promise for p in promises).then (results) =>
           for i in [0...results.length]
             reply = @_replaceCallTags(promises[i].text, results[i], reply)
-            
+
           resolve(reply)
         .catch (reason) =>
           reject(reason)
@@ -637,8 +637,9 @@ class Brain
   #                     string[] botstars, int step, scope)
   #
   # Process tags in a reply element.
-  # XX: All the tags get processed here except for <call> tags that have 
-  # a separate subroutine (refer to processCallTags for more info)
+  #
+  # All the tags get processed here except for `<call>` tags which have
+  # a separate subroutine (refer to `processCallTags` for more info)
   ##
   processTags: (user, msg, reply, st, bst, step, scope) ->
     # Prepare the stars and botstars.

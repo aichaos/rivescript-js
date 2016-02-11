@@ -6,6 +6,12 @@ Create a Brain object which handles the actual process of fetching a reply.
 
 Fetch a reply for the user.
 
+## string|Promise processCallTags (string reply, object scope, bool async)
+
+Process <call> tags in the preprocessed reply string.
+If `async` is true, processCallTags can handle asynchronous subroutines
+and it returns a promise, otherwise a string is returned
+
 ## string _getReply (string user, string msg, string context, int step, scope)
 
 The internal reply method. DO NOT CALL THIS DIRECTLY.
@@ -25,6 +31,9 @@ Prepares a trigger for the regular expression engine.
 ## string processTags (string user, string msg, string reply, string[] stars, string[] botstars, int step, scope)
 
 Process tags in a reply element.
+
+All the tags get processed here except for `<call>` tags which have
+a separate subroutine (refer to `processCallTags` for more info)
 
 ## string substitute (string msg, string type)
 

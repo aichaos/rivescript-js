@@ -30,6 +30,20 @@ bot.unicodePunctuation = new RegExp(/[.,!?;:]/g);
 
 Returns the version number of the RiveScript.js library.
 
+# Promise Promise
+
+Alias for RSVP.Promise
+
+You can use shortcut in your async subroutines
+
+```javascript
+rs.setSubroutine("asyncHelper", function (rs, args) {
+ return new rs.Promise(function (resolve, reject) {
+   resolve(42);
+ });
+});
+```
+
 ## private void runtime ()
 
 Detect the runtime environment of this module, to determine if we're
@@ -237,3 +251,30 @@ so for example the object macro will have access to any local functions
 or attributes that your code has access to, from the location that `reply()`
 was called. For an example of this, refer to the `eg/scope` directory in
 the source distribution of RiveScript-JS.
+
+# Promise replyAsync (string username, string message [[, scope], callback])
+
+Asyncronous version of reply. Use replyAsync if at least one of the subroutines
+used with <call> tag returns a promise
+
+Example: using promises
+
+```javascript
+rs.replyAsync(user, message).then(function(reply) {
+  console.log("Bot>", reply);
+}).catch(function(error) {
+  console.error("Error: ", error);
+});
+```
+
+Example: using the callback
+
+```javascript
+rs.replyAsync(username, msg, this, function(error, reply) {
+  if (!error) {
+    console.log("Bot>", reply);
+  } else {
+    console.error("Error: ", error);
+  }
+});
+```

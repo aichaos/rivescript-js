@@ -26,6 +26,8 @@ RiveScript-js.
 * [persistence](persistence/) - Demonstrates persistence for user variables;
   the bot can be shut down and restarted and it can remember where it left off
   with its users.
+* [reply-async](reply-async/) - Demonstrates using the `replyAsync()` method and
+  a JavaScript object macro that returns a promise.
 * [async-object](async-object/) - Demonstrates a JavaScript object macro in
   RiveScript that asynchronously sends the user a second message at some point
   in the future, asynchronously from the immediately requested message.

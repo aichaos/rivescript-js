@@ -8,7 +8,7 @@ language handler to null, like so:
    $bot->setHandler("javascript", null);
 ```
 
-## void load (string name, string[] code)
+## void load (string name, string[]|function code)
 
 Called by the RiveScript object to load JavaScript code.
 
