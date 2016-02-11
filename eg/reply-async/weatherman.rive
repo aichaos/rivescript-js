@@ -1,0 +1,10 @@
+! sub how's           = how is
+! sub is it going to  = will it
+! sub is it gonna     = will it
+! sub is it raining   = will it rain
+
++ how is [the] weather in *
+- <call>getWeather <star></call>
+
++ will it rain in *
+- <call>checkForRain <star></call>

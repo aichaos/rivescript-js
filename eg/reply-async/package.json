@@ -1,0 +1,10 @@
+{
+  "name": "rive-weatherman",
+  "version": "1.0.0",
+  "description": "Your weather report",
+  "main": "weatherman.js",
+  "dependencies": {
+    "colors": "^1.1.2",
+    "request": "^2.69.0"
+  }
+}
