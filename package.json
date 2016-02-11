@@ -25,10 +25,9 @@
     "lib/lang/javascript.js"
   ],
   "directories": {
-      "lib": "lib",
-      "doc": "docs"
+    "lib": "lib",
+    "doc": "docs"
   },
-  "main": "lib/rivescript.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/aichaos/rivescript-js.git"
@@ -67,6 +66,8 @@
   "scripts": {
     "prepublish": "grunt dist",
     "test": "grunt test"
+  },
+  "dependencies": {
+    "rsvp": "^3.1.0"
   }
-
 }

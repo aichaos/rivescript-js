@@ -9,6 +9,7 @@
 # Brain logic for RiveScript
 utils = require("./utils")
 inherit_utils = require("./inheritance")
+RSVP = require("rsvp")
 
 ##
 # Brain (RiveScript master)
@@ -36,7 +37,7 @@ class Brain
   #
   # Fetch a reply for the user.
   ##
-  reply: (user, msg, scope) ->
+  reply: (user, msg, scope, async) ->
     @say "Asked to reply to [#{user}] #{msg}"
 
     # Store the current user's ID.
@@ -60,6 +61,17 @@ class Brain
     else
       reply = @_getReply(user, msg, "normal", 0, scope)
 
+    reply = @processCallTags(reply, scope, async)
+    
+    if not utils.isAPromise(reply)
+      @onAfterReply(msg, user, reply)
+    else
+      reply.then (result) => 
+        @onAfterReply(msg, user, result)
+    
+    return reply
+
+  onAfterReply: (msg, user, reply) ->
     # Save their reply history
     @master._users[user].__history__.input.pop()
     @master._users[user].__history__.input.unshift(msg)
@@ -69,7 +81,88 @@ class Brain
     # Unset the current user ID.
     @_currentUser = undefined
 
-    return reply
+  ##
+  # string|Promise processCallTags (string reply, Object scope, bool async)
+  #
+  # Process <call> tags in the preprocessed reply string. 
+  # If async is true, processCallTags can handle asynchronous subroutines
+  # and it returns a promise, other wise a string is returned
+  ##
+  processCallTags: (reply, scope, async) ->
+    reply = reply.replace(/\{__call__\}/g, "<call>")
+    reply = reply.replace(/\{\/__call__\}/g, "</call>")
+    callRe = /<call>(.+?)<\/call>/ig
+
+    giveup = 0
+    matches = {}
+    promises = []
+
+    while true
+      giveup++
+      if giveup >= 50
+        @warn "Infinite loop looking for call tag!"
+        break
+
+      match = callRe.exec(reply)
+
+      if not match
+        break
+
+      text  = utils.strip(match[1])
+      parts = text.split(/\s+/)
+      obj   = parts.shift()
+      args  = parts
+
+      matches[match[1]] =
+        text: text
+        obj: obj
+        args: args
+
+    # go through all the object calls and run functions
+    for k,data of matches
+      output = ""
+      if @master._objlangs[data.obj]
+        # We do. Do we have a handler for it?
+        lang = @master._objlangs[data.obj]
+        if @master._handlers[lang]
+          # We do.
+          output = @master._handlers[lang].call(@master, data.obj, data.args, scope)
+        else
+          output = "[ERR: No Object Handler]"
+      else
+        output = "[ERR: Object Not Found]"
+
+      # if we get a promise back and we are not in the async mode,
+      # leave an error message to suggest using an async version of rs
+      # otherwise, keep promises tucked into a list where we can check on
+      # them later
+      if utils.isAPromise(output)
+        if async
+          promises.push
+            promise: output
+            text: k
+          continue
+        else
+          output = "[ERR: Using async routine with reply: use replyAsync instead]"
+
+      reply = @._replaceCallTags(k, output, reply)
+
+    if not async
+      return reply
+    else
+      # wait for all the promises to be resolved and 
+      # return a resulting promise with the final reply
+      return new RSVP.Promise (resolve, reject) =>
+        RSVP.all(p.promise for p in promises).then (results) =>
+          for i in [0...results.length]
+            reply = @_replaceCallTags(promises[i].text, results[i], reply)
+            
+          resolve(reply)
+        .catch (reason) =>
+          reject(reason)
+
+  _replaceCallTags: (callSignature, callResult, reply) ->
+    return reply.replace(new RegExp("<call>" + utils.quotemeta(callSignature) + "</call>", "i"), callResult)
 
   ##
   # string _getReply (string user, string msg, string context, int step, scope)
@@ -544,6 +637,8 @@ class Brain
   #                     string[] botstars, int step, scope)
   #
   # Process tags in a reply element.
+  # XX: All the tags get processed here except for <call> tags that have 
+  # a separate subroutine (refer to processCallTags for more info)
   ##
   processTags: (user, msg, reply, st, bst, step, scope) ->
     # Prepare the stars and botstars.
@@ -745,38 +840,6 @@ class Brain
       subreply = @_getReply(user, target, "normal", step+1, scope)
       reply = reply.replace(new RegExp("\\{@" + utils.quotemeta(target) + "\\}", "i"), subreply)
       match = reply.match(/\{@(.+?)\}/)
-
-    # Object caller
-    reply = reply.replace(/\{__call__\}/g, "<call>")
-    reply = reply.replace(/\{\/__call__\}/g, "</call>")
-    match = reply.match(/<call>(.+?)<\/call>/i)
-    giveup = 0
-    while match
-      giveup++
-      if giveup >= 50
-        @warn "Infinite loop looking for call tag!"
-        break
-
-      text  = utils.strip(match[1])
-      parts = text.split(/\s+/)
-      obj   = parts.shift()
-      args  = parts
-
-      # Do we know this object?
-      output = ""
-      if @master._objlangs[obj]
-        # We do. Do we have a handler for it?
-        lang = @master._objlangs[obj]
-        if @master._handlers[lang]
-          # We do.
-          output = @master._handlers[lang].call(@master, obj, args, scope)
-        else
-          output = "[ERR: No Object Handler]"
-      else
-        output = "[ERR: Object Not Found]"
-
-      reply = reply.replace(new RegExp("<call>" + utils.quotemeta(match[1]) + "</call>", "i"), output)
-      match = reply.match(/<call>(.+?)<\/call>/i)
 
     return reply
 
