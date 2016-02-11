@@ -21,7 +21,7 @@ rs.setSubroutine("asyncHelper", function(rs, args) {
   // access through RiveScript.Promise alias
   // but you are free to use your own Promise implementation
   return new rs.Promise(function(resolve, reject) { 
-  	resolve('hello there');
+    resolve('hello there');
   });
 })
 ```
@@ -39,7 +39,7 @@ rs.replyAsync(username, message).then(function(reply) {
 // or using callbacks
 rs.replyAsync(username, message, this, function(error, reply) {
   if (!error) {
-  	// you can use reply here
+    // you can use reply here
   } else {
     // something went wrong, error has more info
   }
