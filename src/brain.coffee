@@ -652,6 +652,25 @@ class Brain
     if botstars.length is 1
       botstars.push "undefined"
 
+    # Turn arrays into randomized sets.
+    match = reply.match(/\(@([A-Za-z0-9_]+)\)/i)
+    giveup = 0
+    while match
+      if giveup++ > @master._depth
+        @warn "Infinite loop looking for arrays in reply!"
+        break
+
+      name = match[1]
+      if @master._array[name]
+        result = "{random}" + @master._array[name].join("|") + "{/random}"
+      else
+        result = "\x00@#{name}\x00" # Dummy it out so we can reinsert it later.
+
+      reply = reply.replace(new RegExp("\\(@" + utils.quotemeta(name) + "\\)", "ig")
+        result)
+      match = reply.match(/\(@([A-Za-z0-9_]+)\)/i)
+    reply = reply.replace(/\x00@([A-Za-z0-9_]+)\x00/g, "(@$1)")
+
     # Tag shortcuts.
     reply = reply.replace(/<person>/ig,    "{person}<star>{/person}")
     reply = reply.replace(/<@>/ig,         "{@<star>}")
