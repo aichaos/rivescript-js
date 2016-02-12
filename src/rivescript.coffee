@@ -7,7 +7,7 @@
 "use strict"
 
 # Constants
-VERSION  = "1.2.1"
+VERSION  = "1.4.0"
 
 # Helper modules
 Parser  = require "./parser"
@@ -120,12 +120,12 @@ class RiveScript
   # Promise Promise
   #
   # Alias for RSVP.Promise
-  # 
+  #
   # You can use shortcut in your async subroutines
-  # 
+  #
   # ```javascript
   # rs.setSubroutine("asyncHelper", function (rs, args) {
-  #  return new rs.Promise(function (resolve, reject) { 
+  #  return new rs.Promise(function (resolve, reject) {
   #    resolve(42);
   #  });
   # });
@@ -778,7 +778,7 @@ class RiveScript
   #
   # Asyncronous version of reply. Use replyAsync if at least one of the subroutines
   # used with <call> tag returns a promise
-  # 
+  #
   # Example: using promises
   #
   # ```javascript

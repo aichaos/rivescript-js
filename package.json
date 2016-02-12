@@ -1,6 +1,6 @@
 {
   "name": "rivescript",
-  "version": "1.2.1",
+  "version": "1.4.0",
   "description": "RiveScript is a scripting language for chatterbots, making it easy to write trigger/response pairs for building up a bot's intelligence.",
   "keywords": [
     "bot",

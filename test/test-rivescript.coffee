@@ -435,6 +435,7 @@ exports.test_reply_arrays = (test) ->
   bot = new TestCase(test, """
     ! array greek = alpha beta gamma
     ! array test = testing trying
+    ! array format = <uppercase>|<lowercase>|<formal>|<sentence>
 
     + test random array
     - Testing (@greek) array.
@@ -450,6 +451,9 @@ exports.test_reply_arrays = (test) ->
 
     + test weird syntax
     - This (@ greek) shouldn't work, and neither should this @test.
+
+    + random format *
+    - (@format)
   """)
   bot.replyRandom("test random array", [
     "Testing alpha array.", "Testing beta array.", "Testing gamma array.",
@@ -466,6 +470,9 @@ exports.test_reply_arrays = (test) ->
     "I'm trying more beta (@arrays).", "I'm trying more gamma (@arrays)."
   ])
   bot.reply("test weird syntax", "This (@ greek) shouldn't work, and neither should this @test.")
+  bot.replyRandom("random format hello world", [
+    "HELLO WORLD", "hello world", "Hello World", "Hello world",
+  ])
   test.done()
 
 ################################################################################
