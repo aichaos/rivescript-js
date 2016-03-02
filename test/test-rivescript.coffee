@@ -1018,3 +1018,22 @@ exports.test_async_and_sync_subroutines_together = (test) ->
   bot.rs.replyAsync(bot.username, "my name is Rive").then (reply) ->
     test.equal(reply, "hello there stranger!")
     test.done()
+
+
+exports.test_stringify_with_objects = (test) ->
+  bot = new TestCase(test, """
+    > object hello javascript
+      return \"Hello\";
+    < object
+    + my name is *
+    - hello there<call>exclaim</call>
+  """)
+
+  bot.rs.setSubroutine("exclaim", (rs, args) ->
+    return "!"
+  )
+
+  src = bot.rs.stringify()
+  expect = '! version = 2.0\n! local concat = none\n\n> object hello javascript\n\treturn "Hello";\n< object\n\n> object exclaim javascript\n\treturn "!";\n< object\n\n+ my name is *\n- hello there<call>exclaim</call>\n'
+  test.equal(src, expect)
+  test.done()
