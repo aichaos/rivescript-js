@@ -503,6 +503,21 @@ class Parser
             source.push "! #{begin} #{key} = " + value.join(pipes)
         source.push ""
 
+    # Do objects. Requires stripping out the actual function wrapper
+    if deparsed.objects
+      for lang of deparsed.objects
+        if deparsed.objects[lang] and deparsed.objects[lang]._objects
+          for func of deparsed.objects[lang]._objects
+            source.push "> object " + func + " " + lang
+            source.push( deparsed.objects[lang]._objects[func].toString()
+              .match(/function[^{]+\{\n*([\s\S]*)\}\;?\s*$/m)[1]
+              .trim()
+              .split("\n")
+              .map (ln)-> "\t" + ln
+              .join("\n")
+            )
+            source.push "< object\n"
+
     # Begin block triggers.
     if deparsed.begin.triggers?.length
       source.push "> begin\n"

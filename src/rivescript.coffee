@@ -456,6 +456,11 @@ class RiveScript
       topics: utils.clone(@_topics)
       inherits: utils.clone(@_inherits)
       includes: utils.clone(@_includes)
+      objects: {}
+
+    for key of this._handlers
+      result.objects[key] =
+        _objects: utils.clone(this._handlers[key]._objects)
 
     # Begin topic.
     if result.topics.__begin__?
