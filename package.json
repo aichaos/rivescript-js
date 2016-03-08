@@ -1,6 +1,6 @@
 {
   "name": "rivescript",
-  "version": "1.4.0",
+  "version": "1.6.0",
   "description": "RiveScript is a scripting language for chatterbots, making it easy to write trigger/response pairs for building up a bot's intelligence.",
   "keywords": [
     "bot",
@@ -36,6 +36,7 @@
     "Chris Taylor <christhebaron@gmail.com> (https://github.com/ChrisTheBaron)",
     "dc <dc@biz.pikkle.com> (https://github.com/dcsan)",
     "Gerrit (https://github.com/pyrox777)",
+    "Greg Leuch <contact@gleu.ch> (https://gleu.ch)",
     "Mike Rombout <mike.rombout1@gmail.com> (http://www.mikero.nl/)",
     "Philip Nuzhnyi (https://github.com/callmephilip)",
     "pirelaurent (https://github.com/pirelaurent)"

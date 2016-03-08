@@ -1,5 +1,10 @@
 # Changes
 
+* 1.6.0 2016-03-08
+  - Update the `deparse()` and `stringify()` functions to include the source
+    code of JavaScript object macros in the output.
+  - Update the `loadDirectory()` function to load RiveScript files recursively.
+
 * 1.4.0 2016-02-11
   - Add support for asynchronous object macros (using promises via RSVP.js),
     and the accompanying `replyAsync()` function and example code.
