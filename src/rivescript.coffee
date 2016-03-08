@@ -17,6 +17,7 @@ sorting = require "./sorting"
 inherit_utils = require "./inheritance"
 JSObjectHandler = require "./lang/javascript"
 RSVP = require("rsvp")
+readDir = require("fs-readdir-recursive")
 
 ##
 # RiveScript (hash options)
@@ -284,7 +285,7 @@ class RiveScript
   ##
   # void loadDirectory (string path[, func onSuccess[, func onError]])
   #
-  # Load RiveScript documents from a directory.
+  # Load RiveScript documents from a directory recursively.
   #
   # This function is not supported in a web environment.
   ##
@@ -296,29 +297,22 @@ class RiveScript
 
     loadCount = @_loadCount++
     @_pending[loadCount] = {}
+    toLoad = []
 
     @say "Loading batch #{loadCount} from directory #{path}"
 
-    # Read the directory.
-    @_node.fs.readdir path, (err, files) =>
-      if err
-        if typeof(onError) is "function"
-          onError.call undefined, err
-        else
-          @warn err
-        return
+    # Load all the files.
+    files = readDir(path)
+    for file in files
+      if file.match(/\.(rive|rs)$/i)
+        # Keep track of the file's status.
+        @_pending[loadCount][path+"/"+file] = 1
+        toLoad.push path+"/"+file
 
-      toLoad = []
-      for file in files
-        if file.match(/\.(rive|rs)$/i)
-          # Keep track of the file's status.
-          @_pending[loadCount][path+"/"+file] = 1
-          toLoad.push path+"/"+file
-
-      # Load all the files.
-      for file in toLoad
-        @say "Parsing file #{file} from directory"
-        @_nodeLoadFile loadCount, file, onSuccess, onError
+    # Load all the files.
+    for file in toLoad
+      @say "Parsing file #{file} from directory"
+      @_nodeLoadFile loadCount, file, onSuccess, onError
 
   ##
   # bool stream (string code[, func onError])

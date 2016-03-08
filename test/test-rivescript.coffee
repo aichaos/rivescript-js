@@ -1037,3 +1037,20 @@ exports.test_stringify_with_objects = (test) ->
   expect = '! version = 2.0\n! local concat = none\n\n> object hello javascript\n\treturn "Hello";\n< object\n\n> object exclaim javascript\n\treturn "!";\n< object\n\n+ my name is *\n- hello there<call>exclaim</call>\n'
   test.equal(src, expect)
   test.done()
+
+
+exports.load_directory_recursively = (test) ->
+  bot = new TestCase(test, """
+    + *
+    - No, this failed.
+  """)
+
+  bot.rs.loadDirectory('./test/fixtures', ->
+    bot.rs.sortReplies()
+    bot.reply("Did the root directory rivescript load?", "Yes, the root directory rivescript loaded.")
+    bot.reply("Did the recursive directory rivescript load?", "Yes, the recursive directory rivescript loaded.")
+    test.done()
+  , ->
+    test.equal(true, false) # Throw error
+  )
+
