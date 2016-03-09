@@ -896,17 +896,17 @@ exports.test_function_in_setSubroutine_return_value = (test) ->
 
 exports.test_arguments_in_setSubroutine = (test) ->
   bot = new TestCase(test, """
-    + hello *
+    + my name is *
     - hello <call>helper <star> 12</call>
   """)
 
-  bot.rs.setSubroutine("helper", (rs, text, int) ->
-    test.equal(text, "there")
+  bot.rs.setSubroutine("helper", (rs, name, int) ->
+    test.equal(name, "thomas edison")
     test.equal(int, "12")
-    "person"
+    name
   )
 
-  bot.reply("hello there", "hello person")
+  bot.reply("my name is thomas edison", "hello thomas edison")
   test.done()
 
 exports.test_promises_in_objects = (test) ->
