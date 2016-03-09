@@ -873,10 +873,9 @@ exports.test_function_in_setSubroutine = (test) ->
 
   input = "my name is Rive"
 
-  bot.rs.setSubroutine("helper", (rs, args) ->
-    test.ok(args.length is 1)
+  bot.rs.setSubroutine("helper", (rs, name) ->
     test.equal(rs, bot.rs)
-    test.equal(args[0], "rive")
+    test.equal(name, "rive")
     test.done()
   )
 
@@ -895,6 +894,21 @@ exports.test_function_in_setSubroutine_return_value = (test) ->
   bot.reply("hello", "hello person")
   test.done()
 
+exports.test_arguments_in_setSubroutine = (test) ->
+  bot = new TestCase(test, """
+    + hello *
+    - hello <call>helper <star> 12</call>
+  """)
+
+  bot.rs.setSubroutine("helper", (rs, text, int) ->
+    test.equal(text, "there")
+    test.equal(int, "12")
+    "person"
+  )
+
+  bot.reply("hello there", "hello person")
+  test.done()
+
 exports.test_promises_in_objects = (test) ->
   bot = new TestCase(test, """
     + my name is *
@@ -903,15 +917,14 @@ exports.test_promises_in_objects = (test) ->
 
   input = "my name is Rive"
 
-  bot.rs.setSubroutine("helperWithPromise", (rs, args) ->
-    test.ok(args.length is 1)
-    test.equal(args[0], "rive")
+  bot.rs.setSubroutine("helperWithPromise", (rs, name) ->
+    test.equal(name, "rive")
     return new rs.Promise((resolve, reject) ->
       resolve("stranger")
     )
   )
 
-  bot.rs.setSubroutine("anotherHelperWithPromise", (rs, args) ->
+  bot.rs.setSubroutine("anotherHelperWithPromise", (rs) ->
     return new rs.Promise((resolve, reject) ->
       setTimeout () ->
         resolve("delay")
@@ -1029,11 +1042,11 @@ exports.test_stringify_with_objects = (test) ->
     - hello there<call>exclaim</call>
   """)
 
-  bot.rs.setSubroutine("exclaim", (rs, args) ->
+  bot.rs.setSubroutine("exclaim", (rs) ->
     return "!"
   )
 
   src = bot.rs.stringify()
-  expect = '! version = 2.0\n! local concat = none\n\n> object hello javascript\n\treturn "Hello";\n< object\n\n> object exclaim javascript\n\treturn "!";\n< object\n\n+ my name is *\n- hello there<call>exclaim</call>\n'
+  expect = '! version = 2.0\n! local concat = none\n\n> object hello javascript\n\tvar args = []; Array.prototype.push.apply(args, arguments); args.shift();return "Hello";\n< object\n\n> object exclaim javascript\n\treturn "!";\n< object\n\n+ my name is *\n- hello there<call>exclaim</call>\n'
   test.equal(src, expect)
   test.done()

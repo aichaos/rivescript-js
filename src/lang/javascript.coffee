@@ -33,11 +33,13 @@ class JSObjectHandler
       @_objects[name] = code
     else
       # We need to make a dynamic JavaScript function.
-      source = "this._objects[\"" + name + "\"] = function(rs, args) {\n" \
+      source = "this._objects[\"" + name + "\"] = function(rs) {\n" \
+        + "var args = []; Array.prototype.push.apply(args, arguments); args.shift();" \ 
         + code.join("\n") \
         + "}\n"
 
       try
+        console.error('source is', source)
         eval source
       catch e
         @_master.warn "Error evaluating JavaScript object: " + e.message
@@ -56,7 +58,11 @@ class JSObjectHandler
     func = @_objects[name]
     reply = ""
     try
-      reply = func.call(scope, rs, fields)
+      args = []
+      args.push(rs)
+      for f in fields
+        args.push(f)
+      reply = func.apply(scope, args)
     catch e
       reply = "[ERR: Error when executing JavaScript object: #{e.message}]"
 
