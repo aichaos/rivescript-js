@@ -92,6 +92,7 @@ class Brain
     reply = reply.replace(/\{__call__\}/g, "<call>")
     reply = reply.replace(/\{\/__call__\}/g, "</call>")
     callRe = /<call>(.+?)<\/call>/ig
+    argsRe = /{__call_arg__}([^{]*){\/__call_arg__}/ig
 
     giveup = 0
     matches = {}
@@ -109,13 +110,24 @@ class Brain
         break
 
       text  = utils.strip(match[1])
-      parts = text.split(/\s+/)
-      obj   = parts.shift()
-      args  = parts
+      
+      # get subroutine name
+      subroutineNameMatch = (/(\S+)/ig).exec(text)
+      subroutineName = subroutineNameMatch[0]
+
+      args = []
+
+      # get arguments
+      while true
+        m = argsRe.exec(text)
+        if not m
+          break
+        args.push(m[1])
+
 
       matches[match[1]] =
         text: text
-        obj: obj
+        obj: subroutineName
         args: args
 
     # go through all the object calls and run functions
@@ -163,6 +175,74 @@ class Brain
 
   _replaceCallTags: (callSignature, callResult, reply) ->
     return reply.replace(new RegExp("<call>" + utils.quotemeta(callSignature) + "</call>", "i"), callResult)
+
+  _parseCallArgsString: (args) ->
+    # turn args string into a list of arguments
+    result = []
+    buff = ""
+    insideAString = false
+    spaceRe = /\s/ig
+    doubleQuoteRe = /"/ig
+
+    flushBuffer = () ->
+      if buff.length isnt 0 
+        result.push(buff)
+      buff = ""
+
+    for c in args
+      if c.match(spaceRe) and not insideAString
+        flushBuffer()
+        continue
+      if c.match(doubleQuoteRe)
+        if insideAString
+          flushBuffer()
+        insideAString = not insideAString
+        continue
+      buff = buff + c
+
+    flushBuffer()
+
+    return result
+
+  _wrapArgumentsInCallTags: (reply) ->
+    # wrap arguments inside <call></call> in {__call_arg__}{/__call_arg__}
+    callRegEx = /<call>\s*(.*?)\s*<\/call>/ig
+    callArgsRegEx = /<call>\s*[^\s]+ (.*)<\/call>/ig
+    
+    callSignatures = []
+
+    while true
+      match = callRegEx.exec(reply)
+
+      if not match
+        break
+
+      originalCallSignature = match[0]
+      wrappedCallSignature = originalCallSignature
+
+      while true
+        argsMatch = callArgsRegEx.exec(originalCallSignature)
+        if not argsMatch
+          break
+        
+        originalArgs = argsMatch[1]
+        args = @_parseCallArgsString(originalArgs)
+        wrappedArgs = []
+
+        for a in args
+          wrappedArgs.push "{__call_arg__}#{a}{/__call_arg__}"
+
+        wrappedCallSignature = wrappedCallSignature.replace(originalArgs, 
+          wrappedArgs.join(' '))
+
+      callSignatures.push
+        original: originalCallSignature
+        wrapped: wrappedCallSignature 
+
+    for cs in callSignatures
+      reply = reply.replace cs.original, cs.wrapped
+
+    reply
 
   ##
   # string _getReply (string user, string msg, string context, int step, scope)
@@ -671,6 +751,9 @@ class Brain
       match = reply.match(/\(@([A-Za-z0-9_]+)\)/i)
     reply = reply.replace(/\x00@([A-Za-z0-9_]+)\x00/g, "(@$1)")
 
+    # Wrap args inside call tags
+    reply = @_wrapArgumentsInCallTags(reply)
+
     # Tag shortcuts.
     reply = reply.replace(/<person>/ig,    "{person}<star>{/person}")
     reply = reply.replace(/<@>/ig,         "{@<star>}")
@@ -751,6 +834,7 @@ class Brain
     # Dummy out the <call> tags first, because we don't handle them right here.
     reply = reply.replace(/<call>/ig, "{__call__}")
     reply = reply.replace(/<\/call>/ig, "{/__call__}")
+
     while true
       # This regexp will match a <tag> which contains no other tag inside it,
       # i.e. in the case of <set a=<get b>> it will match <get b> but not the

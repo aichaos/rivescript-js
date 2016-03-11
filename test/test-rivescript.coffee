@@ -874,8 +874,8 @@ exports.test_function_in_setSubroutine = (test) ->
   input = "my name is Rive"
 
   bot.rs.setSubroutine("helper", (rs, args) ->
-    test.ok(args.length is 1)
     test.equal(rs, bot.rs)
+    test.equal(args.length, 1)
     test.equal(args[0], "rive")
     test.done()
   )
@@ -895,6 +895,56 @@ exports.test_function_in_setSubroutine_return_value = (test) ->
   bot.reply("hello", "hello person")
   test.done()
 
+exports.test_arguments_in_setSubroutine = (test) ->
+  bot = new TestCase(test, """
+    + my name is *
+    - hello <call>helper <star> 12</call>
+  """)
+
+  bot.rs.setSubroutine("helper", (rs, args) ->
+    test.equal(args.length, 2)
+    test.equal(args[0], "thomas edison")
+    test.equal(args[1], "12")
+    args[0]
+  )
+
+  bot.reply("my name is thomas edison", "hello thomas edison")
+  test.done()
+
+exports.test_quoted_strings_arguments_in_setSubroutine = (test) ->
+  bot = new TestCase(test, """
+    + my name is *
+    - hello <call>helper <star> 12 "another param"</call>
+  """)
+
+  bot.rs.setSubroutine("helper", (rs, args) ->
+    test.equal(args.length, 3)
+    test.equal(args[0], "thomas edison")
+    test.equal(args[1], "12")
+    test.equal(args[2], "another param")
+    args[0]
+  )
+
+  bot.reply("my name is thomas edison", "hello thomas edison")
+  test.done()
+
+exports.test_arguments_with_funky_spacing_in_setSubroutine = (test) ->
+  bot = new TestCase(test, """
+    + my name is *
+    - hello <call> helper <star>   12   "another  param" </call>
+  """)
+
+  bot.rs.setSubroutine("helper", (rs, args) ->
+    test.equal(args.length, 3)
+    test.equal(args[0], "thomas edison")
+    test.equal(args[1], "12")
+    test.equal(args[2], "another  param")
+    args[0]
+  )
+
+  bot.reply("my name is thomas edison", "hello thomas edison")
+  test.done()
+
 exports.test_promises_in_objects = (test) ->
   bot = new TestCase(test, """
     + my name is *
@@ -904,14 +954,12 @@ exports.test_promises_in_objects = (test) ->
   input = "my name is Rive"
 
   bot.rs.setSubroutine("helperWithPromise", (rs, args) ->
-    test.ok(args.length is 1)
-    test.equal(args[0], "rive")
     return new rs.Promise((resolve, reject) ->
       resolve("stranger")
     )
   )
 
-  bot.rs.setSubroutine("anotherHelperWithPromise", (rs, args) ->
+  bot.rs.setSubroutine("anotherHelperWithPromise", (rs) ->
     return new rs.Promise((resolve, reject) ->
       setTimeout () ->
         resolve("delay")
@@ -1029,7 +1077,7 @@ exports.test_stringify_with_objects = (test) ->
     - hello there<call>exclaim</call>
   """)
 
-  bot.rs.setSubroutine("exclaim", (rs, args) ->
+  bot.rs.setSubroutine("exclaim", (rs) ->
     return "!"
   )
 
