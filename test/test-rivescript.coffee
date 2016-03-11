@@ -873,9 +873,10 @@ exports.test_function_in_setSubroutine = (test) ->
 
   input = "my name is Rive"
 
-  bot.rs.setSubroutine("helper", (rs, name) ->
+  bot.rs.setSubroutine("helper", (rs, args) ->
     test.equal(rs, bot.rs)
-    test.equal(name, "rive")
+    test.equal(args.length, 1)
+    test.equal(args[0], "rive")
     test.done()
   )
 
@@ -900,10 +901,45 @@ exports.test_arguments_in_setSubroutine = (test) ->
     - hello <call>helper <star> 12</call>
   """)
 
-  bot.rs.setSubroutine("helper", (rs, name, int) ->
-    test.equal(name, "thomas edison")
-    test.equal(int, "12")
-    name
+  bot.rs.setSubroutine("helper", (rs, args) ->
+    test.equal(args.length, 2)
+    test.equal(args[0], "thomas edison")
+    test.equal(args[1], "12")
+    args[0]
+  )
+
+  bot.reply("my name is thomas edison", "hello thomas edison")
+  test.done()
+
+exports.test_quoted_strings_arguments_in_setSubroutine = (test) ->
+  bot = new TestCase(test, """
+    + my name is *
+    - hello <call>helper <star> 12 "another param"</call>
+  """)
+
+  bot.rs.setSubroutine("helper", (rs, args) ->
+    test.equal(args.length, 3)
+    test.equal(args[0], "thomas edison")
+    test.equal(args[1], "12")
+    test.equal(args[2], "another param")
+    args[0]
+  )
+
+  bot.reply("my name is thomas edison", "hello thomas edison")
+  test.done()
+
+exports.test_arguments_with_funky_spacing_in_setSubroutine = (test) ->
+  bot = new TestCase(test, """
+    + my name is *
+    - hello <call> helper <star>   12   "another  param" </call>
+  """)
+
+  bot.rs.setSubroutine("helper", (rs, args) ->
+    test.equal(args.length, 3)
+    test.equal(args[0], "thomas edison")
+    test.equal(args[1], "12")
+    test.equal(args[2], "another  param")
+    args[0]
   )
 
   bot.reply("my name is thomas edison", "hello thomas edison")
@@ -917,8 +953,7 @@ exports.test_promises_in_objects = (test) ->
 
   input = "my name is Rive"
 
-  bot.rs.setSubroutine("helperWithPromise", (rs, name) ->
-    test.equal(name, "rive")
+  bot.rs.setSubroutine("helperWithPromise", (rs, args) ->
     return new rs.Promise((resolve, reject) ->
       resolve("stranger")
     )
@@ -1047,7 +1082,7 @@ exports.test_stringify_with_objects = (test) ->
   )
 
   src = bot.rs.stringify()
-  expect = '! version = 2.0\n! local concat = none\n\n> object hello javascript\n\tvar args = []; Array.prototype.push.apply(args, arguments); args.shift();return "Hello";\n< object\n\n> object exclaim javascript\n\treturn "!";\n< object\n\n+ my name is *\n- hello there<call>exclaim</call>\n'
+  expect = '! version = 2.0\n! local concat = none\n\n> object hello javascript\n\treturn "Hello";\n< object\n\n> object exclaim javascript\n\treturn "!";\n< object\n\n+ my name is *\n- hello there<call>exclaim</call>\n'
   test.equal(src, expect)
   test.done()
 

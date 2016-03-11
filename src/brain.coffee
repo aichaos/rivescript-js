@@ -111,11 +111,8 @@ class Brain
 
       text  = utils.strip(match[1])
       
-      console.error('@@ text is', text)
-
       # get subroutine name
       subroutineNameMatch = (/(\S+)/ig).exec(text)
-      console.error('got match for', text, subroutineNameMatch)
       subroutineName = subroutineNameMatch[0]
 
       args = []
@@ -127,7 +124,6 @@ class Brain
           break
         args.push(m[1])
 
-      console.error('@@args are', args)
 
       matches[match[1]] =
         text: text
@@ -178,17 +174,41 @@ class Brain
           reject(reason)
 
   _replaceCallTags: (callSignature, callResult, reply) ->
-    console.error('replacing calltags for', utils.quotemeta(callSignature))
     return reply.replace(new RegExp("<call>" + utils.quotemeta(callSignature) + "</call>", "i"), callResult)
+
+  _parseCallArgsString: (args) ->
+    # turn args string into a list of arguments
+    result = []
+    buff = ""
+    insideAString = false
+    spaceRe = /\s/ig
+    doubleQuoteRe = /"/ig
+
+    flushBuffer = () ->
+      if buff.length isnt 0 
+        result.push(buff)
+      buff = ""
+
+    for c in args
+      if c.match(spaceRe) and not insideAString
+        flushBuffer()
+        continue
+      if c.match(doubleQuoteRe)
+        if insideAString
+          flushBuffer()
+        insideAString = not insideAString
+        continue
+      buff = buff + c
+
+    flushBuffer()
+
+    return result
 
   _wrapArgumentsInCallTags: (reply) ->
     # wrap arguments inside <call></call> in {__call_arg__}{/__call_arg__}
-    callRegEx = /<call>(.*?)<\/call>/ig
-    callArgsRegEx = /<call>[^\s]+ (.*)<\/call>/ig
-    # callArgs = callArgsRegEx.exec
-
-    # /<call>[^\s]+ (.*)<\/call>/ig
-
+    callRegEx = /<call>\s*(.*?)\s*<\/call>/ig
+    callArgsRegEx = /<call>\s*[^\s]+ (.*)<\/call>/ig
+    
     callSignatures = []
 
     while true
@@ -206,12 +226,11 @@ class Brain
           break
         
         originalArgs = argsMatch[1]
-        args = originalArgs.split(" ")
+        args = @_parseCallArgsString(originalArgs)
         wrappedArgs = []
 
         for a in args
           wrappedArgs.push "{__call_arg__}#{a}{/__call_arg__}"
-
 
         wrappedCallSignature = wrappedCallSignature.replace(originalArgs, 
           wrappedArgs.join(' '))
@@ -220,12 +239,8 @@ class Brain
         original: originalCallSignature
         wrapped: wrappedCallSignature 
 
-      console.error('wrapped call looks like', wrappedCallSignature)
-
     for cs in callSignatures
       reply = reply.replace cs.original, cs.wrapped
-
-    console.error('wrapped reply', reply)
 
     reply
 
