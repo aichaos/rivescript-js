@@ -320,7 +320,7 @@ class Brain
       for top in allTopics
         @say "Checking topic #{top} for any %Previous's"
 
-        if @master._sorted.thats[top]
+        if @master._sorted.thats[top].length
           # There's one here!
           @say "There's a %Previous in this topic!"
 
@@ -373,6 +373,8 @@ class Brain
                 foundMatch = true
                 matchedTrigger = userSide.trigger
                 break
+        else
+          @say "No %Previous in this topic!"
 
     # Search their topic for a match to their trigger.
     if not foundMatch
