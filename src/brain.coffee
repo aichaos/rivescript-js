@@ -260,11 +260,11 @@ class Brain
       return "ERR: Replies Not Sorted"
 
     # Initialize the user's profile?
-    if not @master._users[user]
-      @master._users[user] = {"topic": "random"}
+    if not @master.getUservars(user)
+      @master.setUservar(user, "topic", "random")
 
     # Collect data on this user.
-    topic     = @master._users[user].topic
+    topic     = @master.getUservar(user, "topic")
     stars     = []
     thatstars = [] # For %Previous
     reply     = ""
@@ -272,7 +272,8 @@ class Brain
     # Avoid letting them fall into a missing topic.
     if not @master._topics[topic]
       @warn "User #{user} was in an empty topic named '#{topic}'"
-      topic = @master._users[user].topic = "random"
+      topic = "random"
+      @master.setUservar(user, "topic", topic)
 
     # Avoid deep recursion.
     if step > @master._depth
@@ -524,7 +525,7 @@ class Brain
           @warn "Infinite loop looking for topic tag!"
           break
         name = match[1]
-        @master._users[user].topic = name
+        @master.setUservar(user, "topic", name)
         reply = reply.replace(new RegExp("{topic=" + utils.quotemeta(name) + "}", "ig"), "")
         match = reply.match(/\{topic=(.+?)\}/i)
 
@@ -538,7 +539,7 @@ class Brain
           break
         name = match[1]
         value = match[2]
-        @master._users[user][name] = value
+        @master.setUservar(user, name, value)
         reply = reply.replace(new RegExp("<set " + utils.quotemeta(name) + "=" + utils.quotemeta(value) + ">", "ig"), "")
         match = reply.match(/<set (.+?)=(.+?)>/i)
     else
@@ -687,9 +688,7 @@ class Brain
       match = regexp.match(/<get (.+?)>/i)
       if match
         name = match[1]
-        rep  = 'undefined'
-        if typeof(@master._users[user][name]) isnt "undefined"
-          rep = @master._users[user][name]
+        rep = @master.getUservar(user, name)
         regexp = regexp.replace(new RegExp("<get " + utils.quotemeta(name) + ">", "ig"), rep.toLowerCase())
 
     # Filter in input/reply tags.
@@ -870,7 +869,7 @@ class Brain
         # <set> user vars
         parts = data.split("=", 2)
         @say "Set uservar #{parts[0]} = #{parts[1]}"
-        @master._users[user][parts[0]] = parts[1]
+        @master.setUservar(user, parts[0], parts[1])
       else if tag is "add" or tag is "sub" or tag is "mult" or tag is "div"
         # Math operator tags
         parts = data.split("=")
@@ -878,17 +877,17 @@ class Brain
         value = parts[1]
 
         # Initialize the variable?
-        if typeof(@master._users[user][name]) is "undefined"
-          @master._users[user][name] = 0
+        if @master.getUservar(user, name) is "undefined"
+          @master.setUservar(user, name, 0)
 
         # Sanity check
         value = parseInt(value)
         if isNaN(value)
           insert = "[ERR: Math can't '#{tag}' non-numeric value '#{value}']"
-        else if isNaN(parseInt(@master._users[user][name]))
+        else if isNaN(parseInt(@master.getUservar(user, name)))
           insert = "[ERR: Math can't '#{tag}' non-numeric user variable '#{name}']"
         else
-          result = parseInt(@master._users[user][name])
+          result = parseInt(@master.getUservar(user, name))
           if tag is "add"
             result += value
           else if tag is "sub"
@@ -903,11 +902,9 @@ class Brain
 
           # No errors?
           if insert is ""
-            @master._users[user][name] = result
+            @master.setUservar(user, name, result)
       else if tag is "get"
-        insert = if typeof(@master._users[user][data] isnt "undefined") \
-          then @master._users[user][data] \
-          else "undefined"
+        insert = @master.getUservar(user, data)
       else
         # Unrecognized tag, preserve it
         insert = "\x00#{match}\x01"
@@ -928,7 +925,7 @@ class Brain
         break
 
       name = match[1]
-      @master._users[user].topic = name
+      @master.setUservar(user, "topic", name)
       reply = reply.replace(new RegExp("{topic=" + utils.quotemeta(name) + "}", "ig"), "")
       match = reply.match(/\{topic=(.+?)\}/i) # Look for more
 
