@@ -1,5 +1,15 @@
 # Changes
 
+* 1.8.0 2016-03-18
+  - Update the way the `args` array works in JavaScript object macros: it now
+    uses a shell-style array where quoted strings come in as one array element,
+    even if it contains spaces.
+  - Update all internal user variable getting/setting to use the public
+    `setUservar()` and `getUservar()` methods, enabling developers to override
+    the implementation of these functions.
+  - Fix a bug when looking for `%Previous` tags, so that if the current topic
+    has no `%Previous` trigger RiveScript won't bother looking for them.
+
 * 1.6.0 2016-03-08
   - Update the `deparse()` and `stringify()` functions to include the source
     code of JavaScript object macros in the output.
