@@ -1102,3 +1102,69 @@ exports.load_directory_recursively = (test) ->
     test.equal(true, false) # Throw error
   )
 
+exports.test_concat_with_conditionals = (test) ->
+  # Newline
+  bot = new TestCase(test, """
+    ! local concat = newline
+
+    + test *
+    * <star1> == a => First A line
+    ^ Second A line
+    ^ Third A line
+    - First B line
+    ^ Second B line
+    ^ Third B line
+  """)
+
+  bot.reply("test a", "First A line\nSecond A line\nThird A line")
+  bot.reply("test b", "First B line\nSecond B line\nThird B line")
+
+  # Space
+  bot = new TestCase(test, """
+    ! local concat = space
+
+    + test *
+    * <star1> == a => First A line
+    ^ Second A line
+    ^ Third A line
+    - First B line
+    ^ Second B line
+    ^ Third B line
+  """)
+
+  bot.reply("test a", "First A line Second A line Third A line")
+  bot.reply("test b", "First B line Second B line Third B line")
+
+  # No concat
+  bot = new TestCase(test, """
+    + test *
+    * <star1> == a => First A line
+    ^ Second A line
+    ^ Third A line
+    - First B line
+    ^ Second B line
+    ^ Third B line
+  """)
+
+  bot.reply("test a", "First A lineSecond A lineThird A line")
+  bot.reply("test b", "First B lineSecond B lineThird B line")
+
+  test.done()
+
+
+exports.test_concat_space_with_conditionals = (test) ->
+  bot = new TestCase(test, """
+    ! local concat = newline
+
+    + test *
+    * <star1> == a => First A line
+    ^ Second A line
+    ^ Third A line
+    - First B line
+    ^ Second B line
+    ^ Third B line
+  """)
+
+  bot.reply("test a", "First A line\nSecond A line\nThird A line")
+  bot.reply("test b", "First B line\nSecond B line\nThird B line")
+  test.done()

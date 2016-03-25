@@ -438,7 +438,7 @@ class Brain
               left = utils.strip(condition[1])
               eq   = condition[2]
               right = utils.strip(condition[3])
-              potreply = utils.strip(halves[1])
+              potreply = halves[1].trim()
 
               # Process tags all around
               left  = @processTags(user, msg, left, stars, thatstars, step, scope)
