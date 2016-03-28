@@ -1185,11 +1185,11 @@ exports.test_redirect_with_undefined_input = (test) ->
     < topic
 
     + *
-    - Wildcard!
+    - Wildcard "<star>"!
   """)
 
   bot.reply("test", "hello")
-  bot.reply("?", "Wildcard!")
+  bot.reply("?", "Wildcard \"\"!")
 
 
   # empty variable test
@@ -1220,22 +1220,22 @@ exports.test_redirect_with_undefined_input = (test) ->
     < topic
 
     + *
-    - Wildcard!
+    - Wildcard "<star>"!
   """)
 
   # No variable set, should go through wildcard
-  bot.reply("test", "Wildcard!")
+  bot.reply("test", "Wildcard \"undefined\"!")
   bot.reply("test without redirect", "undefined")
 
   # Variable set, should respond with text
   bot.reply("set test name test", "hello test!")
 
   # Different variable set, should get wildcard
-  bot.reply("set test name newtest", "Wildcard!")
+  bot.reply("set test name newtest", "Wildcard \"newtest\"!")
 
   # Test redirects using bot variable.
   bot.reply("get global test", "hello test!")
-  bot.reply("get bad global test", "Wildcard!")
+  bot.reply("get bad global test", "Wildcard \"undefined\"!")
 
 
 
