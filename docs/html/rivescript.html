@@ -194,7 +194,7 @@ for all users.</p>
 <h2>void freezeUservars (string user)</h2>
 <p>Freeze the variable state of a user. This will clone and preserve the user's
 entire variable state, so that it can be restored later with
-<code>thatUservars()</code></p>
+<code>thawUservars()</code></p>
 <h2>void thawUservars (string user[, string action])</h2>
 <p>Thaw a user's frozen variables. The action can be one of the following:
 <em> discard: Don't restore the variables, just delete the frozen copy.
@@ -225,7 +225,7 @@ was called. For an example of this, refer to the <code>eg/scope</code> directory
 the source distribution of RiveScript-JS.</p>
 <h2>Promise replyAsync (string username, string message [[, scope], callback])</h2>
 <p>Asyncronous version of reply. Use replyAsync if at least one of the subroutines
-used with &lt;call&gt; tag returns a promise</p>
+used with the <code>&lt;call&gt;</code> tag returns a promise.</p>
 <p>Example: using promises</p>
 <pre class="codehilite"><code class="language-javascript">rs.replyAsync(user, message).then(function(reply) {
   console.log(&quot;Bot&gt;&quot;, reply);

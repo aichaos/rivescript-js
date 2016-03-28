@@ -273,7 +273,7 @@ for all users.
 
 Freeze the variable state of a user. This will clone and preserve the user's
 entire variable state, so that it can be restored later with
-`thatUservars()`
+`thawUservars()`
 
 ## void thawUservars (string user[, string action])
 
@@ -317,7 +317,7 @@ the source distribution of RiveScript-JS.
 ## Promise replyAsync (string username, string message [[, scope], callback])
 
 Asyncronous version of reply. Use replyAsync if at least one of the subroutines
-used with <call> tag returns a promise
+used with the `<call>` tag returns a promise.
 
 Example: using promises
 
