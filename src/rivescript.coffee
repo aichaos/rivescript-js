@@ -850,7 +850,7 @@ class RiveScript
   # Promise replyAsync (string username, string message [[, scope], callback])
   #
   # Asyncronous version of reply. Use replyAsync if at least one of the subroutines
-  # used with <call> tag returns a promise
+  # used with the `<call>` tag returns a promise.
   #
   # Example: using promises
   #
