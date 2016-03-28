@@ -74,4 +74,4 @@ module.exports = (grunt) ->
   grunt.registerTask "dist", ["coffee", "browserify", "uglify"]
   grunt.registerTask "server", ["dist", "connect:server"]
   grunt.registerTask "lint", ["coffeelint"]
-  grunt.registerTask "test", ["nodeunit"]
+  grunt.registerTask "test", ["coffee", "nodeunit"]

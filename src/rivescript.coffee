@@ -30,6 +30,7 @@ readDir = require("fs-readdir-recursive")
 # * bool strict:   Strict mode           (default true)
 # * bool utf8:     Enable UTF-8 mode     (default false)
 # * func onDebug:  Set a custom handler to catch debug log messages (default null)
+# * obj  errors:   Customize certain error messages (see below)
 #
 # ## UTF-8 Mode
 #
@@ -45,6 +46,68 @@ readDir = require("fs-readdir-recursive")
 # var bot = new RiveScript({utf8: true});
 # bot.unicodePunctuation = new RegExp(/[.,!?;:]/g);
 # ```
+#
+# ## Custom Error Messages
+#
+# You can provide any or all of the following properties in the `errors`
+# argument to the constructor to override certain internal error messages:
+#
+# * `replyNotMatched`: The message returned when the user's message does not
+#   match any triggers in your RiveScript code.
+#
+#   The default is "ERR: No Reply Matched"
+#
+#   **Note:** the recommended way to handle this case is to provide a trigger of
+#   simply `*`, which serves as the catch-all trigger and is the default one
+#   that will match if nothing else matches the user's message. Example:
+#
+#   ```
+#   + *
+#   - I don't know what to say to that!
+#   ```
+# * `replyNotFound`: This message is returned when the user *did* in fact match
+#   a trigger, but no response was found for the user. For example, if a trigger
+#   only checks a set of conditions that are all false and provides no "normal"
+#   reply, this error message is given to the user instead.
+#
+#   The default is "ERR: No Reply Found"
+#
+#   **Note:** the recommended way to handle this case is to provide at least one
+#   normal reply (with the `-` command) to every trigger to cover the cases
+#   where none of the conditions are true. Example:
+#
+#   ```
+#   + hello
+#   * <get name> != undefined => Hello there, <get name>.
+#   - Hi there.
+#   ```
+# * `objectNotFound`: This message is inserted into the bot's reply in-line when
+#   it attempts to call an object macro which does not exist (for example, its
+#   name was invalid or it was written in a programming language that the bot
+#   couldn't parse, or that it had compile errors).
+#
+#   The default is "[ERR: Object Not Found]"
+# * `deepRecursion`: This message is inserted when the bot encounters a deep
+#   recursion situation, for example when a reply redirects to a trigger which
+#   redirects back to the first trigger, creating an infinite loop.
+#
+#   The default is "ERR: Deep Recursion Detected"
+#
+# These custom error messages can be provided during the construction of the
+# RiveScript object, or set afterwards on the object's `errors` property.
+#
+# Examples:
+#
+# ```javascript
+# var bot = new RiveScript({
+#    errors: {
+#        replyNotFound: "I don't know how to reply to that."
+#    }
+# });
+#
+# bot.errors.objectNotFound = "Something went terribly wrong.";
+# ```
+#
 ##
 class RiveScript
 
@@ -65,6 +128,17 @@ class RiveScript
 
     # UTF-8 punctuation, overridable by the user.
     @unicodePunctuation = new RegExp(/[.,!?;:]/g)
+
+    # Customized error messages.
+    @errors =
+      replyNotMatched:      "ERR: No Reply Matched"
+      replyNotFound:        "ERR: No Reply Found"
+      objectNotFound:       "[ERR: Object Not Found]"
+      deepRecursion:        "ERR: Deep Recursion Detected"
+    if typeof(opts.errors) is "object"
+      for key, value of opts.errors
+        if opts.errors.hasOwnProperty(key)
+          @errors[key] = value
 
     # Identify our runtime environment. Web, or node?
     @_node    = {} # NodeJS objects
@@ -684,7 +758,7 @@ class RiveScript
   #
   # Freeze the variable state of a user. This will clone and preserve the user's
   # entire variable state, so that it can be restored later with
-  # `thatUservars()`
+  # `thawUservars()`
   ##
   freezeUservars: (user) ->
     if @_users[user]?
@@ -776,7 +850,7 @@ class RiveScript
   # Promise replyAsync (string username, string message [[, scope], callback])
   #
   # Asyncronous version of reply. Use replyAsync if at least one of the subroutines
-  # used with <call> tag returns a promise
+  # used with the `<call>` tag returns a promise.
   #
   # Example: using promises
   #

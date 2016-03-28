@@ -110,7 +110,7 @@ class Brain
         break
 
       text  = utils.strip(match[1])
-      
+
       # get subroutine name
       subroutineNameMatch = (/(\S+)/ig).exec(text)
       subroutineName = subroutineNameMatch[0]
@@ -142,7 +142,7 @@ class Brain
         else
           output = "[ERR: No Object Handler]"
       else
-        output = "[ERR: Object Not Found]"
+        output = @master.errors.objectNotFound
 
       # if we get a promise back and we are not in the async mode,
       # leave an error message to suggest using an async version of rs
@@ -185,7 +185,7 @@ class Brain
     doubleQuoteRe = /"/ig
 
     flushBuffer = () ->
-      if buff.length isnt 0 
+      if buff.length isnt 0
         result.push(buff)
       buff = ""
 
@@ -208,7 +208,7 @@ class Brain
     # wrap arguments inside <call></call> in {__call_arg__}{/__call_arg__}
     callRegEx = /<call>\s*(.*?)\s*<\/call>/ig
     callArgsRegEx = /<call>\s*[^\s]+ (.*)<\/call>/ig
-    
+
     callSignatures = []
 
     while true
@@ -224,7 +224,7 @@ class Brain
         argsMatch = callArgsRegEx.exec(originalCallSignature)
         if not argsMatch
           break
-        
+
         originalArgs = argsMatch[1]
         args = @_parseCallArgsString(originalArgs)
         wrappedArgs = []
@@ -232,12 +232,12 @@ class Brain
         for a in args
           wrappedArgs.push "{__call_arg__}#{a}{/__call_arg__}"
 
-        wrappedCallSignature = wrappedCallSignature.replace(originalArgs, 
+        wrappedCallSignature = wrappedCallSignature.replace(originalArgs,
           wrappedArgs.join(' '))
 
       callSignatures.push
         original: originalCallSignature
-        wrapped: wrappedCallSignature 
+        wrapped: wrappedCallSignature
 
     for cs in callSignatures
       reply = reply.replace cs.original, cs.wrapped
@@ -277,7 +277,7 @@ class Brain
 
     # Avoid deep recursion.
     if step > @master._depth
-      return "ERR: Deep Recursion Detected"
+      return @master.errors.deepRecursion
 
     # Are we in the BEGIN block?
     if context is "begin"
@@ -506,9 +506,9 @@ class Brain
 
     # Still no reply?
     if not foundMatch
-      reply = "ERR: No Reply Matched"
+      reply = @master.errors.replyNotMatched
     else if reply is undefined or reply.length is 0
-      reply = "ERR: No Reply Found"
+      reply = @master.errors.replyNotFound
 
     @say "Reply: #{reply}"
 
