@@ -9,8 +9,13 @@ scripting language for chatterbots, making it easy to write trigger/response
 pairs for building up a bot's intelligence.
 
 This library can be used both in a web browser or as a Node module.
-See the `eg/` folder for a web browser example. There's a `node/` folder with
-an example Node TCP server.
+See the `eg/` folder for examples.
+
+## DOCUMENTATION
+
+[Documentation](https://github.com/aichaos/rivescript-js/tree/master/docs) for
+the module's API is available in the `docs/` directory and is browseable in
+Markdown and HTML format.
 
 ## INSTALLATION
 
