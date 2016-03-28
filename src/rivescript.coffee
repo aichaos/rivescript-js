@@ -758,7 +758,7 @@ class RiveScript
   #
   # Freeze the variable state of a user. This will clone and preserve the user's
   # entire variable state, so that it can be restored later with
-  # `thatUservars()`
+  # `thawUservars()`
   ##
   freezeUservars: (user) ->
     if @_users[user]?
