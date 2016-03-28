@@ -789,6 +789,9 @@ class Brain
     reply = reply.replace(/\\n/ig, "\n")
     reply = reply.replace(/\\#/ig, "#")
 
+    # Prevent empty redirects
+    reply = reply.replace(/\{@\}/ig, "{@*}")
+
     # {random}
     match = reply.match(/\{random\}(.+?)\{\/random\}/i)
     giveup = 0

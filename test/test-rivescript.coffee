@@ -1168,3 +1168,75 @@ exports.test_concat_space_with_conditionals = (test) ->
   bot.reply("test a", "First A line\nSecond A line\nThird A line")
   bot.reply("test b", "First B line\nSecond B line\nThird B line")
   test.done()
+
+
+exports.test_redirect_with_undefined_input = (test) ->
+  # <@> test
+  bot = new TestCase(test, """
+    + test
+    - {topic=test}{@hi}
+
+    > topic test
+      + hi
+      - hello
+
+      + *
+      - {topic=random}<@>
+    < topic
+
+    + *
+    - Wildcard!
+  """)
+
+  bot.reply("test", "hello")
+  bot.reply("?", "Wildcard!")
+
+
+  # empty variable test
+  bot = new TestCase(test, """
+    ! var globaltest = set test name test
+
+    + test
+    - {topic=test}{@<get test_name>}
+
+    + test without redirect
+    - {topic=test}<get test_name>
+
+    + set test name *
+    - <set test_name=<star>>{@test}
+
+    + get global test
+    @ <bot globaltest>
+
+    + get bad global test
+    @ <bot badglobaltest>
+
+    > topic test
+      + test
+      - hello <get test_name>!{topic=random}
+
+      + *
+      - {topic=random}<@>
+    < topic
+
+    + *
+    - Wildcard!
+  """)
+
+  # No variable set, should go through wildcard
+  bot.reply("test", "Wildcard!")
+  bot.reply("test without redirect", "undefined")
+
+  # Variable set, should respond with text
+  bot.reply("set test name test", "hello test!")
+
+  # Different variable set, should get wildcard
+  bot.reply("set test name newtest", "Wildcard!")
+
+  # Test redirects using bot variable.
+  bot.reply("get global test", "hello test!")
+  bot.reply("get bad global test", "Wildcard!")
+
+
+
+  test.done()
