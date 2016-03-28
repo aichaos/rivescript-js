@@ -50,7 +50,7 @@ class JSObjectHandler
   call: (rs, name, fields, scope) ->
     # We have it?
     if not @_objects[name]
-      return "[ERR: Object Not Found]"
+      return @_master.errors.objectNotFound
 
     # Call the dynamic method.
     func = @_objects[name]

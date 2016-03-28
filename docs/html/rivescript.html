@@ -15,6 +15,7 @@ following keys:</p>
 <li>bool strict:   Strict mode           (default true)</li>
 <li>bool utf8:     Enable UTF-8 mode     (default false)</li>
 <li>func onDebug:  Set a custom handler to catch debug log messages (default null)</li>
+<li>obj  errors:   Customize certain error messages (see below)</li>
 </ul>
 <h2>UTF-8 Mode</h2>
 <p>In UTF-8 mode, most characters in a user's message are left intact, except for
@@ -25,6 +26,51 @@ assigning the <code>unicodePunctuation</code> attribute of the bot object after
 initialization. Example:</p>
 <pre class="codehilite"><code class="language-javascript">var bot = new RiveScript({utf8: true});
 bot.unicodePunctuation = new RegExp(/[.,!?;:]/g);</code></pre>
+
+
+<h2>Custom Error Messages</h2>
+<p>You can provide any or all of the following properties in the <code>errors</code>
+argument to the constructor to override certain internal error messages:</p>
+<ul>
+<li><code>replyNotMatched</code>: The message returned when the user's message does not
+  match any triggers in your RiveScript code.</li>
+</ul>
+<p>The default is "ERR: No Reply Matched"</p>
+<p><strong>Note:</strong> the recommended way to handle this case is to provide a trigger of
+  simply <code>*</code>, which serves as the catch-all trigger and is the default one
+  that will match if nothing else matches the user's message. Example:</p>
+<p><code>+ *
+  - I don't know what to say to that!</code>
+<em> <code>replyNotFound</code>: This message is returned when the user </em>did* in fact match
+  a trigger, but no response was found for the user. For example, if a trigger
+  only checks a set of conditions that are all false and provides no "normal"
+  reply, this error message is given to the user instead.</p>
+<p>The default is "ERR: No Reply Found"</p>
+<p><strong>Note:</strong> the recommended way to handle this case is to provide at least one
+  normal reply (with the <code>-</code> command) to every trigger to cover the cases
+  where none of the conditions are true. Example:</p>
+<p><code>+ hello
+  * &lt;get name&gt; != undefined =&gt; Hello there, &lt;get name&gt;.
+  - Hi there.</code>
+* <code>objectNotFound</code>: This message is inserted into the bot's reply in-line when
+  it attempts to call an object macro which does not exist (for example, its
+  name was invalid or it was written in a programming language that the bot
+  couldn't parse, or that it had compile errors).</p>
+<p>The default is "[ERR: Object Not Found]"
+* <code>deepRecursion</code>: This message is inserted when the bot encounters a deep
+  recursion situation, for example when a reply redirects to a trigger which
+  redirects back to the first trigger, creating an infinite loop.</p>
+<p>The default is "ERR: Deep Recursion Detected"</p>
+<p>These custom error messages can be provided during the construction of the
+RiveScript object, or set afterwards on the object's <code>errors</code> property.</p>
+<p>Examples:</p>
+<pre class="codehilite"><code class="language-javascript">var bot = new RiveScript({
+   errors: {
+       replyNotFound: &quot;I don't know how to reply to that.&quot;
+   }
+});
+
+bot.errors.objectNotFound = &quot;Something went terribly wrong.&quot;;</code></pre>
 
 
 <h1>Constructor and Debug Methods</h1>
@@ -68,7 +114,7 @@ argument, in case you want to correlate it with your call to <code>loadFile()</c
 <p><code>onSuccess</code> receives: int batchNumber
 <code>onError</code> receives: string errorMessage[, int batchNumber]</p>
 <h2>void loadDirectory (string path[, func onSuccess[, func onError]])</h2>
-<p>Load RiveScript documents from a directory.</p>
+<p>Load RiveScript documents from a directory recursively.</p>
 <p>This function is not supported in a web environment.</p>
 <h2>bool stream (string code[, func onError])</h2>
 <p>Stream in RiveScript code dynamically. <code>code</code> should be the raw RiveScript
