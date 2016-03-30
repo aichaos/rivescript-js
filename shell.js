@@ -13,19 +13,48 @@ var readline = require("readline"),
 // Accept command line parameters.
 //------------------------------------------------------------------------------
 
-if (process.argv.length < 3) {
-	console.log("Usage: node shell.js </path/to/brain>");
+var opts = {
+	debug: false,
+	utf8: false,
+	brain: undefined
+};
+
+process.argv.forEach(function(val, index, array) {
+	if (index < 2) {
+		return;
+	}
+
+	if (val === "--debug") {
+		opts.debug = true;
+	}
+	else if (val === "--utf8") {
+		opts.utf8 = true;
+	}
+	else if (val.indexOf("-") === 0) {
+		console.error("Unknown option: %s", val);
+	}
+	else if (opts.brain === undefined) {
+		opts.brain = val;
+	}
+	else {
+		console.error("Extra parameter ignored: %s", val);
+	}
+});
+
+if (opts.brain === undefined) {
+	console.log("Usage: node shell.js [--debug --utf8] </path/to/brain>");
 	process.exit(1);
 }
-
-var brain = process.argv[2];
 
 //------------------------------------------------------------------------------
 // Initialize the RiveScript bot and print the welcome banner.
 //------------------------------------------------------------------------------
 
-var bot = new RiveScript();
-bot.loadDirectory(brain, loading_done);
+var bot = new RiveScript({
+	debug: opts.debug,
+	utf8:  opts.utf8,
+});
+bot.loadDirectory(opts.brain, loading_done);
 
 function loading_done(batch_num) {
 	bot.sortReplies();
@@ -33,7 +62,7 @@ function loading_done(batch_num) {
 	console.log("RiveScript Interpreter (JavaScript) -- Interactive Mode");
 	console.log("-------------------------------------------------------");
 	console.log("rivescript version: " + bot.version());
-	console.log("        Reply root: " + brain);
+	console.log("        Reply root: " + opts.brain);
 	console.log("");
 	console.log(
 		"You are now chatting with the RiveScript bot. Type a message and press Return\n"

@@ -15,25 +15,47 @@ CoffeeObjectHandler = require "./lib/lang/coffee"
 # Accept command line parameters.
 ################################################################################
 
-if process.argv.length < 3
-  console.log "Usage: coffee shell.coffee </path/to/brain>"
-  process.exit 1
+opts =
+  debug: false
+  utf8:  false
+  brain: undefined
 
-brain = process.argv[2]
+process.argv.forEach((val, index, array) ->
+  if index < 2
+    return
+
+  if val is "--debug"
+    opts.debug = true
+  else if val is "--utf8"
+    opts.utf8 = true
+  else if val.indexOf("-") is 0
+    console.error "Unknown option: #{val}"
+  else if opts.brain is undefined
+    opts.brain = val
+  else
+    console.error "Extra parameter ignored: #{val}"
+)
+
+if opts.brain is undefined
+  console.log "Usage: coffee shell.coffee [--debug --utf8] </path/to/brain>"
+  process.exit 1
 
 ################################################################################
 # Initialize the RiveScript bot and print the welcome banner.
 ################################################################################
 
-bot = new RiveScript()
+bot = new RiveScript({
+  debug: opts.debug
+  utf8: opts.utf8
+})
 bot.setHandler("coffee", new CoffeeObjectHandler())
-bot.loadDirectory brain, (batch_num) ->
+bot.loadDirectory opts.brain, (batch_num) ->
   bot.sortReplies()
 
   console.log """RiveScript Interpreter (CoffeeScript) -- Interactive Mode
                 ----------------------------------------------------------
                 rivescript version: #{bot.version()}
-                        Reply root: #{brain}
+                        Reply root: #{opts.brain}
 
                 You are now chatting with the RiveScript bot. Type a message
                 and press Return to send it. When finished, type '/quit' to
