@@ -305,6 +305,7 @@ exports.test_stringify_with_objects = (test) ->
     < object
     + my name is *
     - hello there<call>exclaim</call>
+    ^ and i like continues
   """)
 
   bot.rs.setSubroutine("exclaim", (rs) ->
@@ -312,6 +313,6 @@ exports.test_stringify_with_objects = (test) ->
   )
 
   src = bot.rs.stringify()
-  expect = '! version = 2.0\n! local concat = none\n\n> object hello javascript\n\treturn "Hello";\n< object\n\n> object exclaim javascript\n\treturn "!";\n< object\n\n+ my name is *\n- hello there<call>exclaim</call>\n'
+  expect = '! version = 2.0\n! local concat = none\n\n> object hello javascript\n\treturn "Hello";\n< object\n\n> object exclaim javascript\n\treturn "!";\n< object\n\n+ my name is *\n- hello there<call>exclaim</call>and i like continues\n'
   test.equal(src, expect)
   test.done()

@@ -470,7 +470,7 @@ class Parser
 
         if t.reply
           for r in t.reply
-            output.push "#{id}- #{r}"
+            output.push "#{id}- #{r.replace(/\n/mg, "\n" + id + "^ ")}"
 
         output.push ""
 
@@ -571,7 +571,7 @@ class Parser
           tagged = true
 
       if tagged
-        source.push "> topic #{topic} " + tagline.join(" ") + "\n"
+        source.push ("> topic #{topic} " + tagline.join(" ")).trim() + "\n"
 
       source.push.apply source, _writeTriggers(deparsed.topics[topic], tagged)
 
