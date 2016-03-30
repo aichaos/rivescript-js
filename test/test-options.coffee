@@ -118,3 +118,25 @@ exports.test_concat_space_with_conditionals = (test) ->
   bot.reply("test a", "First A line\nSecond A line\nThird A line")
   bot.reply("test b", "First B line\nSecond B line\nThird B line")
   test.done()
+
+exports.test_concat_newline_stringify = (test) ->
+  bot = new TestCase(test, """
+    ! local concat = newline
+
+    + test *
+    - First B line
+    ^ Second B line
+    ^ Third B line
+
+    > topic a_cool_topic
+      + hello
+      - Oh hi there.
+      ^ Do you liek turtles?
+    < topic
+
+  """)
+
+  src = bot.rs.stringify()
+  expect = '! version = 2.0\n! local concat = none\n\n+ test *\n- First B line\\nSecond B line\\nThird B line\n\n> topic a_cool_topic\n\n\t+ hello\n\t- Oh hi there.\\nDo you liek turtles?\n\n< topic\n'
+  test.equal(src, expect)
+  test.done()
