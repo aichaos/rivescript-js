@@ -1,5 +1,19 @@
 # Changes
 
+* 1.10.0 2016-03-30
+  - Fix a bug where `! local concat` settings wouldn't apply to the first
+    continuation of a conditional (bug #88)
+  - Add the ability to override certain common error messages with custom text,
+    for the cases where a trigger wasn't matched, when a trigger *was* matched
+    but no reply was given, when an object macro wasn't found, and when deep
+    recursion errors arise (bug #90)
+  - Fix a bug where the `<@>` syntax for a redirect fails when `<star1>` is
+    undefined (bug #92)
+  - Fix the `stringify()` function to escape newline characters so that the
+    resulting code doesn't have syntax errors when reloading it (bug #95)
+  - Fix some triggers in the default example brain to account for substitution
+    on the bot's previous reply (bug #87)
+
 * 1.8.0 2016-03-18
   - Update the way the `args` array works in JavaScript object macros: it now
     uses a shell-style array where quoted strings come in as one array element,
