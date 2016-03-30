@@ -13,6 +13,8 @@
     resulting code doesn't have syntax errors when reloading it (bug #95)
   - Fix some triggers in the default example brain to account for substitution
     on the bot's previous reply (bug #87)
+  - Add command line arguments to `shell.js` and `shell.coffee`: use `--debug`
+    to enable verbose debug logging and `--utf8` to enable UTF-8 mode.
 
 * 1.8.0 2016-03-18
   - Update the way the `args` array works in JavaScript object macros: it now
