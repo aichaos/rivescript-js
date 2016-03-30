@@ -930,7 +930,7 @@ class Brain
       match = reply.match(/\{topic=(.+?)\}/i) # Look for more
 
     # Inline redirector
-    match = reply.match(/\{@(.+?)\}/)
+    match = reply.match(/\{@([^\}]*?)\}/)
     giveup = 0
     while match
       giveup++
@@ -942,7 +942,7 @@ class Brain
       @say "Inline redirection to: #{target}"
       subreply = @_getReply(user, target, "normal", step+1, scope)
       reply = reply.replace(new RegExp("\\{@" + utils.quotemeta(target) + "\\}", "i"), subreply)
-      match = reply.match(/\{@(.+?)\}/)
+      match = reply.match(/\{@([^\}]*?)\}/)
 
     return reply
 
