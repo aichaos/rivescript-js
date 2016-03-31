@@ -128,6 +128,16 @@ exports.test_concat_newline_stringify = (test) ->
     ^ Second B line
     ^ Third B line
 
+    + status is *
+    * <star1> == good => All good!
+    ^ Congrats!
+    ^ Have fun!
+    * <star1> == bad => Oh no.
+    ^ That sucks.
+    ^ Try again.
+    - I didn't get that.
+    ^ What did you say?
+
     > topic a_cool_topic
       + hello
       - Oh hi there.
@@ -137,6 +147,6 @@ exports.test_concat_newline_stringify = (test) ->
   """)
 
   src = bot.rs.stringify()
-  expect = '! version = 2.0\n! local concat = none\n\n+ test *\n- First B line\\nSecond B line\\nThird B line\n\n> topic a_cool_topic\n\n\t+ hello\n\t- Oh hi there.\\nDo you liek turtles?\n\n< topic\n'
+  expect = '! version = 2.0\n! local concat = none\n\n+ test *\n- First B line\\nSecond B line\\nThird B line\n\n+ status is *\n* <star1> == good => All good!\\nCongrats!\\nHave fun!\n* <star1> == bad => Oh no.\\nThat sucks.\\nTry again.\n- I didn\'t get that.\\nWhat did you say?\n\n> topic a_cool_topic\n\n\t+ hello\n\t- Oh hi there.\\nDo you liek turtles?\n\n< topic\n'
   test.equal(src, expect)
   test.done()
