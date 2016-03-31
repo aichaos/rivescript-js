@@ -463,7 +463,7 @@ class Parser
 
         if t.condition
           for c in t.condition
-            output.push "#{id}* #{c}"
+            output.push "#{id}* #{c.replace(/\n/mg, "\\n")}"
 
         if t.redirect
           output.push "#{id}@ #{t.redirect}"
