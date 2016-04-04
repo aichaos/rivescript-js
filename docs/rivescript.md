@@ -180,6 +180,11 @@ into a JSON-serializable data structure. This may be useful for developing
 a user interface to edit RiveScript replies without having to edit the
 RiveScript code manually, in conjunction with the `write()` method.
 
+The format of the deparsed data structure is out of scope for this document,
+but there is additional information and examples available in the `eg/`
+directory of the source distribution. You can read the documentation on
+GitHub here: [RiveScript Deparse](https://github.com/aichaos/rivescript-js/tree/master/eg/deparse)
+
 ## string stringify([data deparsed])
 
 Translate the in-memory representation of the RiveScript brain back into
