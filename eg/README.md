@@ -34,3 +34,5 @@ RiveScript-js.
 * [scope](scope/) - Demonstrates the usage of the `scope` parameter to the
   `reply()` function for passing the parent scope down into JavaScript object
   macros.
+* [deparse](deparse/) - Additional documentation on how the `deparse()` function
+  is used and its data format.
