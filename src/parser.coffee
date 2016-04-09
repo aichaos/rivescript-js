@@ -602,6 +602,12 @@ class Parser
       if not line.match(/^.+(?:\s+.+|)\s*=\s*.+?$/)
         return "Invalid format for !Definition line: must be
                 '! type name = value' OR '! type = value'"
+      else if line.match(/^array/)
+        if line.match(/\=\s?\||\|\s?$/)
+          return "Piped arrays can't begin or end with a |"
+        else if line.match(/\|\|/)
+          return "Piped arrays can't include blank entries"
+
     else if cmd is ">"
       # > Label
       # - The "begin" label must have only one argument ("begin")
@@ -636,6 +642,14 @@ class Parser
       else if line.match(/[^a-z0-9(|)\[\]*_#@{}<>=\s]/)
         return "Triggers may only contain lowercase letters, numbers, and
                 these symbols: ( | ) [ ] * _ # { } < > ="
+      else if line.match(/\(\||\|\)/)
+        return "Piped alternations can't begin or end with a |"
+      else if line.match(/\([^\)].+\|\|.+\)/)
+        return "Piped alternations can't include blank entries"
+      else if line.match(/\[\||\|\]/)
+        return "Piped optionals can't begin or end with a |"
+      else if line.match(/\[[^\]].+\|\|.+\]/)
+        return "Piped optionals can't include blank entries"
 
       # Count the brackets.
       chars = line.split ""
