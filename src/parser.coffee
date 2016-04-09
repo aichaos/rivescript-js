@@ -306,6 +306,9 @@ class Parser
               for field, i in fields
                 fields[i] = fields[i].replace(/\\s/ig, " ")
 
+              # Delete any empty fields.
+              fields = fields.filter (val)-> val != ''
+
               ast.begin.array[name] = fields
 
             when "sub"

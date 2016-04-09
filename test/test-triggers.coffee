@@ -123,3 +123,20 @@ exports.test_weighted_triggers = (test) ->
   bot.reply("Can you run a Google search for Node", "Sure!")
   bot.reply("Can you run a Google search for Node or something", "Or something. Sure!")
   test.done()
+
+
+exports.test_empty_piped_arrays = (test) ->
+  bot = new TestCase(test, """
+    ! array hello = hi|hey|sup|yo|
+
+    + [*] @hello [*]
+    - Oh hello there.
+
+    + *
+    - Anything else?
+  """)
+  bot.reply("Hey!", "Oh hello there.")
+  bot.reply("sup", "Oh hello there.")
+  bot.reply("Bye!", "Anything else?")
+  bot.reply("Love you", "Anything else?")
+  test.done()
