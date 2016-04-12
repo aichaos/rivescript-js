@@ -807,9 +807,6 @@ class Brain
       else
         random = text.split(" ")
 
-      # Delete any empty randoms.
-      # random = random.filter (val)-> val != ''
-
       output = random[ parseInt(Math.random() * random.length) ]
 
       reply = reply.replace(new RegExp("\\{random\\}" + utils.quotemeta(text) + "\\{\\/random\\}", "ig")
