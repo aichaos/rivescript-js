@@ -596,6 +596,9 @@ class Brain
     regexp = regexp.replace(/_/g,  "(\\w+?)") # Convert _ into (\w+?)
     regexp = regexp.replace(/\{weight=\d+\}/g, "") # Remove {weight} tags
     regexp = regexp.replace(/<zerowidthstar>/g, "(.*?)")
+    regexp = regexp.replace(/\|{2,}/, '|') # Remove empty entities
+    regexp = regexp.replace(/(\(|\[)\|/g, '$1') # Remove empty entities from start of alt/opts
+    regexp = regexp.replace(/\|(\)|\])/g, '$1') # Remove empty entities from end of alt/opts
 
     # UTF-8 mode special characters.
     if @utf8

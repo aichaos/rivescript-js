@@ -123,3 +123,113 @@ exports.test_weighted_triggers = (test) ->
   bot.reply("Can you run a Google search for Node", "Sure!")
   bot.reply("Can you run a Google search for Node or something", "Or something. Sure!")
   test.done()
+
+exports.test_empty_piped_arrays = (test) ->
+  errors = []
+  expected_errors = [
+    'Syntax error: Piped arrays can\'t begin or end with a | at stream() line 1 near ! array hello = hi|hey|sup|yo|'
+    'Syntax error: Piped arrays can\'t begin or end with a | at stream() line 2 near ! array something = |something|some thing'
+    'Syntax error: Piped arrays can\'t include blank entries at stream() line 3 near ! array nothing = nothing||not a thing'
+  ]
+
+  console.error = (text)->
+    errors.push(text)
+
+  bot = new TestCase(test, """
+    ! array hello = hi|hey|sup|yo|
+    ! array something = |something|some thing
+    ! array nothing = nothing||not a thing
+
+    + [*] @hello [*]
+    - Oh hello there.
+
+    + *
+    - Anything else?
+  """)
+
+  # Check that errors were thrown
+  test.deepEqual(errors, expected_errors)
+
+  # We also fix these, so these should also work
+  bot.reply("Hey!", "Oh hello there.")
+  bot.reply("sup", "Oh hello there.")
+  bot.reply("Bye!", "Anything else?")
+  bot.reply("Love you", "Anything else?")
+  test.done()
+
+exports.test_empty_piped_alternations = (test) ->
+  errors = []
+  expected_errors = [
+    'Syntax error: Piped alternations can\'t begin or end with a | at stream() line 1 near + [*] (hi|hey|sup|yo|) [*]'
+    'Syntax error: Piped alternations can\'t begin or end with a | at stream() line 4 near + [*] (|good|great|nice) [*]'
+    'Syntax error: Piped alternations can\'t include blank entries at stream() line 7 near + [*] (mild|warm||hot) [*]'
+  ]
+
+  console.error = (text)->
+    errors.push(text)
+
+  bot = new TestCase(test, """
+    + [*] (hi|hey|sup|yo|) [*]
+    - Oh hello there.
+
+    + [*] (|good|great|nice) [*]
+    - Oh nice!
+
+    + [*] (mild|warm||hot) [*]
+    - Purrfect.
+
+    + *
+    - Anything else?
+  """)
+
+  # Check that errors were thrown
+  test.deepEqual(errors, expected_errors)
+
+  # We also fix these, so these should also work
+  bot.reply("Hey!", "Oh hello there.")
+  bot.reply("sup", "Oh hello there.")
+  bot.reply("that's nice to hear", "Oh nice!")
+  bot.reply("so good", "Oh nice!")
+  bot.reply("You're hot!", "Purrfect.")
+  bot.reply("Bye!", "Anything else?")
+  bot.reply("Love you", "Anything else?")
+  test.done()
+
+
+exports.test_empty_piped_optionals = (test) ->
+  errors = []
+  expected_errors = [
+    'Syntax error: Piped optionals can\'t begin or end with a | at stream() line 1 near + bot [*] [hi|hey|sup|yo|] [*] to me'
+    'Syntax error: Piped optionals can\'t begin or end with a | at stream() line 4 near + dog [*] [|good|great|nice] [*] to me'
+    'Syntax error: Piped optionals can\'t include blank entries at stream() line 7 near + cat [*] [mild|warm||hot] [*] to me'
+  ]
+
+  console.error = (text)->
+    errors.push(text)
+
+  bot = new TestCase(test, """
+    + bot [*] [hi|hey|sup|yo|] [*] to me
+    - Oh hello there.
+
+    + dog [*] [|good|great|nice] [*] to me
+    - Oh nice!
+
+    + cat [*] [mild|warm||hot] [*] to me
+    - Purrfect.
+
+    + *
+    - Anything else?
+  """)
+
+  # Check that errors were thrown
+  test.deepEqual(errors, expected_errors)
+
+  # We also fix these, so these should also work
+  bot.reply("Bot say hey to me", "Oh hello there.")
+  bot.reply("bot w hi to me", "Oh hello there.")
+  bot.reply("dog be nice to me", "Oh nice!")
+  bot.reply("Dog don't be good to me", "Oh nice!")
+  bot.reply("Cat should not feel warm to me", "Purrfect.")
+  bot.reply("Bye!", "Anything else?")
+  bot.reply("Love you", "Anything else?")
+  test.done()
