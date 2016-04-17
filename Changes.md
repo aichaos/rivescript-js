@@ -1,5 +1,14 @@
 # Changes
 
+* 1.12.0 2016-04-17
+  - Fix the `stringify()` function to also escape newlines on conditionals.
+  - Various fixes to "pipe syntax" for arrays, optionals and alternations;
+    having a "blank" entry separated by pipes (e.g. a trailing or leading pipe)
+    would cause matching issues. These have been fixed and a syntax error is
+    given if this is detected at parsing time.
+  - Added additional documentation for the usage of `deparse()` and related
+    functions to the `eg/deparse` directory.
+
 * 1.10.0 2016-03-30
   - Fix a bug where `! local concat` settings wouldn't apply to the first
     continuation of a conditional (bug #88)

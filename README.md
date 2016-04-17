@@ -176,7 +176,7 @@ Grunt options:
   for local testing and demoing.
 * `grunt test` - Run unit tests.
 
-## GRUNT CONNECT
+## GRUNT SERVER
 
 This project uses [Grunt](http://gruntjs.com) for compiling to minified JS and
 also includes a simple web server for local testing and demoing for RiveScript.
@@ -188,6 +188,24 @@ $ npm install -g grunt-cli # If you don't already have it
 $ npm install              # Install dev dependencies
 $ grunt server             # Will start a local web server and open eg/chat.html
 ```
+
+## PUBLISHING
+
+Steps for the npm maintainer of this module:
+
+1. Increment the version number in `package.json` and `src/rivescript.coffee`
+2. Add a change log notice to `Changes.md`
+3. Run `grunt dist` to build the JavaScript sources and `grunt test` to verify
+   all tests pass.
+3. Test a local installation from a different directory
+   (`npm install ../rivescript-js`)
+4. `npm login` if it's the first time on a new system, and `npm publish` to
+   publish the module to NPM.
+5. Create compiled zip and tarballs for GitHub releases:
+  * Copy git repo to a new folder.
+  * `rm -rf .git node_modules` to remove cruft from the new folder.
+  * `zip -r rivescript-js-VERSION.zip rivescript-js`
+  * `tar -czvf rivescript-js-VERSION.tar.gz rivescript-js`
 
 ## LICENSE
 
