@@ -1,5 +1,9 @@
 # Changes
 
+* 1.12.1 2016-05-05
+  - Fix the `<call>...</call>` regular expression to match line break characters
+    and preserve them in the argument list sent to an object macro (bug #108).
+
 * 1.12.0 2016-04-17
   - Fix the `stringify()` function to also escape newlines on conditionals.
   - Various fixes to "pipe syntax" for arrays, optionals and alternations;
