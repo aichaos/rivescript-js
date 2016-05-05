@@ -18,7 +18,19 @@
 exports.strip = (text) ->
   text = text.replace(/^[\s\t]+/, "") \
              .replace(/[\s\t]+$/, "") \
-             .replace(/[\x0D\x0A]+/, "");
+             .replace(/[\x0D\x0A]+/, "")
+  return text
+
+##
+# string trim (string)
+#
+# Compatible implementation of `String.prototype.trim()`. Strips whitespace
+# from the beginning and end of the string, but doesn't remove any
+# whitespace inside the string like `strip()` does.
+##
+exports.trim = (text) ->
+  text = text.replace(/^[\x0D\x0A\s\t]+/, "") \
+             .replace(/[\x0D\x0A\s\t]+$/, "")
   return text
 
 ##
@@ -138,7 +150,7 @@ exports.clone = (obj) ->
 # Determines if obj looks like a promise
 ##
 exports.isAPromise = (obj) ->
-  return obj and obj.then and obj.catch and obj.finally and 
-  typeof obj.then is 'function' and 
+  return obj and obj.then and obj.catch and obj.finally and
+  typeof obj.then is 'function' and
   typeof obj.catch is 'function' and
-  typeof obj.finally is 'function' 
+  typeof obj.finally is 'function'

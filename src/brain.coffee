@@ -91,7 +91,7 @@ class Brain
   processCallTags: (reply, scope, async) ->
     reply = reply.replace(/\{__call__\}/g, "<call>")
     reply = reply.replace(/\{\/__call__\}/g, "</call>")
-    callRe = /<call>(.+?)<\/call>/ig
+    callRe = /<call>([\s\S]+?)<\/call>/ig
     argsRe = /{__call_arg__}([^{]*){\/__call_arg__}/ig
 
     giveup = 0
@@ -109,7 +109,7 @@ class Brain
       if not match
         break
 
-      text  = utils.strip(match[1])
+      text = utils.trim(match[1])
 
       # get subroutine name
       subroutineNameMatch = (/(\S+)/ig).exec(text)

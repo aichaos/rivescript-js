@@ -5,6 +5,12 @@
 Strip extra whitespace from both ends of the string, and remove
 line breaks anywhere in the string.
 
+## string trim (string)
+
+Compatible implementation of `String.prototype.trim()`. Strips whitespace
+from the beginning and end of the string, but doesn't remove any
+whitespace inside the string like `strip()` does.
+
 ## void extend (object a, object b)
 
 Combine the properties of both objects into one. The properties from
