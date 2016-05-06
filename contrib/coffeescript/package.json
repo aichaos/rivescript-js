@@ -1,6 +1,6 @@
 {
   "name": "rivescript-contrib-coffeescript",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "CoffeeScript object macro handler for RiveScript",
   "main": "index.js",
   "scripts": {
