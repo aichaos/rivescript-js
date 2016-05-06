@@ -4,6 +4,10 @@
   - Fix the `<call>` tags not being executed on the left side of conditionals,
     so that `<call>test</call> == true => Success` types of conditions should
     work (bug #107).
+  - Fix trigger regexp processing so that if a `{weight}` tag contains a space
+    before or after it (or: a space between `{weight}` and the rest of the
+    trigger text), the spaces are also stripped so that matching isn't broken
+    for that trigger (bug #102).
 
 * 1.12.1 2016-05-05
   - Fix the `<call>...</call>` regular expression to match line break characters

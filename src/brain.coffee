@@ -600,7 +600,7 @@ class Brain
     regexp = regexp.replace(/\*/g, "(.+?)")   # Convert * into (.+?)
     regexp = regexp.replace(/#/g,  "(\\d+?)") # Convert # into (\d+?)
     regexp = regexp.replace(/_/g,  "(\\w+?)") # Convert _ into (\w+?)
-    regexp = regexp.replace(/\{weight=\d+\}/g, "") # Remove {weight} tags
+    regexp = regexp.replace(/\s*\{weight=\d+\}\s*/g, "") # Remove {weight} tags
     regexp = regexp.replace(/<zerowidthstar>/g, "(.*?)")
     regexp = regexp.replace(/\|{2,}/, '|') # Remove empty entities
     regexp = regexp.replace(/(\(|\[)\|/g, '$1') # Remove empty entities from start of alt/opts

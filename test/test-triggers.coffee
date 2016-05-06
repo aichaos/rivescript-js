@@ -117,11 +117,42 @@ exports.test_weighted_triggers = (test) ->
 
     + hello *{weight=20}
     - Hi there!
+
+    // Test that spaces before or after the {weight} tag are gobbled up along
+    // with the {weight} tag itself.
+
+    + something{weight=100}
+    - Weighted something
+
+    + something
+    - Unweighted something
+
+    + nothing {weight=100}
+    - Weighted nothing
+
+    + nothing
+    - Unweighted nothing
+
+    + {weight=100}everything
+    - Weighted everything
+
+    + everything
+    - Unweighted everything
+
+    + {weight=100}   blank
+    - Weighted blank
+
+    + blank
+    - Unweighted blank
   """)
   bot.reply("Hello robot.", "Hi there!")
   bot.reply("Hello or something.", "Hi there!")
   bot.reply("Can you run a Google search for Node", "Sure!")
   bot.reply("Can you run a Google search for Node or something", "Or something. Sure!")
+  bot.reply("something", "Weighted something")
+  bot.reply("nothing", "Weighted nothing")
+  bot.reply("everything", "Weighted everything")
+  bot.reply("blank", "Weighted blank")
   test.done()
 
 exports.test_empty_piped_arrays = (test) ->
