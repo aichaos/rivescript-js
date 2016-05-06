@@ -1,5 +1,10 @@
 # Changes
 
+* 1.12.2 TBD
+  - Fix the `<call>` tags not being executed on the left side of conditionals,
+    so that `<call>test</call> == true => Success` types of conditions should
+    work (bug #107).
+
 * 1.12.1 2016-05-05
   - Fix the `<call>...</call>` regular expression to match line break characters
     and preserve them in the argument list sent to an object macro (bug #108).

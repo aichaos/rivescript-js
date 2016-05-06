@@ -84,6 +84,44 @@ exports.test_get_variable = (test) ->
   bot.reply("show me var", "test")
   test.done()
 
+exports.test_objects_in_conditions = (test) ->
+  bot = new TestCase(test, """
+    > object test_condition javascript
+      return args[0] === "1" ? "true" : "false";
+    < object
+
+    + test *
+    * <call>test_condition <star></call> == true  => True.
+    * <call>test_condition <star></call> == false => False.
+    - Call failed.
+  """)
+  bot.reply("test 1", "True.")
+  bot.reply("test 2", "False.")
+  bot.reply("test 0", "False.")
+  bot.reply("test x", "False.")
+  test.done()
+
+exports.test_line_breaks_in_call = (test) ->
+  bot = new TestCase(test, """
+    > object macro javascript
+      var a = args.join("; ");
+      return a;
+    < object
+
+    // Variables with newlines aren't expected to interpolate, because
+    // tag processing only happens in one phase.
+    ! var name = name with\\nnew line
+
+    + test literal newline
+    - <call>macro "argumentwith\\nnewline"</call>
+
+    + test botvar newline
+    - <call>macro "<bot name>"</call>
+  """)
+  bot.reply("test literal newline", "argumentwith\nnewline")
+  bot.reply("test botvar newline", "name with\\nnew line")
+  test.done()
+
 exports.test_js_string_in_setSubroutine = (test) ->
   bot = new TestCase(test, """
     + hello
