@@ -1,0 +1,31 @@
+> object base coffeescript
+	return "Test basic CoffeeScript"
+< object
+
+> object reverse coffeescript
+	msg = args.join " "
+	return msg.split("").reverse().join("")
+< object
+
+> object broken coffeescript
+	return "syntax error
+< object
+
+> object foreign perl
+	return "Perl checking in!";
+< object
+
++ test base
+- <call>base</call>
+
++ reverse *
+- <call>reverse <star></call>
+
++ test broken
+- Broken: <call>broken</call>
+
++ test fake
+- Fake: <call>fake</call>
+
++ test perl
+- Perl: <call>foreign</call>
