@@ -1,5 +1,11 @@
 # Changes
 
+* 1.12.2 2016-05-16
+  - Call the error handler on `loadDirectory()` when the directory doesn't exist
+    or isn't a directory (bug #117).
+  - Include the `dist/` directory on npm for easy web browser embedding using
+    npmcdn.
+
 * 1.12.1 2016-05-05
   - Fix the `<call>...</call>` regular expression to match line break characters
     and preserve them in the argument list sent to an object macro (bug #108).
