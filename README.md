@@ -24,6 +24,12 @@ through npm:
 
 `npm install rivescript`
 
+For the web you can use the npmcdn:
+
+```html
+<script src="https://npmcdn.com/rivescript@latest/dist/rivescript.min.js"></script>
+```
+
 The GitHub repository for this project only includes the CoffeeScript sources.
 To download a compiled JavaScript release of this library, check the
 [Releases](https://github.com/aichaos/rivescript-js/releases) tab. The compiled

@@ -54,7 +54,7 @@ var bot = new RiveScript({
 	debug: opts.debug,
 	utf8:  opts.utf8,
 });
-bot.loadDirectory(opts.brain, loading_done);
+bot.loadDirectory(opts.brain, loading_done, loading_error);
 
 function loading_done(batch_num) {
 	bot.sortReplies();
@@ -101,6 +101,10 @@ function loading_done(batch_num) {
 	}).on("close", function() {
 		process.exit(0);
 	});
+}
+
+function loading_error(error, loadBatch) {
+	console.error("Loading error: " + error);
 }
 
 function help() {

@@ -373,20 +373,34 @@ class RiveScript
     @_pending[loadCount] = {}
     toLoad = []
 
-    @say "Loading batch #{loadCount} from directory #{path}"
+    # Default error handler/dummy function.
+    if not onError?
+      onError = () ->
+        return
 
-    # Load all the files.
-    files = readDir(path)
-    for file in files
-      if file.match(/\.(rive|rs)$/i)
-        # Keep track of the file's status.
-        @_pending[loadCount][path+"/"+file] = 1
-        toLoad.push path+"/"+file
+    # Verify the directory exists.
+    @_node.fs.stat(path, (err, stats) =>
+      if err
+        return onError.call undefined, err, loadCount
 
-    # Load all the files.
-    for file in toLoad
-      @say "Parsing file #{file} from directory"
-      @_nodeLoadFile loadCount, file, onSuccess, onError
+      if not stats.isDirectory()
+        return onError.call undefined, "#{path} is not a directory", loadCount
+
+      @say "Loading batch #{loadCount} from directory #{path}"
+
+      # Load all the files.
+      files = readDir(path)
+      for file in files
+        if file.match(/\.(rive|rs)$/i)
+          # Keep track of the file's status.
+          @_pending[loadCount][path+"/"+file] = 1
+          toLoad.push path+"/"+file
+
+      # Load all the files.
+      for file in toLoad
+        @say "Parsing file #{file} from directory"
+        @_nodeLoadFile loadCount, file, onSuccess, onError
+    )
 
   ##
   # bool stream (string code[, func onError])

@@ -15,14 +15,12 @@
   "author": "Noah Petherbridge <root@kirsle.net> (http://www.kirsle.net/)",
   "main": "lib/rivescript.js",
   "files": [
-    "lib/rivescript.js",
-    "lib/brain.js",
-    "lib/inheritance.js",
-    "lib/parser.js",
-    "lib/sorting.js",
-    "lib/utils.js",
-    "lib/lang/coffee.js",
-    "lib/lang/javascript.js"
+    "README.md",
+    "LICENSE",
+    "Changes.md",
+    "lib/",
+    "dist/",
+    "docs/"
   ],
   "directories": {
     "lib": "lib",
