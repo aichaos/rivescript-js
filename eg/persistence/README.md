@@ -85,6 +85,7 @@ after your username. Example:
     ]
   },
   "__lastmatch__": "(what is my name|who am i|do you know my name|do you know who i am){weight=10}",
+  "__initialmatch__": "(what is my name|who am i|do you know my name|do you know who i am){weight=10}",
   "name": "Noah"
 }
 ```

@@ -826,6 +826,19 @@ class RiveScript
     return undefined
 
   ##
+  # string initialMatch (string user)
+  #
+  # Retrieve the trigger that the user matched initially. This will return
+  # only the first matched trigger and will not include subsequent redirects.
+  #
+  # This value is reset on each `reply()` or `replyAsync()` call.
+  ##
+  initialMatch: (user) ->
+    if @_users[user]?
+      return @_users[user].__initialmatch__
+    return undefined
+
+  ##
   # string currentUser ()
   #
   # Retrieve the current user's ID. This is most useful within a JavaScript
