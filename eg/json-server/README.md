@@ -60,7 +60,8 @@ send along user variables.
 		"name": "Soandso",
 		"age": "10",
 		"__history__": {},
-		"__lastmatch__": "hello bot"
+		"__lastmatch__": "hello bot",
+    "__initialmatch__": "hello bot"
 	}
 }
 ```
@@ -121,7 +122,8 @@ Connection: keep-alive
                 "undefined"
             ]
         },
-        "__lastmatch__": "(hello|hi|hey|howdy|hola|hai|yo) [*]"
+        "__lastmatch__": "(hello|hi|hey|howdy|hola|hai|yo) [*]",
+        "__initialmatch__": "(hello|hi|hey|howdy|hola|hai|yo) [*]"
     }
 }
 ```

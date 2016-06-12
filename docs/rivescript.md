@@ -291,6 +291,13 @@ Thaw a user's frozen variables. The action can be one of the following:
 
 Retrieve the trigger that the user matched most recently.
 
+## string initialMatch (string user)
+
+Retrieve the trigger that the user matched initially. This will return
+only the first matched trigger and will not include subsequent redirects.
+
+This value is reset on each `reply()` or `replyAsync()` call.
+
 ## string currentUser ()
 
 Retrieve the current user's ID. This is most useful within a JavaScript

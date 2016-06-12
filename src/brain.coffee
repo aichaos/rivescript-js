@@ -47,6 +47,10 @@ class Brain
     msg   = @formatMessage(msg)
     reply = ""
 
+    # Set initial match to be undefined
+    if @master.getUservars(user)
+      @master._users[user].__initialmatch__ = undefined
+
     # If the BEGIN block exists, consult it first.
     if @master._topics.__begin__
       begin = @_getReply(user, "request", "begin", 0, scope)
@@ -417,6 +421,10 @@ class Brain
     # Store what trigger they matched on. If their matched trigger is undefined,
     # this will be too, which is great.
     @master._users[user].__lastmatch__ = matchedTrigger
+
+    # Store initial matched trigger. Like __lastmatch__, this can be undefined.
+    if step is 0
+      @master._users[user].__initialmatch__ = matchedTrigger
 
     # Did we match?
     if matched

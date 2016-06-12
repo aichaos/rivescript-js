@@ -172,3 +172,40 @@ exports.test_redirect_with_undefined_input = (test) ->
 
 
   test.done()
+
+
+exports.test_initialmatch = (test) ->
+  bot = new TestCase(test, """
+    ! array thanks = thanks|thank you
+
+    + (hello|ni hao)
+    @ hi
+
+    + hi
+    - Oh hi. {@phrase}
+
+    + phrase
+    - How are you?
+
+    + good
+    - That's great.
+
+    + @thanks{weight=2}
+    - No problem. {@phrase}
+
+    + *
+    - I don't know.
+  """)
+  bot.reply("Hello?", "Oh hi. How are you?")
+  bot.uservar("__lastmatch__", "phrase")
+  bot.uservar("__initialmatch__", "(hello|ni hao)")
+
+  bot.reply("Good!", "That's great.")
+  bot.uservar("__lastmatch__", "good")
+  bot.uservar("__initialmatch__", "good")
+
+  bot.reply("Thanks!", "No problem. How are you?")
+  bot.uservar("__lastmatch__", "phrase")
+  bot.uservar("__initialmatch__", "@thanks{weight=2}")
+
+  test.done()
