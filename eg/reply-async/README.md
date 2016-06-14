@@ -1,8 +1,31 @@
-# Reply-async
+# replyAsync Example
 
 This example demonstrates using replyAsync function. You should use
 **replyAsync** instead of **reply** if you have subroutines that return
 promises.
+
+## Important Note About Conditionals
+
+Asynchronous object macros are *not* supported within the conditional side of
+`*Conditions` in RiveScript. That is, RiveScript code like the following will
+not work (where the `weather` macro calls out to an HTTP API and returns a
+promise with the result):
+
+```rivescript
++ is it sunny outside
+* <call>weather <get zipcode></call> == sunny => It appears it is!
+- It doesn't look sunny outside.
+```
+
+Conditionals in RiveScript require their results to be immediately available
+so it can check if the comparison is truthy. So, even if you use `replyAsync()`,
+the `<call>` tags in conditionals only support running synchronous object
+macros (ones that return a string result and not a promise).
+
+However, asynchronous object macros can be used in the *reply* portion of the
+conditional (the part on the right side of the `=>` separator). This is the
+text eventually returned to the user and it can return as a promise when you use
+`replyAsync()` just like if it were in a `-Reply` command.
 
 ## Running the example
 

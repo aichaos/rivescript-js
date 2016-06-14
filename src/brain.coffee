@@ -256,6 +256,7 @@ class Brain
   # * user, msg and scope are the same as reply()
   # * context = "normal" or "begin"
   # * step = the recursion depth
+  # * scope = the call scope for object macros
   ##
   _getReply: (user, msg, context, step, scope) ->
     # Needed to sort replies?
@@ -452,6 +453,13 @@ class Brain
               left  = @processTags(user, msg, left, stars, thatstars, step, scope)
               right = @processTags(user, msg, right, stars, thatstars, step, scope)
 
+              # Execute any <call> tags in the conditions. We explicitly send
+              # `false` as the async parameter, because we can't run async
+              # object macros in conditionals; we need the result NOW
+              # for comparison.
+              left  = @processCallTags(left, scope, false)
+              right = @processCallTags(right, scope, false)
+
               # Defaults?
               if left.length is 0
                 left = "undefined"
@@ -602,7 +610,7 @@ class Brain
     regexp = regexp.replace(/\*/g, "(.+?)")   # Convert * into (.+?)
     regexp = regexp.replace(/#/g,  "(\\d+?)") # Convert # into (\d+?)
     regexp = regexp.replace(/_/g,  "(\\w+?)") # Convert _ into (\w+?)
-    regexp = regexp.replace(/\{weight=\d+\}/g, "") # Remove {weight} tags
+    regexp = regexp.replace(/\s*\{weight=\d+\}\s*/g, "") # Remove {weight} tags
     regexp = regexp.replace(/<zerowidthstar>/g, "(.*?)")
     regexp = regexp.replace(/\|{2,}/, '|') # Remove empty entities
     regexp = regexp.replace(/(\(|\[)\|/g, '$1') # Remove empty entities from start of alt/opts
