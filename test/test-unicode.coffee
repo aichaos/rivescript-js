@@ -54,6 +54,26 @@ exports.test_unicode = (test) ->
   bot.reply("more", "Änd thät wäs thë ënd öf hïm.")
   test.done()
 
+exports.test_wildcards = (test) ->
+  bot = new TestCase(test, """
+    + my name is _
+    - Nice to meet you, <star>.
+
+    + i am # years old
+    - A lot of people are <star> years old.
+
+    + *
+    - No match.
+  """, {utf8: true})
+
+  bot.reply("My name is Aiden", "Nice to meet you, aiden.")
+  bot.reply("My name is Bảo", "Nice to meet you, bảo.")
+  bot.reply("My name is 5", "No match.")
+
+  bot.reply("I am five years old", "No match.")
+  bot.reply("I am 5 years old", "A lot of people are 5 years old.")
+  test.done()
+
 exports.test_punctuation = (test) ->
   bot = new TestCase(test, """
     + hello bot

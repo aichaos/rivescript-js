@@ -666,9 +666,11 @@ class Brain
 
     # _ wildcards can't match numbers! Quick note on why I did it this way:
     # the initial replacement above (_ => (\w+?)) needs to be \w because the
-    # square brackets in [A-Za-z] will confuse the optionals logic just above.
-    # So then we switch it back down here.
-    regexp = regexp.replace(/\\w/, "[A-Za-z]")
+    # square brackets in [\s\d] will confuse the optionals logic just above.
+    # So then we switch it back down here. Also, we don't just use \w+ because
+    # that matches digits, and similarly [A-Za-z] doesn't work with Unicode,
+    # so this regexp excludes spaces and digits instead of including letters.
+    regexp = regexp.replace(/\\w/, "[^\\s\\d]")
 
     # Filter in arrays.
     giveup = 0
