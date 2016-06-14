@@ -53,17 +53,17 @@ class Brain
 
     # If the BEGIN block exists, consult it first.
     if @master._topics.__begin__
-      begin = @_getReply(user, "request", "begin", 0, scope, async)
+      begin = @_getReply(user, "request", "begin", 0, scope)
 
       # OK to continue?
       if begin.indexOf("{ok}") > -1
-        reply = @_getReply(user, msg, "normal", 0, scope, async)
+        reply = @_getReply(user, msg, "normal", 0, scope)
         begin = begin.replace(/\{ok\}/g, reply)
 
       reply = begin
       reply = @processTags(user, msg, reply, [], [], 0, scope)
     else
-      reply = @_getReply(user, msg, "normal", 0, scope, async)
+      reply = @_getReply(user, msg, "normal", 0, scope)
 
     reply = @processCallTags(reply, scope, async)
 
@@ -249,7 +249,7 @@ class Brain
     reply
 
   ##
-  # string _getReply (string user, string msg, string context, int step, scope, async)
+  # string _getReply (string user, string msg, string context, int step, scope)
   #
   # The internal reply method. DO NOT CALL THIS DIRECTLY.
   #
@@ -257,9 +257,8 @@ class Brain
   # * context = "normal" or "begin"
   # * step = the recursion depth
   # * scope = the call scope for object macros
-  # * async = boolean, whether object macros should run asynchronously
   ##
-  _getReply: (user, msg, context, step, scope, async) ->
+  _getReply: (user, msg, context, step, scope) ->
     # Needed to sort replies?
     if not @master._sorted.topics
       @warn "You forgot to call sortReplies()!"
@@ -454,9 +453,12 @@ class Brain
               left  = @processTags(user, msg, left, stars, thatstars, step, scope)
               right = @processTags(user, msg, right, stars, thatstars, step, scope)
 
-              # Execute any <call> tags in the conditions.
-              left  = @processCallTags(left, scope, async)
-              right = @processCallTags(right, scope, async)
+              # Execute any <call> tags in the conditions. We explicitly send
+              # `false` as the async parameter, because we can't run async
+              # object macros in conditionals; we need the result NOW
+              # for comparison.
+              left  = @processCallTags(left, scope, false)
+              right = @processCallTags(right, scope, false)
 
               # Defaults?
               if left.length is 0

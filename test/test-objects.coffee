@@ -86,20 +86,60 @@ exports.test_get_variable = (test) ->
 
 exports.test_objects_in_conditions = (test) ->
   bot = new TestCase(test, """
+    // Normal synchronous object that returns an immediate response.
     > object test_condition javascript
       return args[0] === "1" ? "true" : "false";
     < object
 
-    + test *
+    // Asynchronous object that returns a promise. This isn't supported
+    // in a conditional due to the immediate/urgent nature of the result.
+    > object test_async_condition javascript
+      return new rs.Promise(function(resolve, reject) {
+        setTimeout(function() {
+          resolve(args[0] === "1" ? "true" : "false");
+        }, 10);
+      });
+    < object
+
+    + test sync *
     * <call>test_condition <star></call> == true  => True.
     * <call>test_condition <star></call> == false => False.
     - Call failed.
+
+    + test async *
+    * <call>test_async_condition <star></call> == true  => True.
+    * <call>test_async_condition <star></call> == false => False.
+    - Call failed.
+
+    + call sync *
+    - Result: <call>test_condition <star></call>
+
+    + call async *
+    - Result: <call>test_async_condition <star></call>
   """)
-  bot.reply("test 1", "True.")
-  bot.reply("test 2", "False.")
-  bot.reply("test 0", "False.")
-  bot.reply("test x", "False.")
-  test.done()
+  # First, make sure the sync object works.
+  bot.reply("call sync 1", "Result: true")
+  bot.reply("call sync 0", "Result: false")
+  bot.reply("call async 1", "Result: [ERR: Using async routine with reply: use replyAsync instead]")
+
+  # Test the synchronous object in a conditional.
+  bot.reply("test sync 1", "True.")
+  bot.reply("test sync 2", "False.")
+  bot.reply("test sync 0", "False.")
+  bot.reply("test sync x", "False.")
+
+  # Test the async object on its own and then in a conditional. This code looks
+  # ugly, but `test.done()` must be called only when all tests have resolved
+  # so we have to nest a couple of the promise-based tests this way.
+  bot.rs.replyAsync(bot.username, "call async 1").then((reply) ->
+    test.equal(reply, "Result: true")
+
+    # Now test that it still won't work in a conditional even with replyAsync.
+    bot.rs.replyAsync(bot.username, "test async 1").then((reply) ->
+      test.equal(reply, "Call failed.")
+      test.done()
+    )
+  )
 
 exports.test_line_breaks_in_call = (test) ->
   bot = new TestCase(test, """
@@ -232,7 +272,7 @@ exports.test_promises_in_objects = (test) ->
     return new rs.Promise((resolve, reject) ->
       setTimeout () ->
         resolve("delay")
-      , 1000
+      , 10
     )
   )
 

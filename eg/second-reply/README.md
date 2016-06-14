@@ -1,23 +1,24 @@
-# Asynchronous Objects
+# Asynchronous Second Reply
 
 This example demonstrates how a JavaScript object macro in a RiveScript bot can
-asynchronously send a user a message after a timeout.
+send a second reply to the user asynchronously from the original reply, after a
+timeout.
 
-In this example we have our chatbot in a prototypical object named `AsyncBot`,
+In this example we have our chatbot in a prototypical object named `MyBot`,
 and the bot implements functions such as `sendMessage(user, message)` to deliver
 messages to users. If you imagine this bot were to connect to an IRC server,
 the implementation of `sendMessage()` might deliver a private message to a
 particular user by nickname over IRC. In this example, it just writes a message
 to the console.
 
-View the source code of `bot.js` and `async.rive` for details. The JavaScript
-source is well-documented. The key pieces are:
+View the source code of `bot.js` and `second-reply.rive` for details. The
+JavaScript source is well-documented. The key pieces are:
 
-* In the call to `reply()`, we pass a reference to `this` (the `AsyncBot`
+* In the call to `reply()`, we pass a reference to `this` (the `MyBot`
   object) in as the `scope` parameter. This scope is passed all the way down to
   JavaScript object macros, so that `this` inside the object macro refers to the
-  very same `AsyncBot` instance in the application code.
-* The `asyncTest` object macro in `async.rive` is able to call the
+  very same `MyBot` instance in the application code.
+* The `replyTest` object macro in `second-reply.rive` is able to call the
   `sendMessage()` function after a two-second delay by using `setTimeout()`.
   Any asynchronous JavaScript call could've been used in its place. For example,
   imagine the bot needed to call a web API to get local weather information and
@@ -27,13 +28,11 @@ source is well-documented. The key pieces are:
 
 ```
 % node bot.js
-> async test
-[Soandso] async test
+> reply test
+[Soandso] reply test
 [Bot] @Soandso: Wait for it...
-> [Bot] @Soandso: Async reply!
-lol
-[Soandso] lol
-[Bot] @Soandso: No reply for that. Type "async test" to test the asynchronous macro.
+> [Bot] @Soandso: Second reply!
 ```
 
-The "Async reply!" line was delivered 2 seconds after the "Wait for it..." line.
+The "Second reply!" line was delivered 2 seconds after the
+"Wait for it..." line.

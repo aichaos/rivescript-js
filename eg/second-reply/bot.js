@@ -1,4 +1,4 @@
-// Asynchronous Objects Example
+// Asynchronous Second Reply Example
 // See the accompanying README.md for details.
 
 // Run this demo: `node bot.js`
@@ -10,12 +10,12 @@ var readline = require("readline");
 var RiveScript = require("../../lib/rivescript");
 
 // Create a prototypical class for our own chatbot.
-var AsyncBot = function(onReady) {
+var MyBot = function(onReady) {
     var self = this;
     self.rs = new RiveScript();
 
     // Load the replies and process them.
-    self.rs.loadFile("async.rive", function() {
+    self.rs.loadFile("second-reply.rive", function() {
         self.rs.sortReplies();
         onReady();
     });
@@ -40,7 +40,7 @@ var AsyncBot = function(onReady) {
 };
 
 // Create and run the example bot.
-var bot = new AsyncBot(function() {
+var bot = new MyBot(function() {
     // Drop into an interactive shell to get replies from the user.
     // If this were something like an IRC bot, it would have a message
     // handler from the server for when a user sends a private message

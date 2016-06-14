@@ -1,0 +1,19 @@
+// Example of an asynchronous object macro.
+
++ *
+- No reply for that. Type "reply test" to test the asynchronous macro.
+
++ reply test
+- Wait for it... <call>replyTest</call>
+
+> object replyTest javascript
+	var self = this;
+	var nick = rs.currentUser();
+
+	// Send a second reply after 2 seconds.
+	setTimeout(function() {
+		self.sendMessage(nick, "Second reply!");
+	}, 2000);
+
+	return;
+< object
