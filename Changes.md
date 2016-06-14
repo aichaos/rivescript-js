@@ -1,6 +1,6 @@
 # Changes
 
-* 1.13.0 TBD
+* 1.13.0 2016-06-14
   - Fix the `<call>` tags not being executed on the left side of conditionals,
     so that `<call>test</call> == true => Success` types of conditions should
     work (bug #107).
@@ -8,6 +8,9 @@
     before or after it (or: a space between `{weight}` and the rest of the
     trigger text), the spaces are also stripped so that matching isn't broken
     for that trigger (bug #102).
+  - Rename the old `async-object` example to `second-reply` to lessen confusion
+    between it and `async-reply` (bug #123).
+  - Fix the `_` wildcard not being able to match Unicode letters (bug #118).
 
 * 1.12.2 2016-05-16
   - Call the error handler on `loadDirectory()` when the directory doesn't exist
