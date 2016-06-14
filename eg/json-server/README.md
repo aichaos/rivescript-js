@@ -121,7 +121,8 @@ Connection: keep-alive
                 "undefined"
             ]
         },
-        "__lastmatch__": "(hello|hi|hey|howdy|hola|hai|yo) [*]"
+        "__lastmatch__": "(hello|hi|hey|howdy|hola|hai|yo) [*]",
+        "__initialmatch__": "(hello|hi|hey|howdy|hola|hai|yo) [*]"
     }
 }
 ```

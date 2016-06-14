@@ -1,6 +1,6 @@
 # Changes
 
-* 1.12.2 TBD
+* 1.13.0 TBD
   - Fix the `<call>` tags not being executed on the left side of conditionals,
     so that `<call>test</call> == true => Success` types of conditions should
     work (bug #107).
@@ -8,6 +8,12 @@
     before or after it (or: a space between `{weight}` and the rest of the
     trigger text), the spaces are also stripped so that matching isn't broken
     for that trigger (bug #102).
+
+* 1.12.2 2016-05-16
+  - Call the error handler on `loadDirectory()` when the directory doesn't exist
+    or isn't a directory (bug #117).
+  - Include the `dist/` directory on npm for easy web browser embedding using
+    npmcdn.
 
 * 1.12.1 2016-05-05
   - Fix the `<call>...</call>` regular expression to match line break characters

@@ -87,6 +87,8 @@ bot.loadDirectory opts.brain, (batch_num) ->
     rl.prompt()
   .on "close", () ->
     process.exit 0
+, (err, loadBatch) ->
+  console.error "Loading error: #{err}"
 
 help = () ->
   console.log """Supported commands:

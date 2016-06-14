@@ -1,0 +1,19 @@
+{
+  "name": "rs-coffee-example",
+  "version": "0.0.0",
+  "description": "CoffeeScript example for RiveScript",
+  "main": "coffeebot.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Noah Petherbridge",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/aichaos/rivescript-js.git"
+  },
+  "dependencies": {
+    "coffee-script": "~1.10.0",
+    "rivescript-contrib-coffeescript": "0.0.1"
+  }
+}

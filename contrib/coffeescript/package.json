@@ -1,0 +1,35 @@
+{
+  "name": "rivescript-contrib-coffeescript",
+  "version": "0.0.3",
+  "description": "CoffeeScript object macro handler for RiveScript",
+  "main": "index.js",
+  "scripts": {
+    "prepublish": "grunt dist",
+    "test": "grunt test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/aichaos/rivescript-js"
+  },
+  "keywords": [
+    "rivescript",
+    "coffeescript"
+  ],
+  "author": "Noah Petherbridge <root@kirsle.net>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/aichaos/rivescript-js/issues"
+  },
+  "devDependencies": {
+    "grunt": "~0.4.5",
+    "grunt-contrib-uglify": "~0.6.0",
+    "grunt-contrib-nodeunit": "~0.4.1",
+    "coffee-script": "~1.10.0",
+    "grunt-browserify": "~3.7.0",
+    "grunt-contrib-clean": "~0.6.0",
+    "rivescript": "~1.12.1"
+  },
+  "dependencies": {
+    "coffee-script": "~1.10.0"
+  }
+}

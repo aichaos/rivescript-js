@@ -36,3 +36,6 @@ RiveScript-js.
   macros.
 * [deparse](deparse/) - Additional documentation on how the `deparse()` function
   is used and its data format.
+* [coffeescript](coffeescript/) - Example of using the
+  `rivescript-contrib-coffeescript` module to enable CoffeeScript language for
+  object macros.
