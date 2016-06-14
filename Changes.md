@@ -11,6 +11,9 @@
   - Rename the old `async-object` example to `second-reply` to lessen confusion
     between it and `async-reply` (bug #123).
   - Fix the `_` wildcard not being able to match Unicode letters (bug #118).
+  - Add `initialMatch()` to the API, which is like `lastMatch()` but it returns
+    the original trigger that the user matched instead of a redirected trigger
+    (PR #127).
 
 * 1.12.2 2016-05-16
   - Call the error handler on `loadDirectory()` when the directory doesn't exist
