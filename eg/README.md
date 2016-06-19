@@ -39,3 +39,7 @@ RiveScript-js.
 * [coffeescript](coffeescript/) - Example of using the
   `rivescript-contrib-coffeescript` module to enable CoffeeScript language for
   object macros.
+* [router](router/) - Example of using the RiveScript engine in a "router"
+  style way (in the web application sense of the term), mapping triggers
+  directly to JavaScript handlers without writing RiveScript boilerplate for
+  each mapping.
