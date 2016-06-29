@@ -21,6 +21,12 @@ RiveScript-js.
 * [slack-bot](slack-bot/) - Example of connecting a RiveScript bot to the
   Slack chat platform.
 
+### External Examples
+
+* [hubot-rivescript](https://github.com/aichaos/hubot-rivescript) - A Hubot
+  script that lets you use RiveScript to reply to arbitrary messages sent
+  to your Hubot.
+
 ## Code Snippets
 
 * [persistence](persistence/) - Demonstrates persistence for user variables;
