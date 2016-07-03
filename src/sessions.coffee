@@ -54,11 +54,11 @@ utils = require "./utils"
 ##
 
 class SessionHandler
-  constructor: (warn) ->
+  constructor: (opts) ->
     # In-memory user variable store.
     @_store  = {}
     @_freeze = {}
-    @warn    = warn
+    @warn    = opts?.warn
 
   set: (username, vars) ->
     # Initialize the user?
