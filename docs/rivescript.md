@@ -3,12 +3,16 @@
 Create a new RiveScript interpreter. `options` is an object with the
 following keys:
 
-* bool debug:    Debug mode            (default false)
-* int  depth:    Recursion depth limit (default 50)
-* bool strict:   Strict mode           (default true)
-* bool utf8:     Enable UTF-8 mode     (default false)
-* func onDebug:  Set a custom handler to catch debug log messages (default null)
-* obj  errors:   Customize certain error messages (see below)
+* bool debug: Debug mode            (default false)
+* int  depth: Recursion depth limit (default 50)
+* bool strict: Strict mode           (default true)
+* bool utf8: Enable UTF-8 mode     (default false)
+* func onDebug: Set a custom handler to catch debug log messages (default null)
+* obj errors: Customize certain error messages (see below)
+* obj sessionHandler: Provide a custom session handler for managing user
+  variables (default is to keep them all in memory). See the
+  [sessions documentation](https://github.com/aichaos/rivescript-js/blob/master/docs/sessions.md)
+  for more information.
 
 ## UTF-8 Mode
 

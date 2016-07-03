@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>sessions</title>
+<link rel="stylesheet" type="text/css" href="md.css">
+</head>
+<body>
+
+<h1>SessionHandler</h1>
+<p>This is the default session manager used by RiveScript to store and retrieve
+user variables. This session handler just keeps the variables in RAM; if you
+want to provide your own session handler (e.g. to use a database), you can
+program your own handler and pass it into the RiveScript constructor:</p>
+<pre class="codehilite"><code class="language-javascript">var bot = new RiveScript({
+    sessionHandler: new MySessionHandler()
+})</code></pre>
+
+
+<p>Your custom session handler should be a JavaScript object (class) that
+implements the following functions:</p>
+<ul>
+<li>void set (string username, object vars): For setting user variables. The
+  <code>vars</code> object is a key/value dictionary mapping user variable names (key)
+  to their values. The values will usually be strings, but can be other types
+  for some internal data structures (e.g. input/reply histories as arrays).</li>
+<li>string get (string username, [string key]): For retrieving a user variable.
+  Return the string <code>"undefined"</code> if the variable doesn't exist. If the <code>key</code>
+  parameter is not provided, this should instead return the full object of
+  key/value pairs for the user.</li>
+<li>object getAll(): Retrieve all user variables for all users. This should
+  return an object where the top-level key is the username, and the values
+  are objects of key/value pairs of that user's variables.</li>
+<li>void reset (string username): This should delete all variables about the
+  given username.</li>
+<li>void resetAll(): This should delete all variables about all users.</li>
+<li>void freeze (string username): Make a snapshot of a user's variables, which
+  can be later restored using <code>thaw()</code>.</li>
+<li>void thaw (string username[, string action]): Restore a user's variables
+  from the frozen snapshot. This should replace <em>all</em> their variables with the
+  set that was frozen. The valid options for <code>action</code> are:</li>
+<li><code>thaw</code>: Restore the variables and delete the frozen copy (default).</li>
+<li><code>discard</code>: Don't restore the variables, just delete the frozen copy.</li>
+<li><code>keep</code>: After restoring the user's variables, keep the frozen copy around
+    anyway (e.g. so future calls to <code>thaw()</code> will keep restoring the same
+    set of variables).</li>
+</ul>
+<p>All class methods are optional, and RiveScript won't attempt to call them if
+they haven't been implemented.</p>
+
+</body>
+</html>

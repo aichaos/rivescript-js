@@ -19,6 +19,7 @@ The internal reply method. DO NOT CALL THIS DIRECTLY.
 * user, msg and scope are the same as reply()
 * context = "normal" or "begin"
 * step = the recursion depth
+* scope = the call scope for object macros
 
 ## string formatMessage (string msg)
 
