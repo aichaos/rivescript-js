@@ -839,6 +839,19 @@ class RiveScript
     return undefined
 
   ##
+  # object getUserTopicTriggers (string username)
+  #
+  # Retrieve the triggers in current topic for the specified user. It can be used to create a UI that gives the user
+  # options based one trigges, using buttons, select and other UI resources.
+  #
+  # This will return undefined if the user cant be find
+  ##
+  getUserTopicTriggers(user) ->
+    @userVars = this.getUservars(user);
+    if(@userVars) return inherit_utils.getTopicTriggers(this, @userVars.topic);
+  
+  
+  ##
   # string currentUser ()
   #
   # Retrieve the current user's ID. This is most useful within a JavaScript
