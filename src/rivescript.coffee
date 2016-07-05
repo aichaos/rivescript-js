@@ -846,11 +846,11 @@ class RiveScript
   #
   # This will return undefined if the user cant be find
   ##
-  getUserTopicTriggers(user) ->
+  getUserTopicTriggers: (user) ->
     @userVars = this.getUservars(user);
-    if(@userVars) return inherit_utils.getTopicTriggers(this, @userVars.topic);
-  
-  
+    if @userVars?
+      return inherit_utils.getTopicTriggers(this, @userVars.topic);
+
   ##
   # string currentUser ()
   #
