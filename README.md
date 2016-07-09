@@ -111,7 +111,7 @@ function loading_done (batch_num) {
 }
 
 // It's good to catch errors too!
-function loading_error (batch_num, error) {
+function loading_error (error) {
 	console.log("Error when loading files: " + error);
 }
 ```
