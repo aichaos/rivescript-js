@@ -52,14 +52,19 @@ bot.setHandler("coffee", new CoffeeObjectHandler())
 bot.loadDirectory opts.brain, (batch_num) ->
   bot.sortReplies()
 
-  console.log """RiveScript Interpreter (CoffeeScript) -- Interactive Mode
-                ----------------------------------------------------------
-                rivescript version: #{bot.version()}
-                        Reply root: #{opts.brain}
+  console.log """
+          .   .
+         .:...::      RiveScript Interpreter (CoffeeScript)
+        .::   ::.     Library Version: v#{bot.version()}
+     ..:;;. ' .;;:..
+        .  '''  .     Type '/quit' to quit.
+         :;,:,;:      Type '/help' for more options.
+         :     :
 
-                You are now chatting with the RiveScript bot. Type a message
-                and press Return to send it. When finished, type '/quit' to
-                exit the program. Type '/help' for other options."""
+    Using the RiveScript bot found in: #{opts.brain}
+    Type a message to the bot and press Return to send it.
+
+  """
 
   ##############################################################################
   # Drop into the interactive command shell.

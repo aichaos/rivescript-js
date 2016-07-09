@@ -1,5 +1,13 @@
 # Changes
 
+* 1.14.0 2016-07-09
+  - Add a new API function: `getUserTopicTriggers` returns a list of triggers
+    available from a user's current topic, including triggers that came from
+    topics inherited/included by their topic (PR #138).
+  - Add new examples: using RiveScript as a router, and a link to a plugin for
+    using RiveScript with Hubot.
+  - Add a new ASCII logo to the header output of `shell.js` and `shell.coffee`
+
 * 1.13.0 2016-06-14
   - Fix the `<call>` tags not being executed on the left side of conditionals,
     so that `<call>test</call> == true => Success` types of conditions should

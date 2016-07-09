@@ -7,7 +7,7 @@
 "use strict"
 
 # Constants
-VERSION  = "1.13.0"
+VERSION  = "1.14.0"
 
 # Helper modules
 Parser  = require "./parser"
@@ -841,15 +841,19 @@ class RiveScript
   ##
   # object getUserTopicTriggers (string username)
   #
-  # Retrieve the triggers in current topic for the specified user. It can be used to create a UI that gives the user
-  # options based one trigges, using buttons, select and other UI resources.
+  # Retrieve the triggers in the current topic for the specified user. It can
+  # be used to create a UI that gives the user options based on trigges, e.g.
+  # using buttons, select boxes and other UI resources. This also includes the
+  # triggers available in any topics inherited or included by the user's current
+  # topic.
   #
-  # This will return undefined if the user cant be find
+  # This will return `undefined` if the user cant be find
   ##
   getUserTopicTriggers: (user) ->
     @userVars = this.getUservars(user);
     if @userVars?
       return inherit_utils.getTopicTriggers(this, @userVars.topic);
+    return undefined
 
   ##
   # string currentUser ()

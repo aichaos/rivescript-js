@@ -298,6 +298,16 @@ only the first matched trigger and will not include subsequent redirects.
 
 This value is reset on each `reply()` or `replyAsync()` call.
 
+## object getUserTopicTriggers (string username)
+
+Retrieve the triggers in the current topic for the specified user. It can
+be used to create a UI that gives the user options based on trigges, e.g.
+using buttons, select boxes and other UI resources. This also includes the
+triggers available in any topics inherited or included by the user's current
+topic.
+
+This will return `undefined` if the user cant be find
+
 ## string currentUser ()
 
 Retrieve the current user's ID. This is most useful within a JavaScript

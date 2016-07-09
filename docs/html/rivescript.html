@@ -210,6 +210,13 @@ entire variable state, so that it can be restored later with
 <p>Retrieve the trigger that the user matched initially. This will return
 only the first matched trigger and will not include subsequent redirects.</p>
 <p>This value is reset on each <code>reply()</code> or <code>replyAsync()</code> call.</p>
+<h2>object getUserTopicTriggers (string username)</h2>
+<p>Retrieve the triggers in the current topic for the specified user. It can
+be used to create a UI that gives the user options based on trigges, e.g.
+using buttons, select boxes and other UI resources. This also includes the
+triggers available in any topics inherited or included by the user's current
+topic.</p>
+<p>This will return <code>undefined</code> if the user cant be find</p>
 <h2>string currentUser ()</h2>
 <p>Retrieve the current user's ID. This is most useful within a JavaScript
 object macro to get the ID of the user who invoked the macro (e.g. to

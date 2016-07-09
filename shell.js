@@ -59,16 +59,17 @@ bot.loadDirectory(opts.brain, loading_done, loading_error);
 function loading_done(batch_num) {
 	bot.sortReplies();
 
-	console.log("RiveScript Interpreter (JavaScript) -- Interactive Mode");
-	console.log("-------------------------------------------------------");
-	console.log("rivescript version: " + bot.version());
-	console.log("        Reply root: " + opts.brain);
+	console.log("      .   .       ");
+	console.log("     .:...::      RiveScript Interpreter (JavaScript)");
+	console.log("    .::   ::.     Library Version: v" + bot.version());
+	console.log(" ..:;;. ' .;;:..  ");
+	console.log("    .  '''  .     Type '/quit' to quit.");
+	console.log("     :;,:,;:      Type '/help' for more options.");
+	console.log("     :     :      ");
 	console.log("");
-	console.log(
-		"You are now chatting with the RiveScript bot. Type a message and press Return\n"
-		+ "to send it. When finished, type '/quit' to exit the program.\n"
-		+ "Type '/help' for other options.\n"
-	);
+	console.log("Using the RiveScript bot found in: " + opts.brain);
+	console.log("Type a message to the bot and press Return to send it.");
+	console.log("");
 
 	//--------------------------------------------------------------------------
 	// Drop into the interactive command shell.
