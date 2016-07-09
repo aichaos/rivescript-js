@@ -166,8 +166,8 @@ class Parser
       line = utils.strip(line.substring(1))
 
       # Ignore in-line comments if there's a space before and after the "//"
-      if line.indexOf(" // ") > -1
-        line = utils.strip(line.split(" // ")[0])
+      if line.indexOf(" //") > -1
+        line = utils.strip(line.split(" //")[0])
 
       # Run a syntax check on this line.
       syntaxError = @checkSyntax cmd, line
