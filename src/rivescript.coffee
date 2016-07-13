@@ -10,9 +10,10 @@
 VERSION  = "1.14.0"
 
 # Helper modules
-Parser  = require "./parser"
-Brain   = require "./brain"
-utils   = require "./utils"
+Parser = require "./parser"
+Brain = require "./brain"
+SessionHandler = require "./sessions"
+utils = require "./utils"
 sorting = require "./sorting"
 inherit_utils = require "./inheritance"
 JSObjectHandler = require "./lang/javascript"
@@ -25,12 +26,16 @@ readDir = require("fs-readdir-recursive")
 # Create a new RiveScript interpreter. `options` is an object with the
 # following keys:
 #
-# * bool debug:    Debug mode            (default false)
-# * int  depth:    Recursion depth limit (default 50)
-# * bool strict:   Strict mode           (default true)
-# * bool utf8:     Enable UTF-8 mode     (default false)
-# * func onDebug:  Set a custom handler to catch debug log messages (default null)
-# * obj  errors:   Customize certain error messages (see below)
+# * bool debug: Debug mode            (default false)
+# * int  depth: Recursion depth limit (default 50)
+# * bool strict: Strict mode           (default true)
+# * bool utf8: Enable UTF-8 mode     (default false)
+# * func onDebug: Set a custom handler to catch debug log messages (default null)
+# * obj errors: Customize certain error messages (see below)
+# * obj sessionHandler: Provide a custom session handler for managing user
+#   variables (default is to keep them all in memory). See the
+#   [sessions documentation](https://github.com/aichaos/rivescript-js/blob/master/docs/sessions.md)
+#   for more information.
 #
 # ## UTF-8 Mode
 #
@@ -140,6 +145,9 @@ class RiveScript
         if opts.errors.hasOwnProperty(key)
           @errors[key] = value
 
+    # The session handler.
+    @_sessionHandler = if opts.sessionHandler then opts.sessionHandler else new SessionHandler({warn: @warn})
+
     # Identify our runtime environment. Web, or node?
     @_node    = {} # NodeJS objects
     @_runtime = @runtime()
@@ -160,8 +168,6 @@ class RiveScript
     @_sub      = {} # 'sub' substitutions
     @_person   = {} # 'person' substitutions
     @_array    = {} # 'array' variables
-    @_users    = {} # 'user' variables
-    @_freeze   = {} # frozen 'user' variables
     @_includes = {} # included topics
     @_inherits = {} # inherited topics
     @_handlers = {} # object handlers
@@ -689,14 +695,10 @@ class RiveScript
   # Set a user variable for a user.
   ##
   setUservar: (user, name, value) ->
-    # Initialize the user?
-    if not @_users[user]
-      @_users[user] = {topic: "random"}
-
-    if value is undefined
-      delete @_users[user][name]
-    else
-      @_users[user][name] = value
+    if @_sessionHandler.set?
+      inbound = {}
+      inbound[name] = value
+      @_sessionHandler.set user, inbound
 
   ##
   # void setUservars (string user, object data)
@@ -705,16 +707,8 @@ class RiveScript
   # Equivalent to calling `setUservar()` for each pair in the object.
   ##
   setUservars: (user, data) ->
-    # Initialize the user?
-    if not @_users[user]
-      @_users[user] = {topic: "random"}
-
-    for key of data
-      continue unless data.hasOwnProperty key
-      if data[key] is undefined
-        delete @_users[user][key]
-      else
-        @_users[user][key] = data[key]
+    if @_sessionHandler.set?
+      @_sessionHandler.set user, data
 
   ##
   # void getVariable (string name)
@@ -735,15 +729,8 @@ class RiveScript
   # defined.
   ##
   getUservar: (user, name) ->
-    # No user?
-    if not @_users[user]
-      return "undefined"
-
-    # The var exists?
-    if typeof(@_users[user][name]) isnt "undefined"
-      return @_users[user][name]
-    else
-      return "undefined"
+    if @_sessionHandler.get?
+      return @_sessionHandler.get(user, name)
 
   ##
   # data getUservars ([string user])
@@ -752,13 +739,10 @@ class RiveScript
   # about all users.
   ##
   getUservars: (user) ->
-    if user is undefined
-      # All the users! Return a cloned object to break refs.
-      return utils.clone(@_users)
-    else
-      if @_users[user]?
-        return utils.clone(@_users[user])
-      return undefined
+    if user is undefined and @_sessionHandler.getAll?
+      return @_sessionHandler.getAll()
+    else if user isnt undefined and @_sessionHandler.get?
+      return @_sessionHandler.get user
 
   ##
   # void clearUservars ([string user])
@@ -767,10 +751,10 @@ class RiveScript
   # for all users.
   ##
   clearUservars: (user) ->
-    if user is undefined
-      @_users = {}
-    else
-      delete @_users[user]
+    if user is undefined and @_sessionHandler.resetAll?
+      @_sessionHandler.resetAll()
+    else if user isnt undefined and @_sessionHandler.reset?
+      @_sessionHandler.reset()
 
   ##
   # void freezeUservars (string user)
@@ -780,10 +764,8 @@ class RiveScript
   # `thawUservars()`
   ##
   freezeUservars: (user) ->
-    if @_users[user]?
-      @_freeze[user] = utils.clone(@_users[user])
-    else
-      @warn "Can't freeze vars for user #{user}: not found!"
+    if @_sessionHandler.freeze?
+      @_sessionHandler.freeze user
 
   ##
   # void thawUservars (string user[, string action])
@@ -794,26 +776,8 @@ class RiveScript
   # * thaw: Restore the variables and delete the frozen copy (default)
   ##
   thawUservars: (user, action="thaw") ->
-    if typeof(action) isnt "string"
-      action = "thaw"
-
-    # Frozen?
-    if not @_freeze[user]?
-      @warn "Can't thaw user vars: #{user} wasn't frozen!"
-      return
-
-    # What are we doing?
-    if action is "thaw"
-      @clearUservars(user)
-      @_users[user] = utils.clone(@_freeze[user])
-      delete @_freeze[user]
-    else if action is "discard"
-      delete @_freeze[user]
-    else if action is "keep"
-      @clearUservars(user)
-      @_users[user] = utils.clone(@_freeze[user])
-    else
-      @warn "Unsupported thaw action!"
+    if @_sessionHandler.thaw?
+      @_sessionHandler.thaw(user, action)
 
   ##
   # string lastMatch (string user)
@@ -821,9 +785,7 @@ class RiveScript
   # Retrieve the trigger that the user matched most recently.
   ##
   lastMatch: (user) ->
-    if @_users[user]?
-      return @_users[user].__lastmatch__
-    return undefined
+    return @getUservar(user, "__lastmatch__")
 
   ##
   # string initialMatch (string user)
@@ -834,9 +796,7 @@ class RiveScript
   # This value is reset on each `reply()` or `replyAsync()` call.
   ##
   initialMatch: (user) ->
-    if @_users[user]?
-      return @_users[user].__initialmatch__
-    return undefined
+    return @getUservar(user, "__initialmatch__")
 
   ##
   # object getUserTopicTriggers (string username)

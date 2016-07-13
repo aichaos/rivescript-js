@@ -49,7 +49,7 @@ class Brain
 
     # Set initial match to be undefined
     if @master.getUservars(user)
-      @master._users[user].__initialmatch__ = undefined
+      @master.setUservar(user, "__initialmatch__", undefined)
 
     # If the BEGIN block exists, consult it first.
     if @master._topics.__begin__
@@ -77,10 +77,13 @@ class Brain
 
   onAfterReply: (msg, user, reply) ->
     # Save their reply history
-    @master._users[user].__history__.input.pop()
-    @master._users[user].__history__.input.unshift(msg)
-    @master._users[user].__history__.reply.pop()
-    @master._users[user].__history__.reply.unshift(reply)
+    history = @master.getUservar(user, "__history__")
+    if history?.input? # Did the session store save any history?
+      history.input.pop()
+      history.input.unshift(msg)
+      history.reply.pop()
+      history.reply.unshift(reply)
+      @master.setUservar(user, "__history__", history)
 
     # Unset the current user ID.
     @_currentUser = undefined
@@ -248,6 +251,18 @@ class Brain
 
     reply
 
+  _defaultHistory: ->
+    return {
+      "input": [
+        "undefined", "undefined", "undefined", "undefined", "undefined",
+        "undefined", "undefined", "undefined", "undefined", "undefined"
+      ]
+      "reply": [
+        "undefined", "undefined", "undefined", "undefined", "undefined",
+        "undefined", "undefined", "undefined", "undefined", "undefined"
+      ]
+    }
+
   ##
   # string _getReply (string user, string msg, string context, int step, scope)
   #
@@ -289,17 +304,8 @@ class Brain
       topic = "__begin__"
 
     # Initialize this user's history.
-    if not @master._users[user].__history__
-      @master._users[user].__history__ = {
-        "input": [
-          "undefined", "undefined", "undefined", "undefined", "undefined",
-          "undefined", "undefined", "undefined", "undefined", "undefined"
-        ]
-        "reply": [
-          "undefined", "undefined", "undefined", "undefined", "undefined",
-          "undefined", "undefined", "undefined", "undefined", "undefined"
-        ]
-      }
+    if @master.getUservar(user, "__history__") in ["undefined", undefined]
+      @master.setUservar(user, "__history__", @_defaultHistory())
 
     # More topic sanity checking.
     if not @master._topics[topic]
@@ -331,7 +337,7 @@ class Brain
           @say "There's a %Previous in this topic!"
 
           # Do we have history yet?
-          lastReply = @master._users[user].__history__.reply[0]
+          lastReply = @master.getUservar(user, "__history__")?.reply?[0]
 
           # Format the bot's last reply the same way as the human's.
           lastReply = @formatMessage(lastReply, true)
@@ -421,11 +427,11 @@ class Brain
 
     # Store what trigger they matched on. If their matched trigger is undefined,
     # this will be too, which is great.
-    @master._users[user].__lastmatch__ = matchedTrigger
+    @master.setUservar(user, "__lastmatch__", matchedTrigger)
 
     # Store initial matched trigger. Like __lastmatch__, this can be undefined.
     if step is 0
-      @master._users[user].__initialmatch__ = matchedTrigger
+      @master.setUservar(user, "__initialmatch__", matchedTrigger)
 
     # Did we match?
     if matched
@@ -724,7 +730,7 @@ class Brain
         for i in [1..9]
           if regexp.indexOf("<#{type}#{i}>") > -1
             regexp = regexp.replace(new RegExp("<#{type}#{i}>", "g"),
-              @master._users[user].__history__[type][i])
+              @master.getUservar(user, "__history__")?[type]?[i])
 
     # Recover escaped Unicode symbols.
     if @utf8 and regexp.indexOf("\\u") > -1
@@ -794,15 +800,18 @@ class Brain
       reply = reply.replace(new RegExp("<botstar#{i}>", "ig"), botstars[i])
 
     # <input> and <reply>
-    reply = reply.replace(/<input>/ig, @master._users[user].__history__.input[0])
-    reply = reply.replace(/<reply>/ig, @master._users[user].__history__.reply[0])
+    history = @master.getUservar(user, "__history__")
+    if not history?.input? or not history?.reply?
+      history = @_defaultHistory()
+    reply = reply.replace(/<input>/ig, history.input[0])
+    reply = reply.replace(/<reply>/ig, history.reply[0])
     for i in [1..9]
       if reply.indexOf("<input#{i}>") > -1
         reply = reply.replace(new RegExp("<input#{i}>", "ig"),
-          @master._users[user].__history__.input[i])
+          history.input[i])
       if reply.indexOf("<reply#{i}>") > -1
         reply = reply.replace(new RegExp("<reply#{i}>", "ig"),
-          @master._users[user].__history__.reply[i])
+          history.reply[i])
 
     # <id> and escape codes
     reply = reply.replace(/<id>/ig, user)

@@ -10,12 +10,16 @@
 <p>Create a new RiveScript interpreter. <code>options</code> is an object with the
 following keys:</p>
 <ul>
-<li>bool debug:    Debug mode            (default false)</li>
-<li>int  depth:    Recursion depth limit (default 50)</li>
-<li>bool strict:   Strict mode           (default true)</li>
-<li>bool utf8:     Enable UTF-8 mode     (default false)</li>
-<li>func onDebug:  Set a custom handler to catch debug log messages (default null)</li>
-<li>obj  errors:   Customize certain error messages (see below)</li>
+<li>bool debug: Debug mode            (default false)</li>
+<li>int  depth: Recursion depth limit (default 50)</li>
+<li>bool strict: Strict mode           (default true)</li>
+<li>bool utf8: Enable UTF-8 mode     (default false)</li>
+<li>func onDebug: Set a custom handler to catch debug log messages (default null)</li>
+<li>obj errors: Customize certain error messages (see below)</li>
+<li>obj sessionHandler: Provide a custom session handler for managing user
+  variables (default is to keep them all in memory). See the
+  <a href="https://github.com/aichaos/rivescript-js/blob/master/docs/sessions.md">sessions documentation</a>
+  for more information.</li>
 </ul>
 <h2>UTF-8 Mode</h2>
 <p>In UTF-8 mode, most characters in a user's message are left intact, except for
