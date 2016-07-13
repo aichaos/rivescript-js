@@ -473,7 +473,8 @@ class Parser
 
         if t.reply
           for r in t.reply
-            output.push "#{id}- #{r.replace(/\n/mg, "\\n")}"
+            if r
+              output.push "#{id}- #{r.replace(/\n/mg, "\\n")}"
 
         output.push ""
 
