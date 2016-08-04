@@ -290,16 +290,19 @@ class Brain
 
     # Initialize this user's history.
     if not @master._users[user].__history__
-      @master._users[user].__history__ = {
-        "input": [
-          "undefined", "undefined", "undefined", "undefined", "undefined",
-          "undefined", "undefined", "undefined", "undefined", "undefined"
-        ]
-        "reply": [
-          "undefined", "undefined", "undefined", "undefined", "undefined",
-          "undefined", "undefined", "undefined", "undefined", "undefined"
-        ]
-      }
+      @master._users[user].__history__ = {}
+
+    # Update input &/or reply if given array is missing or empty
+    if not @master._users[user].__history__.input || @master._users[user].__history__.input.length == 0
+      @master._users[user].__history__.input = [
+        "undefined", "undefined", "undefined", "undefined", "undefined",
+        "undefined", "undefined", "undefined", "undefined", "undefined"
+      ]
+    if not @master._users[user].__history__.reply || @master._users[user].__history__.reply.length == 0
+      @master._users[user].__history__.reply = [
+        "undefined", "undefined", "undefined", "undefined", "undefined",
+        "undefined", "undefined", "undefined", "undefined", "undefined"
+      ]
 
     # More topic sanity checking.
     if not @master._topics[topic]
@@ -331,7 +334,7 @@ class Brain
           @say "There's a %Previous in this topic!"
 
           # Do we have history yet?
-          lastReply = @master._users[user].__history__.reply[0]
+          lastReply = @master._users[user].__history__.reply[0] || "undefined"
 
           # Format the bot's last reply the same way as the human's.
           lastReply = @formatMessage(lastReply, true)
@@ -794,8 +797,8 @@ class Brain
       reply = reply.replace(new RegExp("<botstar#{i}>", "ig"), botstars[i])
 
     # <input> and <reply>
-    reply = reply.replace(/<input>/ig, @master._users[user].__history__.input[0])
-    reply = reply.replace(/<reply>/ig, @master._users[user].__history__.reply[0])
+    reply = reply.replace(/<input>/ig, @master._users[user].__history__.input[0] || "undefined")
+    reply = reply.replace(/<reply>/ig, @master._users[user].__history__.reply[0] || "undefined")
     for i in [1..9]
       if reply.indexOf("<input#{i}>") > -1
         reply = reply.replace(new RegExp("<input#{i}>", "ig"),
