@@ -68,12 +68,21 @@ exports.test_redirects = (test) ->
     + hey
     @ hello
 
+    // Test the {@} tag with and without spaces.
     + hi there
     - {@hello}
+
+    + howdy
+    - {@ hello}
+
+    + hola
+    - {@ hello }
   """)
   bot.reply("hello", "Hi there!")
   bot.reply("hey", "Hi there!")
   bot.reply("hi there", "Hi there!")
+  bot.reply("howdy", "Hi there!")
+  bot.reply("hola", "Hi there!")
   test.done()
 
 exports.test_conditionals = (test) ->

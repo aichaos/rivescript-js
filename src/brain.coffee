@@ -962,10 +962,10 @@ class Brain
         @warn "Infinite loop looking for redirect tag!"
         break
 
-      target = match[1]
+      target = utils.strip match[1]
       @say "Inline redirection to: #{target}"
       subreply = @_getReply(user, target, "normal", step+1, scope)
-      reply = reply.replace(new RegExp("\\{@" + utils.quotemeta(target) + "\\}", "i"), subreply)
+      reply = reply.replace(new RegExp("\\{@" + utils.quotemeta(match[1]) + "\\}", "i"), subreply)
       match = reply.match(/\{@([^\}]*?)\}/)
 
     return reply
