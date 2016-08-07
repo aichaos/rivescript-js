@@ -417,6 +417,10 @@ class Parser
             @warn "Response found before trigger", filename, lineno
             continue
 
+          # Warn if we also saw a hard redirect.
+          if curTrig.redirect isnt null
+            @warn "You can't mix @Redirects with -Replies", filename, lineno
+
           @say "\tResponse: #{line}"
           curTrig.reply.push line
 
@@ -425,6 +429,10 @@ class Parser
           if curTrig is null
             @warn "Condition found before trigger", filename, lineno
             continue
+
+          # Warn if we also saw a hard redirect.
+          if curTrig.redirect isnt null
+            @warn "You can't mix @Redirects with *Conditions", filename, lineno
 
           @say "\tCondition: #{line}"
           curTrig.condition.push line
@@ -439,6 +447,10 @@ class Parser
 
         when "@"
           # @ Redirect
+          # Make sure they didn't mix them with incompatible commands.
+          if curTrig.reply.length > 0 or curTrig.condition.length > 0
+            @warn "You can't mix @Redirects with -Replies or *Conditions", filename, lineno
+
           @say "\tRedirect response to: #{line}"
           curTrig.redirect = utils.strip line
 
