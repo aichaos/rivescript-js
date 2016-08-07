@@ -48,6 +48,16 @@ this project on GitHub that show how to interface with a RiveScript bot in
 a variety of ways--such as through a web browser or a telnet server--and other
 code snippets and useful tricks.
 
+## RIVESCRIPT PLAYGROUND
+
+For testing and sharing RiveScript snippets that use the JavaScript
+implementation, check out the [RiveScript Playground](https://play.rivescript.com/).
+
+It's a JSFiddle style web app for playing with RiveScript in your web browser
+and sharing code with others.
+
+<https://play.rivescript.com/>
+
 ## USAGE
 
 The distribution of RiveScript.js includes an interactive shell for testing your

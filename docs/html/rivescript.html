@@ -77,12 +77,20 @@ bot.errors.objectNotFound = &quot;Something went terribly wrong.&quot;;</code></
 <h2>string version ()</h2>
 <p>Returns the version number of the RiveScript.js library.</p>
 <h2>Promise Promise</h2>
-<p>Alias for RSVP.Promise</p>
-<p>You can use shortcut in your async subroutines</p>
+<p>Alias for <code>RSVP.Promise</code> for use in async object macros.</p>
+<p>This enables you to create a JavaScript object macro that returns a promise
+for asynchronous tasks (e.g. polling a web API or database). Example:</p>
 <pre class="codehilite"><code class="language-javascript">rs.setSubroutine(&quot;asyncHelper&quot;, function (rs, args) {
  return new rs.Promise(function (resolve, reject) {
    resolve(42);
  });
+});</code></pre>
+
+
+<p>If you're using promises in your object macros, you need to get a reply from
+the bot using the <code>replyAsync()</code> method instead of <code>reply()</code>, for example:</p>
+<pre class="codehilite"><code class="language-javascript">rs.replyAsync(username, message, this).then(function(reply) {
+   console.log(&quot;Bot&gt; &quot;, reply);
 });</code></pre>
 
 

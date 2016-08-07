@@ -94,15 +94,25 @@ Returns the version number of the RiveScript.js library.
 
 ## Promise Promise
 
-Alias for RSVP.Promise
+Alias for `RSVP.Promise` for use in async object macros.
 
-You can use shortcut in your async subroutines
+This enables you to create a JavaScript object macro that returns a promise
+for asynchronous tasks (e.g. polling a web API or database). Example:
 
 ```javascript
 rs.setSubroutine("asyncHelper", function (rs, args) {
  return new rs.Promise(function (resolve, reject) {
    resolve(42);
  });
+});
+```
+
+If you're using promises in your object macros, you need to get a reply from
+the bot using the `replyAsync()` method instead of `reply()`, for example:
+
+```javascript
+rs.replyAsync(username, message, this).then(function(reply) {
+   console.log("Bot> ", reply);
 });
 ```
 
