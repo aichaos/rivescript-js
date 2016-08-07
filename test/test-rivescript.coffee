@@ -208,3 +208,22 @@ exports.test_initialmatch = (test) ->
   bot.uservar("__initialmatch__", "@thanks{weight=2}")
 
   test.done()
+
+
+exports.test_valid_history = (test) ->
+  bot = new TestCase(test, """
+    + hello
+    - Hi!
+
+    + bye
+    - Goodbye!
+  """)
+
+  bot.reply("Hello", "Hi!")
+
+  # Intentionally set a bad history.
+  bot.rs.setUservar(bot.username, "__history__", {"input": ["Hello"]})
+
+  bot.reply("Bye!", "Goodbye!")
+
+  test.done()
