@@ -10,12 +10,13 @@
 <p>Create a new RiveScript interpreter. <code>options</code> is an object with the
 following keys:</p>
 <ul>
-<li>bool debug:    Debug mode            (default false)</li>
-<li>int  depth:    Recursion depth limit (default 50)</li>
-<li>bool strict:   Strict mode           (default true)</li>
-<li>bool utf8:     Enable UTF-8 mode     (default false)</li>
-<li>func onDebug:  Set a custom handler to catch debug log messages (default null)</li>
-<li>obj  errors:   Customize certain error messages (see below)</li>
+<li>bool debug:     Debug mode               (default false)</li>
+<li>int  depth:     Recursion depth limit    (default 50)</li>
+<li>bool strict:    Strict mode              (default true)</li>
+<li>bool utf8:      Enable UTF-8 mode        (default false, see below)</li>
+<li>bool forceCase: Force-lowercase triggers (default false, see below)</li>
+<li>func onDebug:   Set a custom handler to catch debug log messages (default null)</li>
+<li>obj  errors:    Customize certain error messages (see below)</li>
 </ul>
 <h2>UTF-8 Mode</h2>
 <p>In UTF-8 mode, most characters in a user's message are left intact, except for
@@ -28,6 +29,18 @@ initialization. Example:</p>
 bot.unicodePunctuation = new RegExp(/[.,!?;:]/g);</code></pre>
 
 
+<h2>Force Case</h2>
+<p>This option to the constructor will make RiveScript lowercase all the triggers
+it sees during parse time. This may ease the pain point that authors
+experience when they need to write a lowercase "i" in triggers, for example
+a trigger of <code>i am *</code>, where the lowercase <code>i</code> feels unnatural to type.</p>
+<p>By default a capital ASCII letter in a trigger would raise a parse error.
+Setting the <code>forceCase</code> option to <code>true</code> will instead silently lowercase the
+trigger and thus avoid the error.</p>
+<p>Do note, however, that this can have side effects with certain Unicode symbols
+in triggers, see <a href="https://www.w3.org/International/wiki/Case_folding">case folding in Unicode</a>.
+If you need to support Unicode symbols in triggers this may cause problems with
+certain symbols when made lowercase.</p>
 <h2>Custom Error Messages</h2>
 <p>You can provide any or all of the following properties in the <code>errors</code>
 argument to the constructor to override certain internal error messages:</p>

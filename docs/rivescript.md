@@ -3,12 +3,13 @@
 Create a new RiveScript interpreter. `options` is an object with the
 following keys:
 
-* bool debug:    Debug mode            (default false)
-* int  depth:    Recursion depth limit (default 50)
-* bool strict:   Strict mode           (default true)
-* bool utf8:     Enable UTF-8 mode     (default false)
-* func onDebug:  Set a custom handler to catch debug log messages (default null)
-* obj  errors:   Customize certain error messages (see below)
+* bool debug:     Debug mode               (default false)
+* int  depth:     Recursion depth limit    (default 50)
+* bool strict:    Strict mode              (default true)
+* bool utf8:      Enable UTF-8 mode        (default false, see below)
+* bool forceCase: Force-lowercase triggers (default false, see below)
+* func onDebug:   Set a custom handler to catch debug log messages (default null)
+* obj  errors:    Customize certain error messages (see below)
 
 ## UTF-8 Mode
 
@@ -24,6 +25,22 @@ initialization. Example:
 var bot = new RiveScript({utf8: true});
 bot.unicodePunctuation = new RegExp(/[.,!?;:]/g);
 ```
+
+## Force Case
+
+This option to the constructor will make RiveScript lowercase all the triggers
+it sees during parse time. This may ease the pain point that authors
+experience when they need to write a lowercase "i" in triggers, for example
+a trigger of `i am *`, where the lowercase `i` feels unnatural to type.
+
+By default a capital ASCII letter in a trigger would raise a parse error.
+Setting the `forceCase` option to `true` will instead silently lowercase the
+trigger and thus avoid the error.
+
+Do note, however, that this can have side effects with certain Unicode symbols
+in triggers, see [case folding in Unicode](https://www.w3.org/International/wiki/Case_folding).
+If you need to support Unicode symbols in triggers this may cause problems with
+certain symbols when made lowercase.
 
 ## Custom Error Messages
 

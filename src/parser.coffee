@@ -169,6 +169,11 @@ class Parser
       if line.indexOf(" //") > -1
         line = utils.strip(line.split(" //")[0])
 
+      # In the event of a +Trigger, if we are force-lowercasing it, then do so
+      # now before the syntax check.
+      if @master._forceCase is true and cmd is "+"
+        line = line.toLowerCase()
+
       # Run a syntax check on this line.
       syntaxError = @checkSyntax cmd, line
       if syntaxError isnt ""
