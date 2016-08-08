@@ -1,5 +1,25 @@
 # Changes
 
+* 1.15.0 2016-08-07
+  - Add a new contructor option, `forceCase`, which will force-lowercase your
+    triggers during parse time, enabling authors to use uppercase letters in
+    triggers without it being a syntax error. Do note however that Unicode
+    case folding can become an issue with certain symbols. (Bugs #143 and #69).
+  - Fix a bug where inline redirects, like `{@ hello}` would fail to match their
+    trigger due to the presence of a space between the `@` and text (bug #145).
+  - Add a non-fatal warning at parse time if it's detected that you used an
+    `@Redirect` command in conjunction with a `-Reply` or `*Condition`. In such
+    cases, the redirect "wins" and preempts the others, which may be surprising
+    behavior, and RiveScript will warn you about this now (bug #58).
+  - Prevent errors from arising when the user's history object is invalid, for
+    example if somebody manually overrode the `__history__` user
+    variable (PR #151).
+  - Fix a bug in the `write()` function where `-Replies` were being written when
+    a trigger actually had no reply (resulting in a single-character `-`
+    command which raises an error when re-parsed) (PR #141).
+  - Add more documentation to the `rs.Promise` function, including a full
+    example of how to use the `replyAsync()` method (bug #144).
+
 * 1.14.0 2016-07-09
   - Add a new API function: `getUserTopicTriggers` returns a list of triggers
     available from a user's current topic, including triggers that came from

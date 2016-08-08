@@ -7,7 +7,7 @@
 "use strict"
 
 # Constants
-VERSION  = "1.14.0"
+VERSION  = "1.15.0"
 
 # Helper modules
 Parser  = require "./parser"
@@ -25,12 +25,13 @@ readDir = require("fs-readdir-recursive")
 # Create a new RiveScript interpreter. `options` is an object with the
 # following keys:
 #
-# * bool debug:    Debug mode            (default false)
-# * int  depth:    Recursion depth limit (default 50)
-# * bool strict:   Strict mode           (default true)
-# * bool utf8:     Enable UTF-8 mode     (default false)
-# * func onDebug:  Set a custom handler to catch debug log messages (default null)
-# * obj  errors:   Customize certain error messages (see below)
+# * bool debug:     Debug mode               (default false)
+# * int  depth:     Recursion depth limit    (default 50)
+# * bool strict:    Strict mode              (default true)
+# * bool utf8:      Enable UTF-8 mode        (default false, see below)
+# * bool forceCase: Force-lowercase triggers (default false, see below)
+# * func onDebug:   Set a custom handler to catch debug log messages (default null)
+# * obj  errors:    Customize certain error messages (see below)
 #
 # ## UTF-8 Mode
 #
@@ -46,6 +47,22 @@ readDir = require("fs-readdir-recursive")
 # var bot = new RiveScript({utf8: true});
 # bot.unicodePunctuation = new RegExp(/[.,!?;:]/g);
 # ```
+#
+# ## Force Case
+#
+# This option to the constructor will make RiveScript lowercase all the triggers
+# it sees during parse time. This may ease the pain point that authors
+# experience when they need to write a lowercase "i" in triggers, for example
+# a trigger of `i am *`, where the lowercase `i` feels unnatural to type.
+#
+# By default a capital ASCII letter in a trigger would raise a parse error.
+# Setting the `forceCase` option to `true` will instead silently lowercase the
+# trigger and thus avoid the error.
+#
+# Do note, however, that this can have side effects with certain Unicode symbols
+# in triggers, see [case folding in Unicode](https://www.w3.org/International/wiki/Case_folding).
+# If you need to support Unicode symbols in triggers this may cause problems with
+# certain symbols when made lowercase.
 #
 # ## Custom Error Messages
 #
@@ -120,11 +137,12 @@ class RiveScript
       opts = {}
 
     # Default parameters
-    @_debug   = if opts.debug then opts.debug else false
-    @_strict  = if opts.strict then opts.strict else true
-    @_depth   = if opts.depth then parseInt(opts.depth) else 50
-    @_utf8    = if opts.utf8 then opts.utf8 else false
-    @_onDebug = if opts.onDebug then opts.onDebug else null
+    @_debug     = if opts.debug then opts.debug else false
+    @_strict    = if opts.strict then opts.strict else true
+    @_depth     = if opts.depth then parseInt(opts.depth) else 50
+    @_utf8      = if opts.utf8 then opts.utf8 else false
+    @_forceCase = if opts.forceCase then opts.forceCase else false
+    @_onDebug   = if opts.onDebug then opts.onDebug else null
 
     # UTF-8 punctuation, overridable by the user.
     @unicodePunctuation = new RegExp(/[.,!?;:]/g)
@@ -194,15 +212,25 @@ class RiveScript
   ##
   # Promise Promise
   #
-  # Alias for RSVP.Promise
+  # Alias for `RSVP.Promise` for use in async object macros.
   #
-  # You can use shortcut in your async subroutines
+  # This enables you to create a JavaScript object macro that returns a promise
+  # for asynchronous tasks (e.g. polling a web API or database). Example:
   #
   # ```javascript
   # rs.setSubroutine("asyncHelper", function (rs, args) {
   #  return new rs.Promise(function (resolve, reject) {
   #    resolve(42);
   #  });
+  # });
+  # ```
+  #
+  # If you're using promises in your object macros, you need to get a reply from
+  # the bot using the `replyAsync()` method instead of `reply()`, for example:
+  #
+  # ```javascript
+  # rs.replyAsync(username, message, this).then(function(reply) {
+  #    console.log("Bot> ", reply);
   # });
   # ```
   ##
