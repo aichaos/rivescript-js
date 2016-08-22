@@ -14,7 +14,7 @@
 # language handler to null, like so:
 #
 # ```javascript
-#    $bot->setHandler("javascript", null);
+#    bot.setHandler("javascript", null);
 # ```
 ##
 class JSObjectHandler

@@ -16,7 +16,7 @@ coffee = require "coffee-script"
 #
 # ```coffeescript
 #    CoffeeObjectHandler = require "rivescript/lang/coffee"
-#    $bot->setHandler("coffee", CoffeeObjectHandler);
+#    bot.setHandler "coffee", CoffeeObjectHandler
 # ```
 ##
 class CoffeeObjectHandler
