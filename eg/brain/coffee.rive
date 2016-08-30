@@ -6,7 +6,7 @@
 // RiveScript = require("./lib/rivescript")
 // CoffeeObjectHandler = require("./lib/rivescript/lang/coffee")
 // rs = new RiveScript()
-// rs.setHandler("coffee", CoffeeObjectHandler)
+// rs.setHandler("coffee", new CoffeeObjectHandler)
 
 ! version = 2.0
 
