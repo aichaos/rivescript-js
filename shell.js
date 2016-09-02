@@ -63,7 +63,7 @@ function loadBot() {
 }
 loadBot();
 
-fs.watch(opts.brain, {recursive: true}, function() {
+fs.watch(opts.brain, {recursive: false}, function() {
 	console.log("");
 	console.log('[INFO] Brain changed, reloading bot.');
 	rl.prompt();
@@ -98,8 +98,10 @@ rl.on('line', function(cmd) {
 	// Handle commands.
 	if (cmd === "/help") {
 		help();
+	} else if (cmd.indexOf("/data") === 0) {
+		console.log(bot.getUservars("localuser"));
 	} else if (cmd.indexOf("/eval ") === 0) {
-		eval(cmd.replace("/eval ", ""));
+		console.log(eval(cmd.replace("/eval ", "")));
 	} else if (cmd.indexOf("/log ") === 0) {
 		console.log(eval(cmd.replace("/log ", "")));
 	} else if (cmd === "/quit") {
