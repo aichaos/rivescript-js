@@ -63,12 +63,14 @@ function loadBot() {
 }
 loadBot();
 
-fs.watch(opts.brain, {recursive: false}, function() {
-	console.log("");
-	console.log('[INFO] Brain changed, reloading bot.');
-	rl.prompt();
-	loadBot();
-});
+if (opts.watch) {
+	fs.watch(opts.brain, {recursive: false}, function() {
+		console.log("");
+		console.log('[INFO] Brain changed, reloading bot.');
+		rl.prompt();
+		loadBot();
+	});
+}
 
 
 //--------------------------------------------------------------------------
