@@ -1,5 +1,13 @@
 # Changes
 
+* 1.16.0 2016-09-06
+  - Add TypeScript declaration files (PR #162).
+  - Add a `--watch` option to `shell.js` to automatically reload the bot's
+    brain when the source files change (PR #160).
+  - Fix the `json-server` example not giving errors correctly (passing invalid
+    data into the RiveScript library and potentially raising an exception
+    from within there; bug #165).
+
 * 1.15.0 2016-08-07
   - Add a new contructor option, `forceCase`, which will force-lowercase your
     triggers during parse time, enabling authors to use uppercase letters in

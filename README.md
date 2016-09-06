@@ -83,6 +83,8 @@ of JavaScript code. See `/help` for more.
 Both shell scripts accept command line parameters:
 
 * `--debug`: enables verbose debug logging.
+* `--watch`: watch the reply folder for changes and automatically reload the
+  bot when files are modified.
 * `--utf8`: enables UTF-8 mode.
 
 When using RiveScript.js as a library, the synopsis is as follows:

@@ -8,6 +8,7 @@
 ################################################################################
 
 readline = require "readline"
+fs = require "fs"
 RiveScript = require "./src/rivescript"
 CoffeeObjectHandler = require "./lib/lang/coffee"
 
@@ -18,16 +19,16 @@ CoffeeObjectHandler = require "./lib/lang/coffee"
 opts =
   debug: false
   utf8:  false
+  watch: false
   brain: undefined
 
-process.argv.forEach((val, index, array) ->
-  if index < 2
-    return
-
+process.argv.slice(2).forEach((val, index, array) ->
   if val is "--debug"
     opts.debug = true
   else if val is "--utf8"
     opts.utf8 = true
+  else if val is "--watch"
+    opts.watch = true
   else if val.indexOf("-") is 0
     console.error "Unknown option: #{val}"
   else if opts.brain is undefined
@@ -37,63 +38,81 @@ process.argv.forEach((val, index, array) ->
 )
 
 if opts.brain is undefined
-  console.log "Usage: coffee shell.coffee [--debug --utf8] </path/to/brain>"
+  console.log "Usage: coffee shell.coffee [--debug --utf8 --watch] </path/to/brain>"
   process.exit 1
 
 ################################################################################
 # Initialize the RiveScript bot and print the welcome banner.
 ################################################################################
 
-bot = new RiveScript({
-  debug: opts.debug
-  utf8: opts.utf8
-})
-bot.setHandler("coffee", new CoffeeObjectHandler())
-bot.loadDirectory opts.brain, (batch_num) ->
+rl = readline.createInterface
+  input: process.stdin
+  output: process.stdout
+
+bot = null
+
+loadingDone = (batchNumber) ->
   bot.sortReplies()
+  bot.ready = true
 
-  console.log """
-          .   .
-         .:...::      RiveScript Interpreter (CoffeeScript)
-        .::   ::.     Library Version: v#{bot.version()}
-     ..:;;. ' .;;:..
-        .  '''  .     Type '/quit' to quit.
-         :;,:,;:      Type '/help' for more options.
-         :     :
+loadingError = (error, batchNumber) ->
+  console.error "Loading error: #{error}"
 
-    Using the RiveScript bot found in: #{opts.brain}
-    Type a message to the bot and press Return to send it.
+loadBot = ->
+  bot = new RiveScript({
+    debug: opts.debug
+    utf8: opts.utf8
+  })
+  bot.ready = false
+  bot.setHandler("coffee", new CoffeeObjectHandler())
+  bot.loadDirectory(opts.brain, loadingDone, loadingError)
 
-  """
+loadBot()
 
-  ##############################################################################
-  # Drop into the interactive command shell.
-  ##############################################################################
-
-  rl = readline.createInterface
-    input: process.stdin
-    output: process.stdout
-
-  rl.setPrompt "You> "
-  rl.prompt()
-  rl.on "line", (cmd) ->
-    if cmd is "/help"
-      help()
-    else if cmd.indexOf("/eval ") is 0
-      eval(cmd.replace("/eval ", ""))
-    else if cmd.indexOf("/log ") is 0
-      console.log(eval(cmd.replace("/log ", "")))
-    else if cmd is "/quit"
-      process.exit 0
-    else
-      reply = bot.reply "localuser", cmd
-      console.log "Bot> #{reply}"
-
+if opts.watch?
+  fs.watch opts.brain, {recursive: false}, ->
+    console.log ""
+    console.log "[INFO] Brain changed, reloading bot."
     rl.prompt()
-  .on "close", () ->
+    loadBot()
+
+##############################################################################
+# Drop into the interactive command shell.
+##############################################################################
+
+console.log """
+      .   .
+     .:...::      RiveScript Interpreter (CoffeeScript)
+    .::   ::.     Library Version: v#{bot.version()}
+ ..:;;. ' .;;:..
+    .  '''  .     Type '/quit' to quit.
+     :;,:,;:      Type '/help' for more options.
+     :     :
+
+Using the RiveScript bot found in: #{opts.brain}
+Type a message to the bot and press Return to send it.
+
+"""
+
+rl.setPrompt "You> "
+rl.prompt()
+rl.on "line", (cmd) ->
+  if cmd is "/help"
+    help()
+  else if cmd.indexOf("/eval ") is 0
+    eval(cmd.replace("/eval ", ""))
+  else if cmd.indexOf("/log ") is 0
+    console.log(eval(cmd.replace("/log ", "")))
+  else if cmd is "/quit"
     process.exit 0
-, (err, loadBatch) ->
-  console.error "Loading error: #{err}"
+  else
+    reply = if (bot and bot.ready) then bot.reply("localuser", cmd) else "ERR: Bot not ready yet"
+    console.log "Bot> #{reply}"
+
+  rl.prompt()
+.on "close", () ->
+  console.log ""
+  process.exit 0
 
 help = () ->
   console.log """Supported commands:
