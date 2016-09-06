@@ -52,6 +52,12 @@ if (opts.brain === undefined) {
 // Initialize the RiveScript bot and print the welcome banner.
 //------------------------------------------------------------------------------
 
+var rl = readline.createInterface({
+	input: process.stdin,
+	output: process.stdout
+});
+
+
 var bot = null;
 function loadBot() {
 	bot = new RiveScript({
@@ -89,10 +95,6 @@ console.log("Using the RiveScript bot found in: " + opts.brain);
 console.log("Type a message to the bot and press Return to send it.");
 console.log("");
 
-var rl = readline.createInterface({
-	input: process.stdin,
-	output: process.stdout
-});
 
 rl.setPrompt("You> ");
 rl.prompt();
