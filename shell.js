@@ -65,7 +65,7 @@ function loadBot() {
 		utf8:  opts.utf8,
 	});
 	bot.ready = false;
-	bot.loadDirectory(opts.brain, loading_done, loading_error);
+	bot.loadDirectory(opts.brain, loadingDone, loadingError);
 }
 loadBot();
 
@@ -126,12 +126,12 @@ rl.on('line', function(cmd) {
 
 
 
-function loading_done(batchNumber) {
+function loadingDone(batchNumber) {
 	bot.sortReplies();
 	bot.ready = true;
 }
 
-function loading_error(error, batchNumber) {
+function loadingError(error, batchNumber) {
 	console.error("Loading error: " + error);
 }
 
