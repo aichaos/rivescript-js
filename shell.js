@@ -7,6 +7,7 @@
  ******************************************************************************/
 
 var readline = require("readline"),
+	fs = require("fs"),
 	RiveScript = require("./lib/rivescript");
 
 //------------------------------------------------------------------------------
@@ -16,19 +17,20 @@ var readline = require("readline"),
 var opts = {
 	debug: false,
 	utf8: false,
+	watch: false,
 	brain: undefined
 };
 
-process.argv.forEach(function(val, index, array) {
-	if (index < 2) {
-		return;
-	}
-
+process.argv.slice(2).forEach(function(val, index, array) {
+	
 	if (val === "--debug") {
 		opts.debug = true;
 	}
 	else if (val === "--utf8") {
 		opts.utf8 = true;
+	}
+	else if (val === "--watch") {
+		opts.watch = true;
 	}
 	else if (val.indexOf("-") === 0) {
 		console.error("Unknown option: %s", val);
@@ -42,7 +44,7 @@ process.argv.forEach(function(val, index, array) {
 });
 
 if (opts.brain === undefined) {
-	console.log("Usage: node shell.js [--debug --utf8] </path/to/brain>");
+	console.log("Usage: node shell.js [--debug --utf8 --watch] </path/to/brain>");
 	process.exit(1);
 }
 
@@ -50,61 +52,86 @@ if (opts.brain === undefined) {
 // Initialize the RiveScript bot and print the welcome banner.
 //------------------------------------------------------------------------------
 
-var bot = new RiveScript({
-	debug: opts.debug,
-	utf8:  opts.utf8,
+var rl = readline.createInterface({
+	input: process.stdin,
+	output: process.stdout
 });
-bot.loadDirectory(opts.brain, loading_done, loading_error);
 
-function loading_done(batch_num) {
-	bot.sortReplies();
 
-	console.log("      .   .       ");
-	console.log("     .:...::      RiveScript Interpreter (JavaScript)");
-	console.log("    .::   ::.     Library Version: v" + bot.version());
-	console.log(" ..:;;. ' .;;:..  ");
-	console.log("    .  '''  .     Type '/quit' to quit.");
-	console.log("     :;,:,;:      Type '/help' for more options.");
-	console.log("     :     :      ");
-	console.log("");
-	console.log("Using the RiveScript bot found in: " + opts.brain);
-	console.log("Type a message to the bot and press Return to send it.");
-	console.log("");
-
-	//--------------------------------------------------------------------------
-	// Drop into the interactive command shell.
-	//--------------------------------------------------------------------------
-
-	var rl = readline.createInterface({
-		input: process.stdin,
-		output: process.stdout
+var bot = null;
+function loadBot() {
+	bot = new RiveScript({
+		debug: opts.debug,
+		utf8:  opts.utf8,
 	});
+	bot.ready = false;
+	bot.loadDirectory(opts.brain, loadingDone, loadingError);
+}
+loadBot();
 
-	rl.setPrompt("You> ");
-	rl.prompt();
-	rl.on("line", function(cmd) {
-		// Handle commands.
-		if (cmd === "/help") {
-			help();
-		} else if (cmd.indexOf("/eval ") === 0) {
-			eval(cmd.replace("/eval ", ""));
-		} else if (cmd.indexOf("/log ") === 0) {
-			console.log(eval(cmd.replace("/log ", "")));
-		} else if (cmd === "/quit") {
-			process.exit(0);
-		} else {
-			// Get a reply from the bot.
-			var reply = bot.reply("localuser", cmd);
-			console.log("Bot>", reply);
-		}
-
+if (opts.watch) {
+	fs.watch(opts.brain, {recursive: false}, function() {
+		console.log("");
+		console.log('[INFO] Brain changed, reloading bot.');
 		rl.prompt();
-	}).on("close", function() {
-		process.exit(0);
+		loadBot();
 	});
 }
 
-function loading_error(error, loadBatch) {
+
+//--------------------------------------------------------------------------
+// Drop into the interactive command shell.
+//--------------------------------------------------------------------------
+
+console.log("      .   .       ");
+console.log("     .:...::      RiveScript Interpreter (JavaScript)");
+console.log("    .::   ::.     Library Version: v" + bot.version());
+console.log(" ..:;;. ' .;;:..  ");
+console.log("    .  '''  .     Type '/quit' to quit.");
+console.log("     :;,:,;:      Type '/help' for more options.");
+console.log("     :     :      ");
+console.log("");
+console.log("Using the RiveScript bot found in: " + opts.brain);
+console.log("Type a message to the bot and press Return to send it.");
+console.log("");
+
+
+rl.setPrompt("You> ");
+rl.prompt();
+rl.on('line', function(cmd) {
+	// Handle commands.
+	if (cmd === "/help") {
+		help();
+	} else if (cmd.indexOf("/data") === 0) {
+		console.log(bot.getUservars("localuser"));
+	} else if (cmd.indexOf("/eval ") === 0) {
+		console.log(eval(cmd.replace("/eval ", "")));
+	} else if (cmd.indexOf("/log ") === 0) {
+		console.log(eval(cmd.replace("/log ", "")));
+	} else if (cmd === "/quit") {
+		process.exit(0);
+	} else {
+		// Get a reply from the bot.
+		var reply = (bot && bot.ready)
+			? bot.reply("localuser", cmd)
+			: "ERR: Bot Not Ready Yet";
+		console.log("Bot>", reply);
+	}
+	
+	rl.prompt();
+}).on('close', function() {
+	console.log("");
+	process.exit(0);
+});
+
+
+
+function loadingDone(batchNumber) {
+	bot.sortReplies();
+	bot.ready = true;
+}
+
+function loadingError(error, batchNumber) {
 	console.error("Loading error: " + error);
 }
 
@@ -115,3 +142,5 @@ function help() {
 	console.log("/log <code>  : Shortcut to /eval console.log(code).");
 	console.log("/quit        : Exit the program.");
 }
+
+

@@ -61,6 +61,10 @@ declare module "rivescript" {
 		
 		clearUservars(user: string): void;
 		
+		lastMatch(user: string): string;
+		
+		initialMatch(user: string): string;
+		
 		currentUser(): string;
 	}
 	
