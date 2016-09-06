@@ -53,12 +53,12 @@ function getReply(req, res) {
 	var vars     = req.body.vars;
 
 	// Make sure username and message are included.
-	if (typeof(username) === undefined || typeof(message) === undefined) {
+	if (typeof(username) === "undefined" || typeof(message) === "undefined") {
 		return error(res, "username and message are required keys");
 	}
 
 	// Copy any user vars from the post into RiveScript.
-	if (typeof(vars) !== undefined) {
+	if (typeof(vars) !== "undefined") {
 		for (var key in vars) {
 			if (vars.hasOwnProperty(key)) {
 				bot.setUservar(username, key, vars[key]);
