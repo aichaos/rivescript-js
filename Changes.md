@@ -59,7 +59,7 @@
   - Call the error handler on `loadDirectory()` when the directory doesn't exist
     or isn't a directory (bug #117).
   - Include the `dist/` directory on npm for easy web browser embedding using
-    npmcdn.
+    unpkg.
 
 * 1.12.1 2016-05-05
   - Fix the `<call>...</call>` regular expression to match line break characters
