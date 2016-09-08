@@ -24,10 +24,10 @@ through npm:
 
 `npm install rivescript`
 
-For the web you can use the npmcdn:
+For the web you can use the unpkg:
 
 ```html
-<script src="https://npmcdn.com/rivescript@latest/dist/rivescript.min.js"></script>
+<script src="https://unpkg.com/rivescript@latest/dist/rivescript.min.js"></script>
 ```
 
 The GitHub repository for this project only includes the CoffeeScript sources.

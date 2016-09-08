@@ -7,7 +7,7 @@ This provides a CoffeeScript language handler for RiveScript object macros.
 ```npm install rivescript-contrib-coffeescript```
 
 ```html
-<script src="https://npmcdn.com/rivescript-contrib-coffeescript@latest/dist/rivescript-contrib-coffeescript.min.js"></script>
+<script src="https://unpkg.com/rivescript-contrib-coffeescript@latest/dist/rivescript-contrib-coffeescript.min.js"></script>
 ```
 
 # Usage
