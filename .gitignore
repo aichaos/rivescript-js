@@ -2,3 +2,6 @@ lib/
 dist/
 node_modules/
 .idea/
+
+#OS X
+.DS_Store
