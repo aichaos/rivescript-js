@@ -735,6 +735,9 @@ class Brain
         return String.fromCharCode(parseInt(grp, 16))
       )
 
+    # Prevent accidental wildcard match due to double-pipe (e.g. /hi||hello/)
+    regexp = regexp.replace(/\|{2,}/mg, '|')
+
     return regexp
 
   ##

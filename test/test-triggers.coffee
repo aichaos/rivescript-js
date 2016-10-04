@@ -264,3 +264,30 @@ exports.test_empty_piped_optionals = (test) ->
   bot.reply("Bye!", "Anything else?")
   bot.reply("Love you", "Anything else?")
   test.done()
+
+
+exports.test_empty_piped_missing_arrays = (test) ->
+  # Test case where an array reference is missing, and check that 
+  # compiled regexp does not render as accidental wildcard of `||`
+  bot = new TestCase(test, """
+    ! array test1 = hi|hey|sup|yo
+    ! array test2 = yes|yeah|yep
+    ! array test3 = bye|goodbye||byebye
+
+    // This trigger has an array reference that does not exist
+    // Check that new code prevents accidental double-pipe wildcard match
+    // e.g.  /hi|hey|sup|yo||bye|goodbye|byebye/
+    // should become  /hi|hey|sup|yo|bye|goodbye|byebye/
+    + [*] (@test2|@test4|@test3) [*]
+    - Multi-array match
+
+    // Normal array trigger
+    + [*] (@test1) [*]
+    - Test1 array match
+
+  """)
+
+  # We also fix these, so these should also work
+  bot.reply("Test One: hi", "Test1 array match")
+  bot.reply("Test Two: yeah", "Multi-array match")
+  test.done()
