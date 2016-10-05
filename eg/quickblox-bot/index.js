@@ -3,7 +3,7 @@
 // Example QuickBlox bot for RiveScript-JS.
 //
 // To run this bot, edit 'CONFIG' variable below to fill in your QuickBlox settings for the bot.
-// 
+//
 // Run this demo: `node index.js`
 
 const QB = require('quickblox');
@@ -46,7 +46,7 @@ function loadingError(batch_num, error) {
     console.log(`[RiveScript] Load the batch #${batch_num} is failed`, JSON.stringify(error));
 }
 
-riveScriptGenerator.loadFile('replies.rive', loadingDone, loadingError);
+riveScriptGenerator.loadDirectory('../brain', loadingDone, loadingError);
 
 
 // Initialise QuickBlox
