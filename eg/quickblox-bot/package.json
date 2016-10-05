@@ -1,0 +1,14 @@
+{
+  "name": "quickblox-bot",
+  "version": "0.0.1",
+  "description": "QuickBlox bot example for RiveScript-JS",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Igor Khomenko",
+  "license": "MIT",
+  "dependencies": {
+    "quickblox": "^2.3.1"
+  }
+}
