@@ -1,5 +1,16 @@
 # Changes
 
+* 1.17.0 2016-10-11
+  - Fix accidental double-piped wildcards caused by missing arrays (PR #176).
+  - Fix tags like `{uppercase}` in the BEGIN block from affecting object macros
+    before they could be called (bug #178).
+  - In the parser, include the current topic in some common error messages, such
+    as syntax errors, single-character lines and unknown commands (bug #140).
+  - Allow `forceCase` to apply to topics too, both in the `> topic` command and
+    in the `{topic=...}` tag (bug #158).
+  - In case of deep recursion while scanning topic inheritance trees, the error
+    now includes the current topic that it gave up on (bug #167).
+
 * 1.16.0 2016-09-06
   - Add TypeScript declaration files (PR #162).
   - Add a `--watch` option to `shell.js` to automatically reload the bot's

@@ -13,9 +13,9 @@ See the `eg/` folder for examples.
 
 ## DOCUMENTATION
 
-[Documentation](https://github.com/aichaos/rivescript-js/tree/master/docs) for
-the module's API is available in the `docs/` directory and is browseable in
-Markdown and HTML format.
+There is generated Markdown and HTML documentation of the modules in the
+[docs](https://github.com/aichaos/rivescript-js/tree/master/docs) folder.
+The main module is at [rivescript](https://github.com/aichaos/rivescript-js/blob/master/docs/rivescript.md).
 
 ## INSTALLATION
 
@@ -128,13 +128,6 @@ function loading_error (error) {
 }
 ```
 
-## DOCUMENTATION
-
-There is generated Markdown and HTML documentation of the modules in the
-[docs](https://github.com/aichaos/rivescript-js/tree/master/docs) folder.
-The main module is at
-[rivescript](https://github.com/aichaos/rivescript-js/blob/master/docs/rivescript.md).
-
 ## UTF-8 SUPPORT
 
 Version 1.0.5 adds **experimental** support for UTF-8 in RiveScript documents.
@@ -230,7 +223,7 @@ Steps for the npm maintainer of this module:
 ```
 The MIT License (MIT)
 
-Copyright (c) 2015 Noah Petherbridge
+Copyright (c) 2016 Noah Petherbridge
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
