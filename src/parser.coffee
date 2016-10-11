@@ -348,6 +348,10 @@ class Parser
                 type = "topic"
                 name = "__begin__"
 
+              # Force case on topics.
+              if @master._forceCase is true
+                name = name.toLowerCase()
+
               # Starting a new topic.
               @say "Set topic to #{name}"
               curTrig = null
@@ -636,9 +640,11 @@ class Parser
       if parts[0] is "begin" and parts.length > 1
         return "The 'begin' label takes no additional arguments"
       else if parts[0] is "topic"
-        if line.match(/[^a-z0-9_\-\s]/)
+        if not @master._forceCase and line.match(/[^a-z0-9_\-\s]/)
           return "Topics should be lowercased and contain only letters
                   and numbers"
+        else if line.match(/[^A-Za-z0-9_\-\s]/)
+          return "Topics should contain only letters and numbers in forceCase mode"
       else if parts[0] is "object"
         if line.match(/[^A-Za-z0-9\_\-\s]/)
           return "Objects can only contain numbers and letters"

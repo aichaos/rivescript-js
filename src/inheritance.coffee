@@ -41,7 +41,7 @@ getTopicTriggers = (rs, topic, thats, depth, inheritance, inherited) ->
 
   # Break if we're in too deep.
   if depth > rs._depth
-    rs.warn "Deep recursion while scanning topic inheritance!"
+    rs.warn "Deep recursion while scanning topic inheritance (gave up in topic #{topic})!"
     return []
 
   # Keep in mind here that there is a difference between 'includes' and
