@@ -84,6 +84,42 @@ exports.test_get_variable = (test) ->
   bot.reply("show me var", "test")
   test.done()
 
+exports.test_uppercase_call = (test) ->
+  bot = new TestCase(test, """
+    > begin
+        + request
+        * <bot mood> == happy => {sentence}{ok}{/sentence}
+        * <bot mood> == angry => {uppercase}{ok}{/uppercase}
+        * <bot mood> == sad   => {lowercase}{ok}{/lowercase}
+        - {ok}
+    < begin
+
+    > object test javascript
+        return "The object result.";
+    < object
+
+    // Not much we can do about this part right now... when uppercasing the
+    // whole reply the name of the macro is also uppercased. *shrug*
+    > object TEST javascript
+        return "The object result.";
+    < object
+
+    + *
+    - Hello there. <call>test <star></call>
+  """)
+  bot.reply("hello", "Hello there. The object result.")
+
+  bot.rs.setVariable("mood", "happy")
+  bot.reply("hello", "Hello there. The object result.")
+
+  bot.rs.setVariable("mood", "angry")
+  bot.reply("hello", "HELLO THERE. The object result.")
+
+  bot.rs.setVariable("mood", "sad")
+  bot.reply("hello", "hello there. The object result.")
+
+  test.done()
+
 exports.test_objects_in_conditions = (test) ->
   bot = new TestCase(test, """
     // Normal synchronous object that returns an immediate response.
