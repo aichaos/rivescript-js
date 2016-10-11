@@ -158,9 +158,9 @@ exports.test_weighted_triggers = (test) ->
 exports.test_empty_piped_arrays = (test) ->
   errors = []
   expected_errors = [
-    'Syntax error: Piped arrays can\'t begin or end with a | at stream() line 1 near ! array hello = hi|hey|sup|yo|'
-    'Syntax error: Piped arrays can\'t begin or end with a | at stream() line 2 near ! array something = |something|some thing'
-    'Syntax error: Piped arrays can\'t include blank entries at stream() line 3 near ! array nothing = nothing||not a thing'
+    'Syntax error: Piped arrays can\'t begin or end with a | at stream() line 1 near ! array hello = hi|hey|sup|yo| (in topic random)'
+    'Syntax error: Piped arrays can\'t begin or end with a | at stream() line 2 near ! array something = |something|some thing (in topic random)'
+    'Syntax error: Piped arrays can\'t include blank entries at stream() line 3 near ! array nothing = nothing||not a thing (in topic random)'
   ]
 
   console.error = (text)->
@@ -191,9 +191,9 @@ exports.test_empty_piped_arrays = (test) ->
 exports.test_empty_piped_alternations = (test) ->
   errors = []
   expected_errors = [
-    'Syntax error: Piped alternations can\'t begin or end with a | at stream() line 1 near + [*] (hi|hey|sup|yo|) [*]'
-    'Syntax error: Piped alternations can\'t begin or end with a | at stream() line 4 near + [*] (|good|great|nice) [*]'
-    'Syntax error: Piped alternations can\'t include blank entries at stream() line 7 near + [*] (mild|warm||hot) [*]'
+    'Syntax error: Piped alternations can\'t begin or end with a | at stream() line 1 near + [*] (hi|hey|sup|yo|) [*] (in topic random)'
+    'Syntax error: Piped alternations can\'t begin or end with a | at stream() line 4 near + [*] (|good|great|nice) [*] (in topic random)'
+    'Syntax error: Piped alternations can\'t include blank entries at stream() line 7 near + [*] (mild|warm||hot) [*] (in topic random)'
   ]
 
   console.error = (text)->
@@ -230,9 +230,9 @@ exports.test_empty_piped_alternations = (test) ->
 exports.test_empty_piped_optionals = (test) ->
   errors = []
   expected_errors = [
-    'Syntax error: Piped optionals can\'t begin or end with a | at stream() line 1 near + bot [*] [hi|hey|sup|yo|] [*] to me'
-    'Syntax error: Piped optionals can\'t begin or end with a | at stream() line 4 near + dog [*] [|good|great|nice] [*] to me'
-    'Syntax error: Piped optionals can\'t include blank entries at stream() line 7 near + cat [*] [mild|warm||hot] [*] to me'
+    'Syntax error: Piped optionals can\'t begin or end with a | at stream() line 1 near + bot [*] [hi|hey|sup|yo|] [*] to me (in topic random)'
+    'Syntax error: Piped optionals can\'t begin or end with a | at stream() line 4 near + dog [*] [|good|great|nice] [*] to me (in topic random)'
+    'Syntax error: Piped optionals can\'t include blank entries at stream() line 7 near + cat [*] [mild|warm||hot] [*] to me (in topic random)'
   ]
 
   console.error = (text)->
@@ -267,7 +267,7 @@ exports.test_empty_piped_optionals = (test) ->
 
 
 exports.test_empty_piped_missing_arrays = (test) ->
-  # Test case where an array reference is missing, and check that 
+  # Test case where an array reference is missing, and check that
   # compiled regexp does not render as accidental wildcard of `||`
   bot = new TestCase(test, """
     ! array test1 = hi|hey|sup|yo
