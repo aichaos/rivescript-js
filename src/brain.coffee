@@ -93,8 +93,8 @@ class Brain
   # and it returns a promise, otherwise a string is returned
   ##
   processCallTags: (reply, scope, async) ->
-    reply = reply.replace(/\{__call__\}/g, "<call>")
-    reply = reply.replace(/\{\/__call__\}/g, "</call>")
+    reply = reply.replace(/\{__call__\}/ig, "<call>")
+    reply = reply.replace(/\{\/__call__\}/ig, "</call>")
     callRe = /<call>([\s\S]+?)<\/call>/ig
     argsRe = /{__call_arg__}([^{]*){\/__call_arg__}/ig
 
