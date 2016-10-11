@@ -7,6 +7,10 @@ var readline = require("readline");
 var request = require("request");
 var colors = require('colors');
 
+// Configuration: get an API key from http://openweathermap.org/appid and
+// put it in this variable.
+const APPID = 'change me';
+
 // This would just be require("rivescript") if not for running this
 // example from within the RiveScript project.
 var RiveScript = require("../../lib/rivescript");
@@ -17,7 +21,7 @@ var getWeather = function(location, callback) {
     url: "http://api.openweathermap.org/data/2.5/weather",
     qs: {
       q: location,
-      APPID: "6460241df9136925432064ac70416d05"
+      APPID: APPID
     },
     json: true
   }, function(error, response) {
@@ -31,7 +35,7 @@ var getWeather = function(location, callback) {
 
 
 rs.setSubroutine("getWeather", function (rs, args)  {
-  return new rs.Promise(function(resolve, reject) { 
+  return new rs.Promise(function(resolve, reject) {
     getWeather(args.join(' '), function(error, data){
       if(error) {
         reject(error);
@@ -43,7 +47,7 @@ rs.setSubroutine("getWeather", function (rs, args)  {
 });
 
 rs.setSubroutine("checkForRain", function(rs, args) {
-  return new rs.Promise(function(resolve, reject) { 
+  return new rs.Promise(function(resolve, reject) {
     getWeather(args.join(' '), function(error, data){
       if(error) {
         console.error('');
@@ -54,12 +58,16 @@ rs.setSubroutine("checkForRain", function(rs, args) {
       }
     });
   });
-});    
+});
 
 // Create a prototypical class for our own chatbot.
 var AsyncBot = function(onReady) {
     var self = this;
-    
+
+    if (APPID === 'change me') {
+        console.log('Error -- edit weatherman.js and provide the APPID for Open Weathermap.'.bold.yellow);
+    }
+
     // Load the replies and process them.
     rs.loadFile("weatherman.rive", function() {
       rs.sortReplies();
