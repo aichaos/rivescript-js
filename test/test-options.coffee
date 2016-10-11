@@ -159,11 +159,23 @@ exports.test_force_case = (test) ->
     // Note the capital "I", this would raise a parse error normally.
     + I am # years old
     - <set age=<star>>A lot of people are <get age>.
+
+    + enter topic
+    - Enter topic via topic tag.{topic=CapsTopic}
+
+    > topic CapsTopic
+        + *
+        - The topic worked!{topic=random}
+    < topic
   """, { forceCase: true })
 
   bot.reply("hello bot", "Hello human!")
   bot.reply("i am 5 years old", "A lot of people are 5.")
   bot.reply("I am 6 years old", "A lot of people are 6.")
+  bot.rs.setUservar("localuser", "topic", "CapsTopic")
+  bot.reply("hello", "The topic worked!")
+  bot.reply("enter topic", "Enter topic via topic tag.")
+  bot.reply("hello", "The topic worked!")
   test.done()
 
 exports.test_no_force_case = (test) ->

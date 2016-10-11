@@ -724,6 +724,9 @@ class RiveScript
     if value is undefined
       delete @_users[user][name]
     else
+      # Topic? And are we forcing case?
+      if name is "topic" and @_forceCase
+        value = value.toLowerCase()
       @_users[user][name] = value
 
   ##
@@ -739,6 +742,11 @@ class RiveScript
 
     for key of data
       continue unless data.hasOwnProperty key
+
+      # Topic? And are we forcing case?
+      if key is "topic" and @_forceCase
+        data[key] = data[key].toLowerCase()
+
       if data[key] is undefined
         delete @_users[user][key]
       else
