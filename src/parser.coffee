@@ -160,7 +160,7 @@ class Parser
 
       # Separate the command from the data
       if line.length < 2
-        @warn "Weird single-character line '#{line}' found.", filename, lineno
+        @warn "Weird single-character line '#{line}' found (in topic #{topic})", filename, lineno
         continue
       cmd = line.substring 0, 1
       line = utils.strip(line.substring(1))
@@ -182,7 +182,7 @@ class Parser
                               #{filename} line #{lineno} near #{cmd} #{line}"
         else
           @warn "Syntax error: #{syntaxError} at #{filename} line #{lineno}
-                 near #{cmd} #{line}"
+                 near #{cmd} #{line} (in topic #{topic})"
 
       # Reset the %Previous state if this is a new +Trigger.
       if cmd is "+"
@@ -455,7 +455,7 @@ class Parser
           curTrig.redirect = utils.strip line
 
         else
-          @warn "Unknown command '#{cmd}'", filename, lineno
+          @warn "Unknown command '#{cmd}' (in topic #{topic})", filename, lineno
 
     return ast
 
