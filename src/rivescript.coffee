@@ -757,7 +757,7 @@ class RiveScript
   #
   # Gets a variable. This is equivalent to `<bot name>` in RiveScript.
   ##
-  getVariable: (user, name) ->
+  getVariable: (name) ->
     # The var exists?
     if typeof(@_var[name]) isnt "undefined"
       return @_var[name]

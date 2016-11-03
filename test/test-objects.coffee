@@ -73,9 +73,8 @@ exports.test_get_variable = (test) ->
     ! var test_var = test
 
     > object test_get_var javascript
-        var uid   = rs.currentUser();
         var name  = "test_var";
-        return rs.getVariable(uid, name);
+        return rs.getVariable(name);
     < object
 
     + show me var
