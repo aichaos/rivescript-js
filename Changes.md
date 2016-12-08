@@ -1,5 +1,14 @@
 # Changes
 
+* 1.17.1 2016-12-08
+  - Fix sorting algorithm for triggers with `%Previous`, making their sort order
+    deterministic and correct regardless of the order they appeared in the
+    source file (PR #194)
+  - Fix the function prototype for `getVariable` to only accept the `name`
+    parameter for a bot variable. Previously it was accepting `(username, name)`
+    which was incorrect because bot variables are global and have no relation
+    to a particular username.
+
 * 1.17.0 2016-10-11
   - Fix accidental double-piped wildcards caused by missing arrays (PR #176).
   - Fix tags like `{uppercase}` in the BEGIN block from affecting object macros
