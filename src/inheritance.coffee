@@ -97,7 +97,8 @@ getTopicTriggers = (rs, topic, thats, depth, inheritance, inherited) ->
         continue unless rs._thats[topic].hasOwnProperty curTrig
         for previous of rs._thats[topic][curTrig]
           continue unless rs._thats[topic][curTrig].hasOwnProperty previous
-          inThisTopic.push [previous, rs._thats[topic][curTrig][previous]]
+          pointer = rs._thats[topic][curTrig][previous]
+          inThisTopic.push [pointer.trigger, pointer]
 
   # Does this topic include others?
   if Object.keys(rs._includes[topic]).length > 0
