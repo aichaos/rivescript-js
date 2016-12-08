@@ -21,6 +21,18 @@ exports.test_previous = (test) ->
     % * who
     - Haha! <sentence>!
 
+    + ask me a question
+    - How many arms do I have?
+
+    + [*] # [*]
+    % how many arms do i have
+    * <star> == 2 => Yes!
+    - No!
+
+    + *
+    % how many arms do i have
+    - That isn't a number.
+
     + *
     - I don't know.
   """)
@@ -28,6 +40,12 @@ exports.test_previous = (test) ->
   bot.reply("Canoe", "Canoe who?")
   bot.reply("Canoe help me with my homework?", "Haha! Canoe help me with my homework!")
   bot.reply("hello", "I don't know.")
+  bot.reply("Ask me a question", "How many arms do I have?")
+  bot.reply("1", "No!")
+  bot.reply("Ask me a question", "How many arms do I have?")
+  bot.reply("2", "Yes!")
+  bot.reply("Ask me a question", "How many arms do I have?")
+  bot.reply("lol", "That isn't a number.")
   test.done()
 
 exports.test_random = (test) ->
