@@ -37,7 +37,7 @@ class Brain
   #
   # Fetch a reply for the user.
   ##
-  reply: (user, msg, scope, async) ->
+  reply: (user, msg, scope, async, skipBegin) ->
     @say "Asked to reply to [#{user}] #{msg}"
 
     # Store the current user's ID.
@@ -52,7 +52,7 @@ class Brain
       @master._users[user].__initialmatch__ = undefined
 
     # If the BEGIN block exists, consult it first.
-    if @master._topics.__begin__
+    if not skipBegin and @master._topics.__begin__
       begin = @_getReply(user, "request", "begin", 0, scope)
 
       # OK to continue?

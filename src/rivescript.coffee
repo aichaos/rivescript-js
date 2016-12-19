@@ -911,7 +911,7 @@ class RiveScript
   ##############################################################################
 
   ##
-  # string reply (string username, string message[, scope])
+  # string reply (string username, string message[, scope, skipBegin])
   #
   # Fetch a reply from the RiveScript brain. The message doesn't require any
   # special pre-processing to be done to it, i.e. it's allowed to contain
@@ -927,9 +927,14 @@ class RiveScript
   # or attributes that your code has access to, from the location that `reply()`
   # was called. For an example of this, refer to the `eg/scope` directory in
   # the source distribution of RiveScript-JS.
+  #
+  # The option `skipBegin` parameter can be used to skip any begin blocks.
+  # This is useful for when calling reply from within a macro (when begin
+  # has already been processed) or when executing a system call where the
+  # implementor purposefully wishes to avoid the begin block.
   ##
-  reply: (user, msg, scope) ->
-    return @brain.reply(user, msg, scope)
+  reply: (user, msg, scope, skipBegin) ->
+    return @brain.reply(user, msg, scope, false, skipBegin)
 
   ##
   # Promise replyAsync (string username, string message [[, scope], callback])
