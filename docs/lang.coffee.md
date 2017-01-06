@@ -5,7 +5,7 @@ enabled by default; to enable CoffeeScript object macros:
 
 ```coffeescript
    CoffeeObjectHandler = require "rivescript/lang/coffee"
-   bot.setHandler "coffee", CoffeeObjectHandler
+   bot.setHandler "coffee", new CoffeeObjectHandler
 ```
 
 ## void load (string name, string[] code)

@@ -184,6 +184,13 @@ or else the current state of the bot's brain is used instead.</p>
 <p>Set a custom language handler for RiveScript object macros. See the source
 for the built-in JavaScript handler (src/lang/javascript.coffee) as an
 example.</p>
+<p>By default, JavaScript object macros are enabled. If you want to disable
+these (e.g. for security purposes when loading untrusted third-party code),
+just set the JavaScript handler to null:</p>
+<pre class="codehilite"><code class="language-javascript">var bot = new RiveScript();
+bot.setHandler(&quot;javascript&quot;, null);</code></pre>
+
+
 <h2>void setSubroutine(string name, function)</h2>
 <p>Define a JavaScript object macro from your program.</p>
 <p>This is equivalent to having a JS object defined in the RiveScript code,

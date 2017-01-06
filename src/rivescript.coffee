@@ -642,6 +642,15 @@ class RiveScript
   # Set a custom language handler for RiveScript object macros. See the source
   # for the built-in JavaScript handler (src/lang/javascript.coffee) as an
   # example.
+  #
+  # By default, JavaScript object macros are enabled. If you want to disable
+  # these (e.g. for security purposes when loading untrusted third-party code),
+  # just set the JavaScript handler to null:
+  #
+  # ```javascript
+  # var bot = new RiveScript();
+  # bot.setHandler("javascript", null);
+  # ```
   ##
   setHandler: (lang, obj) ->
     if obj is undefined

@@ -17,6 +17,9 @@ There is generated Markdown and HTML documentation of the modules in the
 [docs](https://github.com/aichaos/rivescript-js/tree/master/docs) folder.
 The main module is at [rivescript](https://github.com/aichaos/rivescript-js/blob/master/docs/rivescript.md).
 
+Also check out the [**RiveScript Community Wiki**](https://github.com/aichaos/rivescript/wiki)
+for common design patterns and tips & tricks for RiveScript.
+
 ## INSTALLATION
 
 For nodejs and other similar JavaScript engines, you can install this module
