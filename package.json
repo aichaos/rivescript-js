@@ -11,8 +11,8 @@
     "chatscript",
     "buddyscript"
   ],
-  "homepage": "http://www.rivescript.com/",
-  "author": "Noah Petherbridge <root@kirsle.net> (http://www.kirsle.net/)",
+  "homepage": "https://www.rivescript.com/",
+  "author": "Noah Petherbridge <root@kirsle.net> (https://www.kirsle.net/)",
   "main": "lib/rivescript.js",
   "files": [
     "README.md",
