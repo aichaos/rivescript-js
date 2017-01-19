@@ -96,7 +96,7 @@ class Brain
     reply = reply.replace(/«__call__»/ig, "<call>")
     reply = reply.replace(/«\/__call__»/ig, "</call>")
     callRe = /<call>([\s\S]+?)<\/call>/ig
-    argsRe = /«__call_arg__»([\s\S]*?)«\/__call_arg__»/mig
+    argsRe = /«__call_arg__»([\s\S]*?)«\/__call_arg__»/ig
 
     giveup = 0
     matches = {}
