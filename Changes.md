@@ -1,5 +1,11 @@
 # Changes
 
+* 1.17.2 2017-01-19
+  - Fix `<call>` tags not working inside of the `@Redirect` command and the
+    inline redirect `{@}` tag. Note that only *synchronous* object macros that
+    return a string response are allowed in these, just like in `*Condition`
+    commands (PR #203)
+
 * 1.17.1 2016-12-08
   - Fix sorting algorithm for triggers with `%Previous`, making their sort order
     deterministic and correct regardless of the order they appeared in the
