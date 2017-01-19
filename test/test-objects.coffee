@@ -176,6 +176,27 @@ exports.test_objects_in_conditions = (test) ->
     )
   )
 
+exports.test_objects_in_redirects = (test) ->
+  bot = new TestCase(test, """
+    > object echo javascript
+      var message = args.join(" ");
+      return message;
+    < object
+
+    + hello bot
+    - Hello human.
+
+    + redirect to *
+    @ <call>echo <star></call>
+
+    + inline to *
+    - "<sentence>": {@ <call>echo <star></call>}
+  """)
+  bot.reply("hello bot", "Hello human.")
+  bot.reply("Redirect to Hello Bot", "Hello human.")
+  bot.reply("Inline to hello bot", '"Hello bot": Hello human.')
+  test.done()
+
 exports.test_line_breaks_in_call = (test) ->
   bot = new TestCase(test, """
     > object macro javascript

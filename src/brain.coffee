@@ -93,10 +93,10 @@ class Brain
   # and it returns a promise, otherwise a string is returned
   ##
   processCallTags: (reply, scope, async) ->
-    reply = reply.replace(/\{__call__\}/ig, "<call>")
-    reply = reply.replace(/\{\/__call__\}/ig, "</call>")
+    reply = reply.replace(/«__call__»/ig, "<call>")
+    reply = reply.replace(/«\/__call__»/ig, "</call>")
     callRe = /<call>([\s\S]+?)<\/call>/ig
-    argsRe = /{__call_arg__}([^{]*){\/__call_arg__}/ig
+    argsRe = /«__call_arg__»([\s\S]*?)«\/__call_arg__»/mig
 
     giveup = 0
     matches = {}
@@ -209,7 +209,7 @@ class Brain
     return result
 
   _wrapArgumentsInCallTags: (reply) ->
-    # wrap arguments inside <call></call> in {__call_arg__}{/__call_arg__}
+    # wrap arguments inside <call></call> in «__call_arg__»«/__call_arg__»
     callRegEx = /<call>\s*(.*?)\s*<\/call>/ig
     callArgsRegEx = /<call>\s*[^\s]+ (.*)<\/call>/ig
 
@@ -234,7 +234,7 @@ class Brain
         wrappedArgs = []
 
         for a in args
-          wrappedArgs.push "{__call_arg__}#{a}{/__call_arg__}"
+          wrappedArgs.push "«__call_arg__»#{a}«/__call_arg__»"
 
         wrappedCallSignature = wrappedCallSignature.replace(originalArgs,
           wrappedArgs.join(' '))
@@ -437,6 +437,10 @@ class Brain
         if matched.redirect?
           @say "Redirecting us to #{matched.redirect}"
           redirect = @processTags(user, msg, matched.redirect, stars, thatstars, step, scope)
+
+          # Execute and resolve *synchronous* <call> tags.
+          redirect = @processCallTags(redirect, scope, false)
+
           @say "Pretend user said: #{redirect}"
           reply = @_getReply(user, redirect, context, step+1, scope)
           break
@@ -860,8 +864,8 @@ class Brain
     # Handle all variable-related tags with an iterative regexp approach, to
     # allow for nesting of tags in arbitrary ways (think <set a=<get b>>)
     # Dummy out the <call> tags first, because we don't handle them right here.
-    reply = reply.replace(/<call>/ig, "{__call__}")
-    reply = reply.replace(/<\/call>/ig, "{/__call__}")
+    reply = reply.replace(/<call>/ig, "«__call__»")
+    reply = reply.replace(/<\/call>/ig, "«/__call__»")
 
     while true
       # This regexp will match a <tag> which contains no other tag inside it,
@@ -966,6 +970,10 @@ class Brain
         break
 
       target = utils.strip match[1]
+
+      # Resolve any *synchronous* <call> tags right now before redirecting.
+      target = @processCallTags(target, scope, false)
+
       @say "Inline redirection to: #{target}"
       subreply = @_getReply(user, target, "normal", step+1, scope)
       reply = reply.replace(new RegExp("\\{@" + utils.quotemeta(match[1]) + "\\}", "i"), subreply)
