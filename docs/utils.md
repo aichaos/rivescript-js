@@ -22,7 +22,7 @@ Count the number of real words in a string.
 
 ## string stripNasties (string, bool utf8)
 
-Stip special characters out of a string.
+Strip special characters out of a string.
 
 ## string quotemeta (string)
 
