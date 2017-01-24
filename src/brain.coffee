@@ -1007,14 +1007,14 @@ class Brain
 
       # Make a placeholder.
       ph.push result
-      placeholder = "\x00#{pi}\x00"
+      placeholder = "\x00<#{pi}>\x00"
       pi++
 
       # Run substitutions.
       msg = msg.replace(new RegExp("^#{qm}$", "g"),           placeholder)
-      msg = msg.replace(new RegExp("^#{qm}(\\W+)", "g"),      "#{placeholder}$1")
-      msg = msg.replace(new RegExp("(\\W+)#{qm}(\\W+)", "g"), "$1#{placeholder}$2")
-      msg = msg.replace(new RegExp("(\\W+)#{qm}$", "g"),      "$1#{placeholder}")
+      msg = msg.replace(new RegExp("^#{qm}([^a-zA-Z0-9_>]+)", "g"),      "#{placeholder}$1")
+      msg = msg.replace(new RegExp("([^a-zA-Z0-9_<]+)#{qm}([^a-zA-Z0-9_>]+)", "g"), "$1#{placeholder}$2")
+      msg = msg.replace(new RegExp("([^a-zA-Z0-9_<]+)#{qm}$", "g"),      "$1#{placeholder}")
 
     # Convert the placeholders back in.
     tries = 0
@@ -1024,11 +1024,11 @@ class Brain
         @warn "Too many loops in substitution placeholders!"
         break
 
-      match = msg.match("\\x00(.+?)\\x00")
+      match = msg.match("\\x00<(.+?)>\\x00")
       if match
         cap = parseInt(match[1])
         result = ph[cap]
-        msg = msg.replace(new RegExp("\x00#{cap}\x00", "g"), result)
+        msg = msg.replace(new RegExp("\x00<#{cap}>\x00", "g"), result)
 
     return msg
 
