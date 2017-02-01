@@ -987,7 +987,6 @@ class Brain
   # Run substitutions against a message. `type` is either "sub" or "person" for
   # the type of substitution to run.
   substitute: (msg, type) ->
-    result = ""
 
     # Safety checking.
     if not @master._sorted[type]
@@ -997,38 +996,59 @@ class Brain
     # Get the substitutions map.
     subs = if type is "sub" then @master._sub else @master._person
 
-    # Make placeholders each time we substitute something.
-    ph = []
-    pi = 0
+    # Get the max number of words in sub/person to minimize interations
+    maxwords = if type is "sub" then @master._submax else @master._personmax
 
-    for pattern in @master._sorted[type]
-      result = subs[pattern]
-      qm     = utils.quotemeta pattern
+    result = ""
 
-      # Make a placeholder.
-      ph.push result
-      placeholder = "\x00<#{pi}>\x00"
-      pi++
-
-      # Run substitutions.
-      msg = msg.replace(new RegExp("^#{qm}$", "g"),           placeholder)
-      msg = msg.replace(new RegExp("^#{qm}([^a-zA-Z0-9_>]+)", "g"),      "#{placeholder}$1")
-      msg = msg.replace(new RegExp("([^a-zA-Z0-9_<]+)#{qm}([^a-zA-Z0-9_>]+)", "g"), "$1#{placeholder}$2")
-      msg = msg.replace(new RegExp("([^a-zA-Z0-9_<]+)#{qm}$", "g"),      "$1#{placeholder}")
-
-    # Convert the placeholders back in.
+    # Take the original message with no punctuation
+    pattern = msg.replace(/[.?,!;:]/, "")
     tries = 0
-    while msg.indexOf("\x00") > -1
-      tries++
-      if tries > 50
-        @warn "Too many loops in substitution placeholders!"
-        break
 
-      match = msg.match("\\x00<(.+?)>\\x00")
-      if match
-        cap = parseInt(match[1])
-        result = ph[cap]
-        msg = msg.replace(new RegExp("\x00<#{cap}>\x00", "g"), result)
+    # Look for words/phrases until there is no "spaces" in pattern
+    while pattern.indexOf(" ") > -1
+        giveup++
+        # Give up if there are too many substitutions (for safety)
+        if giveup >= 50
+          @warn "Too many loops in substitution placeholders!"
+          break
+
+          li = utils.nIndexOf(pattern, " ", maxwords)
+          subpattern = pattern.substring(0, li)
+
+          # If finds the pattern in sub object replace and stop to look
+          result = subs[subpattern];
+          if result!=undefined
+              msg = msg.replace(subpattern, result)
+              break
+          else
+              # Otherwise Look for substitutions in a subpattern
+              while subpattern.indexOf(" ") > -1
+                  subgiveup++
+                  # Give up if there are too many substitutions (for safety)
+                  if subgiveup >= 50
+                    @warn("Too many loops in substitution placeholders!")
+                    break
+
+                  li = subpattern.lastIndexOf(" ");
+                  subpattern = subpattern.substring(0, li);
+
+                  # If finds the subpattern in sub object replace and stop to look
+                  result = subs[subpattern];
+                  if result!=undefined
+                      msg = msg.replace(subpattern, result)
+                      break
+
+                  tries++;
+
+          tries++
+          fi = pattern.indexOf(" ")
+          pattern = pattern.substring(fi+1)
+
+      # After all loops, see if just one word is in the pattern
+      result = subs[pattern]
+      if result!=undefined
+          msg = msg.replace(pattern, result)
 
     return msg
 

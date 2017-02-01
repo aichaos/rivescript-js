@@ -154,3 +154,6 @@ exports.isAPromise = (obj) ->
   typeof obj.then is 'function' and
   typeof obj.catch is 'function' and
   typeof obj.finally is 'function'
+
+exports.nIndexOf = (string, match, index) ->
+   return string.split(match, index).join(match).length
