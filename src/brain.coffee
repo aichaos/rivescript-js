@@ -1002,55 +1002,59 @@ class Brain
     result = ""
 
     # Take the original message with no punctuation
-    pattern = msg.replace(/[.?,!;:]/, "")
+    if @master.unicodePunctuation?
+      pattern = msg.replace(@master.unicodePunctuation, "")
+    else
+      pattern = msg.replace(/[.,!?;:]/g, "")
+
     tries = 0
+    giveup = 0
+    subgiveup = 0
 
     # Look for words/phrases until there is no "spaces" in pattern
     while pattern.indexOf(" ") > -1
-        giveup++
-        # Give up if there are too many substitutions (for safety)
-        if giveup >= 50
-          @warn "Too many loops in substitution placeholders!"
-          break
+      giveup++
+      # Give up if there are too many substitutions (for safety)
+      if giveup >= 1000
+        @warn "Too many loops when handling substitutions!"
+        break
 
-          li = utils.nIndexOf(pattern, " ", maxwords)
-          subpattern = pattern.substring(0, li)
+      li = utils.nIndexOf(pattern, " ", maxwords)
+      subpattern = pattern.substring(0, li)
 
-          # If finds the pattern in sub object replace and stop to look
-          result = subs[subpattern];
-          if result!=undefined
-              msg = msg.replace(subpattern, result)
-              break
-          else
-              # Otherwise Look for substitutions in a subpattern
-              while subpattern.indexOf(" ") > -1
-                  subgiveup++
-                  # Give up if there are too many substitutions (for safety)
-                  if subgiveup >= 50
-                    @warn("Too many loops in substitution placeholders!")
-                    break
-
-                  li = subpattern.lastIndexOf(" ");
-                  subpattern = subpattern.substring(0, li);
-
-                  # If finds the subpattern in sub object replace and stop to look
-                  result = subs[subpattern];
-                  if result!=undefined
-                      msg = msg.replace(subpattern, result)
-                      break
-
-                  tries++;
-
-          tries++
-          fi = pattern.indexOf(" ")
-          pattern = pattern.substring(fi+1)
-
-      # After all loops, see if just one word is in the pattern
-      result = subs[pattern]
+      # If finds the pattern in sub object replace and stop to look
+      result = subs[subpattern];
       if result!=undefined
-          msg = msg.replace(pattern, result)
+          msg = msg.replace(subpattern, result)
+      else
+        # Otherwise Look for substitutions in a subpattern
+        while subpattern.indexOf(" ") > -1
+            subgiveup++
+            # Give up if there are too many substitutions (for safety)
+            if subgiveup >= 1000
+                @warn("Too many loops when handling substitutions!")
+                break
+
+              li = subpattern.lastIndexOf(" ");
+              subpattern = subpattern.substring(0, li);
+
+              # If finds the subpattern in sub object replace and stop to look
+              result = subs[subpattern];
+              if result!=undefined
+                  msg = msg.replace(subpattern, result)
+                  break
+
+              tries++;
+
+      fi = pattern.indexOf(" ")
+      pattern = pattern.substring(fi+1)
+      tries++
+
+    # After all loops, see if just one word is in the pattern
+    result = subs[pattern]
+    if result!=undefined
+        msg = msg.replace(pattern, result)
 
     return msg
-
 
 module.exports = Brain

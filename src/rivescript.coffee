@@ -466,7 +466,7 @@ class RiveScript
       internal = "_#{type}" # so "global" maps to this._global
       for name, value of vars
         if type=='sub' || type=='person'
-          @[internal+"max"] = Math.max(@[internal+"max"], value.split(" ").length);
+          @[internal+"max"] = Math.max(@[internal+"max"], name.split(" ").length);
         continue unless vars.hasOwnProperty name
         if value is "<undef>"
           delete @[internal][name]
@@ -710,7 +710,7 @@ class RiveScript
     if value is undefined
       delete @_sub[name]
     else
-      @_submax = Math.max(value.split(' ').length, @_submax)
+      @_submax = Math.max(name.split(' ').length, @_submax)
       @_sub[name] = value
 
   ##
@@ -723,7 +723,7 @@ class RiveScript
     if value is undefined
       delete @_person[name]
     else
-      @_personmax = Math.max(value.split(' ').length, @_personmax)
+      @_personmax = Math.max(name.split(' ').length, @_personmax)
       @_person[name] = value
 
   ##
