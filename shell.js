@@ -61,8 +61,9 @@ var rl = readline.createInterface({
 var bot = null;
 function loadBot() {
 	bot = new RiveScript({
-		debug: opts.debug,
-		utf8:  opts.utf8,
+		debug:   opts.debug,
+		utf8:    opts.utf8,
+		concat:  "newline",
 	});
 	bot.ready = false;
 	bot.loadDirectory(opts.brain, loadingDone, loadingError);

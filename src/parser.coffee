@@ -97,7 +97,7 @@ class Parser
 
     # Local (file scoped) parser options
     localOptions =
-      concat: "none"
+      concat: @master._concat ? "none"
 
     # Supported concat modes for `! local concat`
     concatModes =
