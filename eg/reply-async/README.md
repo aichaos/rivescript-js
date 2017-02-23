@@ -47,9 +47,8 @@ function in order to return a value back to the script, you should use promises:
 ```javascript
 var rs = new RiveScript();
 rs.setSubroutine("asyncHelper", function(rs, args) {
-  // RiveScript comes bundled with RSVP.js which you can
-  // access through RiveScript.Promise alias
-  // but you are free to use your own Promise implementation
+  // Fell free to polyfill Promises if you run on an environment 
+  // that does not have them (exceedingly rare).
   return new rs.Promise(function(resolve, reject) {
     resolve('hello there');
   });

@@ -9,7 +9,6 @@
 # Brain logic for RiveScript
 utils = require("./utils")
 inherit_utils = require("./inheritance")
-RSVP = require("rsvp")
 
 ##
 # Brain (RiveScript master)
@@ -168,8 +167,8 @@ class Brain
     else
       # wait for all the promises to be resolved and
       # return a resulting promise with the final reply
-      return new RSVP.Promise (resolve, reject) =>
-        RSVP.all(p.promise for p in promises).then (results) =>
+      return new Promise (resolve, reject) =>
+        Promise.all(p.promise for p in promises).then (results) =>
           for i in [0...results.length]
             reply = @_replaceCallTags(promises[i].text, results[i], reply)
 
