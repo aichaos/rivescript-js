@@ -9,15 +9,20 @@
 <h1>RiveScript (hash options)</h1>
 <p>Create a new RiveScript interpreter. <code>options</code> is an object with the
 following keys:</p>
-<ul>
-<li>bool debug:     Debug mode               (default false)</li>
-<li>int  depth:     Recursion depth limit    (default 50)</li>
-<li>bool strict:    Strict mode              (default true)</li>
-<li>bool utf8:      Enable UTF-8 mode        (default false, see below)</li>
-<li>bool forceCase: Force-lowercase triggers (default false, see below)</li>
-<li>func onDebug:   Set a custom handler to catch debug log messages (default null)</li>
-<li>obj  errors:    Customize certain error messages (see below)</li>
-</ul>
+<div class="codehilite"><pre><span></span>* bool debug:     Debug mode               (default false)
+* int  depth:     Recursion depth limit    (default 50)
+* bool strict:    Strict mode              (default true)
+* bool utf8:      Enable UTF-8 mode        (default false, see below)
+* bool forceCase: Force-lowercase triggers (default false, see below)
+* func onDebug:   Set a custom handler to catch debug log messages (default null)
+* obj  errors:    Customize certain error messages (see below)
+* str  concat:    Globally override the concatenation mode when parsing
+                  RiveScript source files (default `null`. be careful when
+                  setting this option if using somebody else&#39;s RiveScript
+                  personality; see below)
+</pre></div>
+
+
 <h2>UTF-8 Mode</h2>
 <p>In UTF-8 mode, most characters in a user's message are left intact, except for
 certain metacharacters like backslashes and common punctuation characters like
@@ -25,8 +30,9 @@ certain metacharacters like backslashes and common punctuation characters like
 <p>If you want to override the punctuation regexp, you can provide a new one by
 assigning the <code>unicodePunctuation</code> attribute of the bot object after
 initialization. Example:</p>
-<pre class="codehilite"><code class="language-javascript">var bot = new RiveScript({utf8: true});
-bot.unicodePunctuation = new RegExp(/[.,!?;:]/g);</code></pre>
+<div class="codehilite"><pre><span></span><span class="kd">var</span> <span class="nx">bot</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">RiveScript</span><span class="p">({</span><span class="nx">utf8</span><span class="o">:</span> <span class="kc">true</span><span class="p">});</span>
+<span class="nx">bot</span><span class="p">.</span><span class="nx">unicodePunctuation</span> <span class="o">=</span> <span class="k">new</span> <span class="nb">RegExp</span><span class="p">(</span><span class="sr">/[.,!?;:]/g</span><span class="p">);</span>
+</pre></div>
 
 
 <h2>Force Case</h2>
@@ -41,6 +47,26 @@ trigger and thus avoid the error.</p>
 in triggers, see <a href="https://www.w3.org/International/wiki/Case_folding">case folding in Unicode</a>.
 If you need to support Unicode symbols in triggers this may cause problems with
 certain symbols when made lowercase.</p>
+<h2>Global Concat Mode</h2>
+<p>The concat (short for concatenation) mode controls how RiveScript joins two
+lines of code together when a <code>^Continue</code> command is used in a source file.
+By default, RiveScript simply joins them together with no symbols inserted in
+between ("none"); the other options are "newline" which joins them with line
+breaks, or "space" which joins them with a single space character.</p>
+<p>RiveScript source files can define a <em>local, file-scoped</em> setting for this
+by using e.g. <code>! local concat = newline</code>, which affects how the continuations
+are joined in the lines that follow.</p>
+<p>Be careful when changing the global concat setting if you're using a RiveScript
+personality written by somebody else; if they were relying on the default
+concat behavior (didn't specify a <code>! local concat</code> option), then changing the
+global default will potentially cause formatting issues or trigger matching
+issues when using that personality.</p>
+<p>I strongly recommend that you <strong>do not</strong> use this option if you intend to ever
+share your RiveScript personality with others; instead, explicitly spell out
+the local concat mode in each source file. It might sound like it will save
+you a lot of typing by not having to copy and paste a <code>! local concat</code> option,
+but it will likely lead to misbehavior in your RiveScript personality when you
+give it to somebody else to use in their bot.</p>
 <h2>Custom Error Messages</h2>
 <p>You can provide any or all of the following properties in the <code>errors</code>
 argument to the constructor to override certain internal error messages:</p>
@@ -77,13 +103,14 @@ argument to the constructor to override certain internal error messages:</p>
 <p>These custom error messages can be provided during the construction of the
 RiveScript object, or set afterwards on the object's <code>errors</code> property.</p>
 <p>Examples:</p>
-<pre class="codehilite"><code class="language-javascript">var bot = new RiveScript({
-   errors: {
-       replyNotFound: &quot;I don't know how to reply to that.&quot;
-   }
-});
+<div class="codehilite"><pre><span></span><span class="kd">var</span> <span class="nx">bot</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">RiveScript</span><span class="p">({</span>
+   <span class="nx">errors</span><span class="o">:</span> <span class="p">{</span>
+       <span class="nx">replyNotFound</span><span class="o">:</span> <span class="s2">&quot;I don&#39;t know how to reply to that.&quot;</span>
+   <span class="p">}</span>
+<span class="p">});</span>
 
-bot.errors.objectNotFound = &quot;Something went terribly wrong.&quot;;</code></pre>
+<span class="nx">bot</span><span class="p">.</span><span class="nx">errors</span><span class="p">.</span><span class="nx">objectNotFound</span> <span class="o">=</span> <span class="s2">&quot;Something went terribly wrong.&quot;</span><span class="p">;</span>
+</pre></div>
 
 
 <h1>Constructor and Debug Methods</h1>
@@ -93,18 +120,20 @@ bot.errors.objectNotFound = &quot;Something went terribly wrong.&quot;;</code></
 <p>Alias for <code>RSVP.Promise</code> for use in async object macros.</p>
 <p>This enables you to create a JavaScript object macro that returns a promise
 for asynchronous tasks (e.g. polling a web API or database). Example:</p>
-<pre class="codehilite"><code class="language-javascript">rs.setSubroutine(&quot;asyncHelper&quot;, function (rs, args) {
- return new rs.Promise(function (resolve, reject) {
-   resolve(42);
- });
-});</code></pre>
+<div class="codehilite"><pre><span></span><span class="nx">rs</span><span class="p">.</span><span class="nx">setSubroutine</span><span class="p">(</span><span class="s2">&quot;asyncHelper&quot;</span><span class="p">,</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">rs</span><span class="p">,</span> <span class="nx">args</span><span class="p">)</span> <span class="p">{</span>
+ <span class="k">return</span> <span class="k">new</span> <span class="nx">rs</span><span class="p">.</span><span class="nb">Promise</span><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">resolve</span><span class="p">,</span> <span class="nx">reject</span><span class="p">)</span> <span class="p">{</span>
+   <span class="nx">resolve</span><span class="p">(</span><span class="mi">42</span><span class="p">);</span>
+ <span class="p">});</span>
+<span class="p">});</span>
+</pre></div>
 
 
 <p>If you're using promises in your object macros, you need to get a reply from
 the bot using the <code>replyAsync()</code> method instead of <code>reply()</code>, for example:</p>
-<pre class="codehilite"><code class="language-javascript">rs.replyAsync(username, message, this).then(function(reply) {
-   console.log(&quot;Bot&gt; &quot;, reply);
-});</code></pre>
+<div class="codehilite"><pre><span></span><span class="nx">rs</span><span class="p">.</span><span class="nx">replyAsync</span><span class="p">(</span><span class="nx">username</span><span class="p">,</span> <span class="nx">message</span><span class="p">,</span> <span class="k">this</span><span class="p">).</span><span class="nx">then</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">reply</span><span class="p">)</span> <span class="p">{</span>
+   <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">&quot;Bot&gt; &quot;</span><span class="p">,</span> <span class="nx">reply</span><span class="p">);</span>
+<span class="p">});</span>
+</pre></div>
 
 
 <h2>private void runtime ()</h2>
@@ -187,8 +216,9 @@ example.</p>
 <p>By default, JavaScript object macros are enabled. If you want to disable
 these (e.g. for security purposes when loading untrusted third-party code),
 just set the JavaScript handler to null:</p>
-<pre class="codehilite"><code class="language-javascript">var bot = new RiveScript();
-bot.setHandler(&quot;javascript&quot;, null);</code></pre>
+<div class="codehilite"><pre><span></span><span class="kd">var</span> <span class="nx">bot</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">RiveScript</span><span class="p">();</span>
+<span class="nx">bot</span><span class="p">.</span><span class="nx">setHandler</span><span class="p">(</span><span class="s2">&quot;javascript&quot;</span><span class="p">,</span> <span class="kc">null</span><span class="p">);</span>
+</pre></div>
 
 
 <h2>void setSubroutine(string name, function)</h2>
@@ -270,21 +300,23 @@ the source distribution of RiveScript-JS.</p>
 <p>Asyncronous version of reply. Use replyAsync if at least one of the subroutines
 used with the <code>&lt;call&gt;</code> tag returns a promise.</p>
 <p>Example: using promises</p>
-<pre class="codehilite"><code class="language-javascript">rs.replyAsync(user, message).then(function(reply) {
-  console.log(&quot;Bot&gt;&quot;, reply);
-}).catch(function(error) {
-  console.error(&quot;Error: &quot;, error);
-});</code></pre>
+<div class="codehilite"><pre><span></span><span class="nx">rs</span><span class="p">.</span><span class="nx">replyAsync</span><span class="p">(</span><span class="nx">user</span><span class="p">,</span> <span class="nx">message</span><span class="p">).</span><span class="nx">then</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">reply</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">&quot;Bot&gt;&quot;</span><span class="p">,</span> <span class="nx">reply</span><span class="p">);</span>
+<span class="p">}).</span><span class="k">catch</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">error</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">error</span><span class="p">(</span><span class="s2">&quot;Error: &quot;</span><span class="p">,</span> <span class="nx">error</span><span class="p">);</span>
+<span class="p">});</span>
+</pre></div>
 
 
 <p>Example: using the callback</p>
-<pre class="codehilite"><code class="language-javascript">rs.replyAsync(username, msg, this, function(error, reply) {
-  if (!error) {
-    console.log(&quot;Bot&gt;&quot;, reply);
-  } else {
-    console.error(&quot;Error: &quot;, error);
-  }
-});</code></pre>
+<div class="codehilite"><pre><span></span><span class="nx">rs</span><span class="p">.</span><span class="nx">replyAsync</span><span class="p">(</span><span class="nx">username</span><span class="p">,</span> <span class="nx">msg</span><span class="p">,</span> <span class="k">this</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">error</span><span class="p">,</span> <span class="nx">reply</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">error</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">&quot;Bot&gt;&quot;</span><span class="p">,</span> <span class="nx">reply</span><span class="p">);</span>
+  <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">error</span><span class="p">(</span><span class="s2">&quot;Error: &quot;</span><span class="p">,</span> <span class="nx">error</span><span class="p">);</span>
+  <span class="p">}</span>
+<span class="p">});</span>
+</pre></div>
 
 </body>
 </html>

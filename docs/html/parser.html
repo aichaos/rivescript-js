@@ -11,38 +11,39 @@
 <h2>data parse (string filename, string code[, func onError])</h2>
 <p>Read and parse a RiveScript document. Returns a data structure that
 represents all of the useful contents of the document, in this format:</p>
-<pre class="codehilite"><code class="language-javascript">{
-  &quot;begin&quot;: { // &quot;begin&quot; data
-    &quot;global&quot;: {}, // ! global vars
-    &quot;var&quot;: {},    // ! bot vars
-    &quot;sub&quot;: {},    // ! sub substitutions
-    &quot;person&quot;: {}, // ! person substitutions
-    &quot;array&quot;: {},  // ! array lists
-  },
-  &quot;topics&quot;: { // main reply data
-    &quot;random&quot;: { // (topic name)
-      &quot;includes&quot;: {}, // included topics
-      &quot;inherits&quot;: {}, // inherited topics
-      &quot;triggers&quot;: [ // array of triggers
-        {
-          &quot;trigger&quot;: &quot;hello bot&quot;,
-          &quot;reply&quot;: [], // array of replies
-          &quot;condition&quot;: [], // array of conditions
-          &quot;redirect&quot;: &quot;&quot;,  // @ redirect command
-          &quot;previous&quot;: null, // % previous command
-        },
-        ...
-      ]
-    }
-  },
-  &quot;objects&quot;: [ // parsed object macros
-    {
-      &quot;name&quot;: &quot;&quot;,     // object name
-      &quot;language&quot;: &quot;&quot;, // programming language
-      &quot;code&quot;: [],     // object source code (in lines)
-    }
-  ]
-}</code></pre>
+<div class="codehilite"><pre><span></span><span class="p">{</span>
+  <span class="s2">&quot;begin&quot;</span><span class="o">:</span> <span class="p">{</span> <span class="c1">// &quot;begin&quot; data</span>
+    <span class="s2">&quot;global&quot;</span><span class="o">:</span> <span class="p">{},</span> <span class="c1">// ! global vars</span>
+    <span class="s2">&quot;var&quot;</span><span class="o">:</span> <span class="p">{},</span>    <span class="c1">// ! bot vars</span>
+    <span class="s2">&quot;sub&quot;</span><span class="o">:</span> <span class="p">{},</span>    <span class="c1">// ! sub substitutions</span>
+    <span class="s2">&quot;person&quot;</span><span class="o">:</span> <span class="p">{},</span> <span class="c1">// ! person substitutions</span>
+    <span class="s2">&quot;array&quot;</span><span class="o">:</span> <span class="p">{},</span>  <span class="c1">// ! array lists</span>
+  <span class="p">},</span>
+  <span class="s2">&quot;topics&quot;</span><span class="o">:</span> <span class="p">{</span> <span class="c1">// main reply data</span>
+    <span class="s2">&quot;random&quot;</span><span class="o">:</span> <span class="p">{</span> <span class="c1">// (topic name)</span>
+      <span class="s2">&quot;includes&quot;</span><span class="o">:</span> <span class="p">{},</span> <span class="c1">// included topics</span>
+      <span class="s2">&quot;inherits&quot;</span><span class="o">:</span> <span class="p">{},</span> <span class="c1">// inherited topics</span>
+      <span class="s2">&quot;triggers&quot;</span><span class="o">:</span> <span class="p">[</span> <span class="c1">// array of triggers</span>
+        <span class="p">{</span>
+          <span class="s2">&quot;trigger&quot;</span><span class="o">:</span> <span class="s2">&quot;hello bot&quot;</span><span class="p">,</span>
+          <span class="s2">&quot;reply&quot;</span><span class="o">:</span> <span class="p">[],</span> <span class="c1">// array of replies</span>
+          <span class="s2">&quot;condition&quot;</span><span class="o">:</span> <span class="p">[],</span> <span class="c1">// array of conditions</span>
+          <span class="s2">&quot;redirect&quot;</span><span class="o">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>  <span class="c1">// @ redirect command</span>
+          <span class="s2">&quot;previous&quot;</span><span class="o">:</span> <span class="kc">null</span><span class="p">,</span> <span class="c1">// % previous command</span>
+        <span class="p">},</span>
+        <span class="p">...</span>
+      <span class="p">]</span>
+    <span class="p">}</span>
+  <span class="p">},</span>
+  <span class="s2">&quot;objects&quot;</span><span class="o">:</span> <span class="p">[</span> <span class="c1">// parsed object macros</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;name&quot;</span><span class="o">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>     <span class="c1">// object name</span>
+      <span class="s2">&quot;language&quot;</span><span class="o">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="c1">// programming language</span>
+      <span class="s2">&quot;code&quot;</span><span class="o">:</span> <span class="p">[],</span>     <span class="c1">// object source code (in lines)</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
 
 
 <h2>string stringify (data deparsed)</h2>

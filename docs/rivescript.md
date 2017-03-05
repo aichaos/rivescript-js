@@ -3,6 +3,7 @@
 Create a new RiveScript interpreter. `options` is an object with the
 following keys:
 
+```
 * bool debug:     Debug mode               (default false)
 * int  depth:     Recursion depth limit    (default 50)
 * bool strict:    Strict mode              (default true)
@@ -10,6 +11,11 @@ following keys:
 * bool forceCase: Force-lowercase triggers (default false, see below)
 * func onDebug:   Set a custom handler to catch debug log messages (default null)
 * obj  errors:    Customize certain error messages (see below)
+* str  concat:    Globally override the concatenation mode when parsing
+                  RiveScript source files (default `null`. be careful when
+                  setting this option if using somebody else's RiveScript
+                  personality; see below)
+```
 
 ## UTF-8 Mode
 
@@ -41,6 +47,31 @@ Do note, however, that this can have side effects with certain Unicode symbols
 in triggers, see [case folding in Unicode](https://www.w3.org/International/wiki/Case_folding).
 If you need to support Unicode symbols in triggers this may cause problems with
 certain symbols when made lowercase.
+
+## Global Concat Mode
+
+The concat (short for concatenation) mode controls how RiveScript joins two
+lines of code together when a `^Continue` command is used in a source file.
+By default, RiveScript simply joins them together with no symbols inserted in
+between ("none"); the other options are "newline" which joins them with line
+breaks, or "space" which joins them with a single space character.
+
+RiveScript source files can define a *local, file-scoped* setting for this
+by using e.g. `! local concat = newline`, which affects how the continuations
+are joined in the lines that follow.
+
+Be careful when changing the global concat setting if you're using a RiveScript
+personality written by somebody else; if they were relying on the default
+concat behavior (didn't specify a `! local concat` option), then changing the
+global default will potentially cause formatting issues or trigger matching
+issues when using that personality.
+
+I strongly recommend that you **do not** use this option if you intend to ever
+share your RiveScript personality with others; instead, explicitly spell out
+the local concat mode in each source file. It might sound like it will save
+you a lot of typing by not having to copy and paste a `! local concat` option,
+but it will likely lead to misbehavior in your RiveScript personality when you
+give it to somebody else to use in their bot.
 
 ## Custom Error Messages
 

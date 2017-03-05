@@ -47,3 +47,15 @@ Clone an object.
 ## boolean isAPromise (object)
 
 Determines if obj looks like a promise
+
+## int nIndexOf (string, string match, int index)
+
+Finds a match in a string at a given index
+
+Usage:
+string = "My name is Rive"
+match = " "
+index = 2
+return = 7
+
+Summary: It will look for a second space in the string
