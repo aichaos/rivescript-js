@@ -177,7 +177,9 @@ class RiveScript
     @_global   = {} # 'global' variables
     @_var      = {} # 'bot' variables
     @_sub      = {} # 'sub' substitutions
+    @_submax   = 1  # 'submax' max words in sub object
     @_person   = {} # 'person' substitutions
+    @_personmax= 1  # 'personmax' max words in person object
     @_array    = {} # 'array' variables
     @_users    = {} # 'user' variables
     @_freeze   = {} # frozen 'user' variables
@@ -464,6 +466,8 @@ class RiveScript
       continue unless ast.begin.hasOwnProperty type
       internal = "_#{type}" # so "global" maps to this._global
       for name, value of vars
+        if type=='sub' || type=='person'
+          @[internal+"max"] = Math.max(@[internal+"max"], name.split(" ").length);
         continue unless vars.hasOwnProperty name
         if value is "<undef>"
           delete @[internal][name]
@@ -707,6 +711,7 @@ class RiveScript
     if value is undefined
       delete @_sub[name]
     else
+      @_submax = Math.max(name.split(' ').length, @_submax)
       @_sub[name] = value
 
   ##
@@ -719,6 +724,7 @@ class RiveScript
     if value is undefined
       delete @_person[name]
     else
+      @_personmax = Math.max(name.split(' ').length, @_personmax)
       @_person[name] = value
 
   ##

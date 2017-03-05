@@ -154,3 +154,19 @@ exports.isAPromise = (obj) ->
   typeof obj.then is 'function' and
   typeof obj.catch is 'function' and
   typeof obj.finally is 'function'
+
+##
+# int nIndexOf (string, string match, int index)
+#
+# Finds a match in a string at a given index
+#
+# Usage:
+# string = "My name is Rive"
+# match = " "
+# index = 2
+# return = 7
+#
+# Summary: It will look for a second space in the string
+##
+exports.nIndexOf = (string, match, index) ->
+   return string.split(match, index).join(match).length
