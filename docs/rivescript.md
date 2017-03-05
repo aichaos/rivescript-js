@@ -1,3 +1,16 @@
+# Notice to Developers
+
+The methods prefixed with the word "private" *should not be used* by you. They
+are documented here to help the RiveScript library developers understand the
+code; they are not considered 'stable' API functions and they may change or
+be removed at any time, for any reason, and with no advance notice.
+
+The most commonly used private function I've seen developers use is the
+`parse()` function, when they want to load RiveScript code from a string
+instead of a file. **Do not use this function.** The public API equivalent
+function is `stream()`. The parse function will probably be removed in the
+near future.
+
 # RiveScript (hash options)
 
 Create a new RiveScript interpreter. `options` is an object with the

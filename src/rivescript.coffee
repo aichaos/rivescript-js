@@ -6,6 +6,21 @@
 # http://www.rivescript.com/
 "use strict"
 
+##
+# Notice to Developers
+#
+# The methods prefixed with the word "private" *should not be used* by you. They
+# are documented here to help the RiveScript library developers understand the
+# code; they are not considered 'stable' API functions and they may change or
+# be removed at any time, for any reason, and with no advance notice.
+#
+# The most commonly used private function I've seen developers use is the
+# `parse()` function, when they want to load RiveScript code from a string
+# instead of a file. **Do not use this function.** The public API equivalent
+# function is `stream()`. The parse function will probably be removed in the
+# near future.
+##
+
 # Constants
 VERSION  = "1.17.2"
 
@@ -277,11 +292,14 @@ class RiveScript
   # running in a web browser or from node.
   ##
   runtime: ->
-    # In Node, there is no window, and module is a thing.
-    if typeof(window) is "undefined" and typeof(module) is "object"
-      @_node.fs = require "fs"
-      return "node"
-    return "web"
+    # Webpack and browserify define `process.browser` so this is the best place
+    # to check if we're running in a web environment.
+    if process.browser
+      return "web"
+
+    # Import the Node filesystem library.
+    @_node.fs = require "fs"
+    return "node"
 
   ##
   # private void say (string message)

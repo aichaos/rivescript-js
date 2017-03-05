@@ -6,6 +6,16 @@
 </head>
 <body>
 
+<h1>Notice to Developers</h1>
+<p>The methods prefixed with the word "private" <em>should not be used</em> by you. They
+are documented here to help the RiveScript library developers understand the
+code; they are not considered 'stable' API functions and they may change or
+be removed at any time, for any reason, and with no advance notice.</p>
+<p>The most commonly used private function I've seen developers use is the
+<code>parse()</code> function, when they want to load RiveScript code from a string
+instead of a file. <strong>Do not use this function.</strong> The public API equivalent
+function is <code>stream()</code>. The parse function will probably be removed in the
+near future.</p>
 <h1>RiveScript (hash options)</h1>
 <p>Create a new RiveScript interpreter. <code>options</code> is an object with the
 following keys:</p>
