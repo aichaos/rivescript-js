@@ -5,6 +5,7 @@ declare module "rivescript" {
 		utf8?: boolean;
 		debug?: boolean;
 		onDebug?: (message: string) => void;
+		concat?: "none" | "newline" | "space";
 		errors?: { [key: string]: string};
 	}
 	
