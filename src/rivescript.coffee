@@ -48,7 +48,7 @@ readDir = require("fs-readdir-recursive")
 # * bool forceCase: Force-lowercase triggers (default false, see below)
 # * func onDebug:   Set a custom handler to catch debug log messages (default null)
 # * obj  errors:    Customize certain error messages (see below)
-# * str  concat:    Globally override the concatenation mode when parsing
+# * str  concat:    Globally replace the default concatenation mode when parsing
 #                   RiveScript source files (default `null`. be careful when
 #                   setting this option if using somebody else's RiveScript
 #                   personality; see below)
