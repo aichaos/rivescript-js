@@ -66,6 +66,8 @@ declare module "rivescript" {
 		
 		initialMatch(user: string): string;
 		
+		lastTriggers(user: string): Object;
+		
 		currentUser(): string;
 	}
 	

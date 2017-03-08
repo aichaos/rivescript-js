@@ -940,6 +940,19 @@ class RiveScript
     return undefined
 
   ##
+  # object lastTrigger (string user)
+  #
+  # Retrieve the triggers that have been matched for the last reply. This
+  # will contain all matched trigger with every subsequent redirects.
+  #
+  # This value is reset on each `reply()` or `replyAsync()` call.
+  ##
+  lastTriggers: (user) ->
+    if @_users[user]?
+      return @_users[user].__last_triggers__
+    return undefined
+
+  ##
   # object getUserTopicTriggers (string username)
   #
   # Retrieve the triggers in the current topic for the specified user. It can

@@ -426,12 +426,18 @@ class Brain
     # this will be too, which is great.
     @master._users[user].__lastmatch__ = matchedTrigger
 
-    # Store initial matched trigger. Like __lastmatch__, this can be undefined.
     if step is 0
+      # Store initial matched trigger. Like __lastmatch__, this can be undefined.
       @master._users[user].__initialmatch__ = matchedTrigger
+
+      # Also initialize __last_triggers__ which will keep all matched triggers
+      @master._users[user].__last_triggers__ = []
 
     # Did we match?
     if matched
+      # Keep the current match
+      @master._users[user].__last_triggers__.push matched
+
       for nil in [1] # A single loop so we can break out early
         # See if there are any hard redirects.
         if matched.redirect?
