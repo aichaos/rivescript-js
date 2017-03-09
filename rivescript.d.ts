@@ -14,6 +14,13 @@ declare module "rivescript" {
 		call(rs: RiveScript, name: string, fields: any, scope: any): string;
 	}
 	
+	interface Trigger {
+		trigger:    string,
+		reply:      string[],
+		condition:  string[],
+		redirect:   string,
+		previous:   string
+	}
 	
 	class RiveScript {
 		constructor(options?: RivescriptOptions);
@@ -65,6 +72,8 @@ declare module "rivescript" {
 		lastMatch(user: string): string;
 		
 		initialMatch(user: string): string;
+		
+		lastTriggers(user: string): Trigger[];
 		
 		currentUser(): string;
 	}
