@@ -940,7 +940,7 @@ class RiveScript
     return undefined
 
   ##
-  # object lastTrigger (string user)
+  # object lastTriggers (string user)
   #
   # Retrieve the triggers that have been matched for the last reply. This
   # will contain all matched trigger with every subsequent redirects.

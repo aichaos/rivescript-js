@@ -17,7 +17,7 @@ declare module "rivescript" {
 	interface Trigger {
 		trigger:    string,
 		reply:      string[],
-		conditions: string[],
+		condition:  string[],
 		redirect:   string,
 		previous:   string
 	}
