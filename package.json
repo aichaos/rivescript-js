@@ -1,6 +1,6 @@
 {
   "name": "rivescript",
-  "version": "1.17.2",
+  "version": "1.17.3",
   "description": "RiveScript is a scripting language for chatterbots, making it easy to write trigger/response pairs for building up a bot's intelligence.",
   "keywords": [
     "bot",
@@ -70,6 +70,8 @@
   },
   "dependencies": {
     "fs-readdir-recursive": "^1.0.0",
+    "lodash": "^4.17.4",
+    "q": "^1.5.0",
     "rsvp": "^3.1.0"
   },
   "typings": "rivescript.d.ts"
