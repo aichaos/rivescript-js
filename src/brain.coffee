@@ -227,11 +227,11 @@ class Brain
             return bucket[choice];
           else if _.get(match, 'reply.length', 0) is 0
             return @master.errors.replyNotMatched
-
-          @say "Processing tags #{reply}"
-          @processTagsPromisified(user, msg, reply, stars, thatstars, step, scope, hooks);
       else
         return q(@master.errors.replyNotFound)
+    .then (reply) => 
+      @say "Processing tags #{reply}"
+      @processTagsPromisified(user, msg, reply, stars, thatstars, step, scope, hooks);
 
   _checkCondition: (user, condition, msg, stars, thatstars, step, scope) ->
     @say "Check Condition #{condition}"
