@@ -81,10 +81,10 @@ class Brain
       if not utils.isAPromise(reply)
         @onAfterReply(msg, user, reply)
       else
-        reply.then (result) =>
+        return reply.then (result) =>
           @onAfterReply(msg, user, result)
-
-      return reply
+          reply
+      reply
 
   ##
   # Promise<string> _getReplyWithHooks 
@@ -136,103 +136,105 @@ class Brain
     thatstars  = matchResults.thatstars
     foundMatch = Boolean(matched);
 
+    @say "Reducing #{matched.condition}"
+    _.reduce(matched.condition, (promise, condition) =>
+      promise.then (result) => 
+        halves = condition.split(/\s*=>\s*/)
+        if result isnt false and halves.length is 2
+          @_checkCondition(user, halves[0], msg, stars, thatstars, step, scope).then (result) =>
+            if result is true
+              matched.reply = [halves[1]];
+            # break out of promise loop
+            return false
+        else
+          result
+    , q()).then =>
 
-    # Process tags for the BEGIN block.
-    if context is "begin"
-      # The BEGIN block can set {topic} and user vars.
-      reply = _.get(matched, 'reply.0')
+      # Process tags for the BEGIN block.
+      if context is "begin"
+        # The BEGIN block can set {topic} and user vars.
+        reply = _.get(matched, 'reply.0')
 
-      # Topic setter
-      match = reply.match(/\{topic=(.+?)\}/i)
-      giveup = 0
-      while match
-        giveup++
-        if giveup >= 50
-          @warn "Infinite loop looking for topic tag!"
-          break
-        name = match[1]
-        @master.setUservar(user, "topic", name)
-        reply = reply.replace(new RegExp("{topic=" + utils.quotemeta(name) + "}", "ig"), "")
+        @say "Matched in begin #{reply}"
+
+        # Topic setter
         match = reply.match(/\{topic=(.+?)\}/i)
+        giveup = 0
+        while match
+          giveup++
+          if giveup >= 50
+            @warn "Infinite loop looking for topic tag!"
+            break
+          name = match[1]
+          @master.setUservar(user, "topic", name)
+          reply = reply.replace(new RegExp("{topic=" + utils.quotemeta(name) + "}", "ig"), "")
+          match = reply.match(/\{topic=(.+?)\}/i)
 
-      # Set user vars
-      match = reply.match(/<set (.+?)=(.+?)>/i)
-      giveup = 0
-      reply = matched.reply[0]
-      while match
-        giveup++
-        if giveup >= 50
-          @warn "Infinite loop looking for set tag!"
-          break
-        name = match[1]
-        value = match[2]
-        @master.setUservar(user, name, value)
-        reply = reply.replace(new RegExp("<set " + utils.quotemeta(name) + "=" + utils.quotemeta(value) + ">", "ig"), "")
+        # Set user vars
         match = reply.match(/<set (.+?)=(.+?)>/i)
-      return q(reply)
+        giveup = 0
+        reply = matched.reply[0]
+        while match
+          giveup++
+          if giveup >= 50
+            @warn "Infinite loop looking for set tag!"
+            break
+          name = match[1]
+          value = match[2]
+          @master.setUservar(user, name, value)
+          reply = reply.replace(new RegExp("<set " + utils.quotemeta(name) + "=" + utils.quotemeta(value) + ">", "ig"), "")
+          match = reply.match(/<set (.+?)=(.+?)>/i)
+        return q(reply)
 
-    # Did we match?
-    if matched?
-      # Keep the current match
-      @master._users[user].__last_triggers__.push matched
+      # Did we match?
+      if matched?
+        # Keep the current match
+        @master._users[user].__last_triggers__.push matched
 
-      # See if there are any hard redirects.
-      if matched.redirect?
-        @say "Redirecting us to #{matched.redirect}"
-        redirect = @processTagsPromisified(user, msg, matched.redirect, stars, thatstars, step, scope, hooks)
+        # See if there are any hard redirects.
+        if matched.redirect?
+          @say "Redirecting us to #{matched.redirect}"
+          redirect = @processTagsPromisified(user, msg, matched.redirect, stars, thatstars, step, scope, hooks)
 
-        # Execute and resolve *synchronous* <call> tags.
-        redirect = @processCallTags(redirect, scope, false)
+          # Execute and resolve *synchronous* <call> tags.
+          redirect = @processCallTags(redirect, scope, false)
 
-        @say "Pretend user said: #{redirect}"
-        return @_getReplyWithHooks(user, redirect, context, step+1, scope, hooks);
+          @say "Pretend user said: #{redirect}"
+          return @_getReplyWithHooks(user, redirect, context, step+1, scope, hooks);
+        else
+          length = _.get(matched, 'reply.length')
+          
+          if length is 1
+            @say "Returning first reply #{matched.reply[0]}"
+            return matched.reply[0]
+          else if length  > 1
+            # Process weights in the replies.
+            bucket = []
+            for rep in matched.reply
+              weight = 1
+              match = rep.match(/\{weight=(\d+?)\}/i)
+              if match
+                weight = match[1]
+                if weight <= 0
+                  @warn "Can't have a weight <= 0!"
+                  weight = 1
 
-      @say "Reducing #{matched.condition}"
-      _.reduce(matched.condition, (promise, condition) =>
-        promise.then (result) => 
-          halves = condition.split(/\s*=>\s*/)
-          if result isnt false and halves.length is 2
-            @_checkCondition(user, halves[0], msg, stars, thatstars, step, scope).then (result) =>
-              if result is true
-                matched.reply = [halves[1]];
-              # break out of promise loop
-              return false
-          else
-            result
-      , q())
-      .then () =>
-        length = _.get(matched, 'reply.length')
-        
-        if length is 1
-          @say "Returning first reply #{matched.reply[0]}"
-          return matched.reply[0]
-        else if length  > 1
-          # Process weights in the replies.
-          bucket = []
-          for rep in matched.reply
-            weight = 1
-            match = rep.match(/\{weight=(\d+?)\}/i)
-            if match
-              weight = match[1]
-              if weight <= 0
-                @warn "Can't have a weight <= 0!"
-                weight = 1
+              for i in [0..weight]
+                bucket.push rep
 
-            for i in [0..weight]
-              bucket.push rep
+            # Get a random reply.
+            choice = parseInt(Math.random() * bucket.length)
+            return bucket[choice];
+          else if _.get(match, 'reply.length', 0) is 0
+            return @master.errors.replyNotMatched
 
-          # Get a random reply.
-          choice = parseInt(Math.random() * bucket.length)
-          return bucket[choice];
-        else if _.get(match, 'reply.length', 0) is 0
-          return @master.errors.replyNotMatched
-      .then (reply) => 
-        @say "Processing tags #{reply}"
-        @processTagsPromisified(user, msg, reply, stars, thatstars, step, scope, hooks);
-    else
-      return q(@master.errors.replyNotFound)
+          @say "Processing tags #{reply}"
+          @processTagsPromisified(user, msg, reply, stars, thatstars, step, scope, hooks);
+      else
+        return q(@master.errors.replyNotFound)
 
   _checkCondition: (user, condition, msg, stars, thatstars, step, scope) ->
+    @say "Check Condition #{condition}"
     condition = condition.match(/^(.+?)\s+(==|eq|!=|ne|<>|<|<=|>|>=)\s+(.*?)$/)
     passed    = false
     if condition
