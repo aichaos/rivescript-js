@@ -52,6 +52,7 @@ class Parser
   #       "triggers": [ // array of triggers
   #         {
   #           "trigger": "hello bot",
+  #           "afterMatch": [], // array of lines to pass to any afterMatch processor
   #           "reply": [], // array of replies
   #           "condition": [], // array of conditions
   #           "redirect": "",  // @ redirect command
@@ -411,10 +412,22 @@ class Parser
             trigger: line
             reply: []
             condition: []
+            afterMatch: []
             redirect: null
             previous: isThat
           ast.topics[topic].triggers.push curTrig
+        when "$"
+          # $ afterMatch
+          if curTrig is null
+            @warn "afterMatch found before trigger", filename, lineno
+            continue
 
+          # Warn if we also saw a hard redirect.
+          if curTrig.redirect isnt null
+            @warn "You can't mix @Redirects with $Preprocessors", filename, lineno
+
+          @say "\tTrigger afterMatch: #{line}"
+          curTrig.afterMatch.push line
         when "-"
           # - Response
           if curTrig is null
