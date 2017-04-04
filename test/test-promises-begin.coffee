@@ -1,4 +1,4 @@
-TestCase = require("./test-base")
+TestCase = require("./test-promises-base")
 
 ################################################################################
 # BEGIN Block Tests
@@ -9,8 +9,8 @@ exports.test_no_begin_block = (test) ->
     + hello bot
     - Hello human.
   """)
-  bot.reply("Hello bot", "Hello human.")
-  test.done()
+  bot.replyPromisified("Hello bot", "Hello human.").then ->
+    test.done()
 
 exports.test_simple_begin_block = (test) ->
   bot = new TestCase(test, """
@@ -22,8 +22,8 @@ exports.test_simple_begin_block = (test) ->
     + hello bot
     - Hello human.
   """)
-  bot.reply("Hello bot.", "Hello human.")
-  test.done()
+  bot.replyPromisified("Hello bot.", "Hello human.").then ->
+    test.done()
 
 exports.test_blocked_begin_block = (test) ->
   bot = new TestCase(test, """
@@ -35,8 +35,8 @@ exports.test_blocked_begin_block = (test) ->
     + hello bot
     - Hello human.
   """)
-  bot.reply("Hello bot.", "Nope.")
-  test.done()
+  bot.replyPromisified("Hello bot.", "Nope.").then ->
+    test.done()
 
 exports.test_conditional_begin_block = (test) ->
   bot = new TestCase(test, """
@@ -53,13 +53,15 @@ exports.test_conditional_begin_block = (test) ->
     + my name is *
     - <set name=<formal>>Hello, <get name>.
   """)
-  bot.reply("Hello bot.", "Hello human.")
-  bot.uservar("met", "true")
-  bot.uservar("name", "undefined")
-  bot.reply("My name is bob", "Hello, Bob.")
-  bot.uservar("name", "Bob")
-  bot.reply("Hello Bot", "Bob: Hello human.")
-  test.done()
+  bot.replyPromisified("Hello bot.", "Hello human.").then ->
+    bot.uservar("met", "true")
+    bot.uservar("name", "undefined")
+    bot.replyPromisified("My name is bob", "Hello, Bob.")
+  .then ->
+    bot.uservar("name", "Bob")
+    bot.replyPromisified("Hello Bot", "Bob: Hello human.")
+  .then ->
+    test.done()
 
 exports.test_skip_begin_block = (test) ->
   bot = new TestCase(test, """
@@ -72,6 +74,6 @@ exports.test_skip_begin_block = (test) ->
     - Hello human.
   """)
 
-  reply = bot.rs.reply(bot.username, "Hello bot.", null, true)
-  test.equal(reply, "Hello human.");
-  test.done()
+  bot.rs.replyPromisified(bot.username, "Hello bot.", null, true).then (reply) ->
+    test.equal(reply, "Hello human.");
+    test.done()

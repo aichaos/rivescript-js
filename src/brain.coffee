@@ -57,7 +57,7 @@ class Brain
       promise = promise.then (reply) =>
         @say "Begin #{reply}"
         @_getReplyWithHooks(user, "request", "begin", 0, scope, hooks)
-      .then (begin) => 
+      .then (begin) =>
         @say "After Begin #{begin}"
 
         # OK to continue?
@@ -65,16 +65,15 @@ class Brain
           @_getReplyWithHooks(user, msg, "normal", 0, scope, hooks).then (reply) =>
             if begin?
               reply = begin.replace(/\{ok\}/g, reply)
+              return @processTagsPromisified(user, msg, reply,  [], [], 0, scope, hooks)
             return reply
         else
           begin
-      .then (reply) =>
-         @processTags(user, msg, reply, [], [], 0, scope)
     else
-      promise = promise.then (reply) => 
+      promise = promise.then (reply) =>
         @_getReplyWithHooks(user, reply, "normal", 0, scope, hooks)
 
-    promise.then (reply) => 
+    promise.then (reply) =>
       if reply?
         reply = @processCallTags(reply, scope, async)
 
@@ -92,7 +91,7 @@ class Brain
   # Get a reply and call hooks along the way
   ##
   _getReplyWithHooks: (user, msg, context, step, scope, hooks) ->
-    @say "Reply: #{msg} *#{step}*"
+    @say "Reply: #{msg} step: #{step}"
     matchResults = @_getMatch(user, msg, context, step, scope)
     stars        = matchResults.stars
     thatstars    = matchResults.thatstars
@@ -105,10 +104,10 @@ class Brain
         matchResults.matched.afterMatch = (@processCallTags(row, scope, false) for row in matchResults.matched.afterMatch)
         promise = hooks.onAfterMatch(matchResults)
 
-      promise.then => 
+      promise.then =>
         @_getReplyPromisified(user, msg, context, step || 0, scope, matchResults, hooks)
     else
-      q(@master.errors.replyNotFound)
+      q(@master.errors.replyNotMatched)
 
   ##
   # string _getReply (string user, string msg, string context, int step, scope)
@@ -134,20 +133,20 @@ class Brain
     matched    = matchResults.matched
     stars      = matchResults.stars
     thatstars  = matchResults.thatstars
-    foundMatch = Boolean(matched);
+    foundMatch = Boolean(matched)
 
     @say "Reducing #{matched.condition}"
     _.reduce(matched.condition, (promise, condition) =>
-      promise.then (result) => 
+      promise.then (result) =>
         halves = condition.split(/\s*=>\s*/)
         if result isnt false and halves.length is 2
           @_checkCondition(user, halves[0], msg, stars, thatstars, step, scope).then (result) =>
             if result is true
-              matched.reply = [halves[1]];
-            # break out of promise loop
-            return false
+              matched.reply = [halves[1]]
+              # break out of promise loop
+              return false
         else
-          result
+          return result
     , q()).then =>
 
       # Process tags for the BEGIN block.
@@ -187,20 +186,18 @@ class Brain
         return q(reply)
 
       # Did we match?
-      if matched?
+      if matched
         # Keep the current match
         @master._users[user].__last_triggers__.push matched
 
         # See if there are any hard redirects.
         if matched.redirect?
           @say "Redirecting us to #{matched.redirect}"
-          redirect = @processTagsPromisified(user, msg, matched.redirect, stars, thatstars, step, scope, hooks)
-
-          # Execute and resolve *synchronous* <call> tags.
-          redirect = @processCallTags(redirect, scope, false)
-
-          @say "Pretend user said: #{redirect}"
-          return @_getReplyWithHooks(user, redirect, context, step+1, scope, hooks);
+          return @processTagsPromisified(user, msg, matched.redirect, stars, thatstars, step, scope, hooks).then (redirect) =>
+            # Execute and resolve *synchronous* <call> tags.
+            redirect = @processCallTags(redirect, scope, false)
+            @say "Pretend user said: #{redirect}"
+            return @_getReplyWithHooks(user, redirect, context, step+1, scope, hooks)
         else
           length = _.get(matched, 'reply.length')
           
@@ -224,14 +221,18 @@ class Brain
 
             # Get a random reply.
             choice = parseInt(Math.random() * bucket.length)
-            return bucket[choice];
-          else if _.get(match, 'reply.length', 0) is 0
-            return @master.errors.replyNotMatched
+            return bucket[choice]
+          else if _.get(matched, 'reply.length', 0) is 0
+            return @master.errors.replyNotFound
       else
-        return q(@master.errors.replyNotFound)
-    .then (reply) => 
-      @say "Processing tags #{reply}"
-      @processTagsPromisified(user, msg, reply, stars, thatstars, step, scope, hooks);
+        return q(@master.errors.replyNotMatched)
+    .then (reply) =>
+      # begin tags are special and are handled above
+      if context isnt "begin"
+        @say "Processing tags #{reply}"
+        @processTagsPromisified(user, msg, reply, stars, thatstars, step, scope, hooks)
+      else
+        return reply
 
   _checkCondition: (user, condition, msg, stars, thatstars, step, scope) ->
     @say "Check Condition #{condition}"
@@ -706,7 +707,7 @@ class Brain
     matched = matchResults.matched
     stars = matchResults.stars
     thatstars = matchResults.thatstars
-    foundMatch = Boolean(matched);
+    foundMatch = Boolean(matched)
 
     # Did we match?
     if matched
@@ -1247,6 +1248,10 @@ class Brain
       promise.then =>
         match = redirect.match(/\{@([^\}]*?)\}/)
         target = utils.strip match[1]
+
+        # Resolve any *synchronous* <call> tags right now before redirecting.
+        target = @processCallTags(target, scope, false)
+
         @say "Inline redirection to: #{target}"
         @_getReplyWithHooks(user, target, "normal", step+1, scope, hooks).then (subreply) =>
           reply = reply.replace(new RegExp("\\{@" + utils.quotemeta(match[1]) + "\\}", "i"), subreply)

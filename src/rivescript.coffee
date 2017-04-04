@@ -185,7 +185,7 @@ class RiveScript
     # Default parameters
     @_debug     = if opts.debug then opts.debug else false
     @_strict    = if opts.strict then opts.strict else true
-    @_depth     = if opts.depth then parseInt(opts.depth) else 20
+    @_depth     = if opts.depth then parseInt(opts.depth) else 50
     @_utf8      = if opts.utf8 then opts.utf8 else false
     @_forceCase = if opts.forceCase then opts.forceCase else false
     @_onDebug   = if opts.onDebug then opts.onDebug else null
