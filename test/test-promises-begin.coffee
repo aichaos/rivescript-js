@@ -75,5 +75,25 @@ exports.test_skip_begin_block = (test) ->
   """)
 
   bot.rs.replyPromisified(bot.username, "Hello bot.", null, true).then (reply) ->
-    test.equal(reply, "Hello human.");
+    test.equal(reply, "Hello human.")
     test.done()
+
+exports.test_redirects_in_begin = (test) ->
+    bot = new TestCase(test, """
+        > begin
+        + request
+        * <get welcomed> == undefined => {@ hello}
+        * <get welcomed> == 1 => {ok}
+        - {ok}
+        < begin
+
+        + hello
+        - <set welcomed=1>Hello human.
+
+        + *
+        - Hi Again
+    """)
+
+    bot.replyPromisified("I'm not welcomed yet", "Hello human.")
+    .then (reply) -> bot.replyPromisified("Now I am welcomed", "Hi Again")
+    .then -> test.done()

@@ -60,15 +60,15 @@ class Brain
       .then (begin) =>
         @say "After Begin #{begin}"
 
+        if !begin then return
+
         # OK to continue?
-        if !begin or begin.indexOf("{ok}") > -1
+        if begin.indexOf("{ok}") > -1
           @_getReplyWithHooks(user, msg, "normal", 0, scope, hooks).then (reply) =>
-            if begin?
-              reply = begin.replace(/\{ok\}/g, reply)
-              return @processTagsPromisified(user, msg, reply,  [], [], 0, scope, hooks)
-            return reply
+            reply = begin.replace(/\{ok\}/g, reply)
+            return @processTagsPromisified(user, msg, reply,  [], [], 0, scope, hooks)
         else
-          begin
+          return @processTagsPromisified(user, msg, begin,  [], [], 0, scope, hooks)
     else
       promise = promise.then (reply) =>
         @_getReplyWithHooks(user, reply, "normal", 0, scope, hooks)
