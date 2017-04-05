@@ -172,7 +172,6 @@ class Brain
         # Set user vars
         match = reply.match(/<set (.+?)=(.+?)>/i)
         giveup = 0
-        reply = matched.reply[0]
         while match
           giveup++
           if giveup >= 50

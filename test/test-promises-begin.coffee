@@ -96,4 +96,31 @@ exports.test_redirects_in_begin = (test) ->
 
     bot.replyPromisified("I'm not welcomed yet", "Hello human.")
     .then (reply) -> bot.replyPromisified("Now I am welcomed", "Hi Again")
+    .then ->
+        bot = new TestCase(test, """
+          > begin
+           + request
+           * <get welcomed> != 1 => {topic=intro}{ok}
+           - {ok}
+          < begin
+
+          > topic intro
+          + hello
+          - <set welcomed=1>hi{topic=next}
+
+          + *
+          - not here
+          < topic
+
+          > topic next
+          + next
+          - in next
+
+          + *
+          - nope
+          < topic
+        """, "debug":true)
+        bot.replyPromisified("hello", "hi")
+        .then -> bot.replyPromisified("next", "in next")
     .then -> test.done()
+
