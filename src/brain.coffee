@@ -75,7 +75,7 @@ class Brain
 
     promise.then (reply) =>
       if reply?
-        reply = @processCallTags(reply, scope, async)
+        reply = @processCallTags(reply, scope, true, hooks)
 
       if not utils.isAPromise(reply)
         @onAfterReply(msg, user, reply)
@@ -101,7 +101,7 @@ class Brain
       # process tags in the afterMatch command
       if matchResults.matched and hooks.onAfterMatch?
         matchResults.matched.afterMatch = (@processTags(user, msg, row, stars, thatstars, step, scope) for row in matchResults.matched.afterMatch)
-        matchResults.matched.afterMatch = (@processCallTags(row, scope, false) for row in matchResults.matched.afterMatch)
+        matchResults.matched.afterMatch = (@processCallTags(row, scope, false, hooks) for row in matchResults.matched.afterMatch)
         promise = hooks.onAfterMatch(matchResults)
 
       promise.then =>
@@ -342,13 +342,14 @@ class Brain
     @_currentUser = undefined
 
   ##
-  # string|Promise processCallTags (string reply, object scope, bool async)
+  # string|Promise processCallTags (string reply, object scope, bool async, object hooks)
   #
   # Process <call> tags in the preprocessed reply string.
   # If `async` is true, processCallTags can handle asynchronous subroutines
-  # and it returns a promise, otherwise a string is returned
+  # and it returns a promise, otherwise a string is returned.
+  # Hooks are passed along so that they can be hadned off to redirects.
   ##
-  processCallTags: (reply, scope, async) ->
+  processCallTags: (reply, scope, async, hooks) ->
     reply = reply.replace(/«__call__»/ig, "<call>")
     reply = reply.replace(/«\/__call__»/ig, "</call>")
     callRe = /<call>([\s\S]+?)<\/call>/ig
@@ -398,7 +399,7 @@ class Brain
         lang = @master._objlangs[data.obj]
         if @master._handlers[lang]
           # We do.
-          output = @master._handlers[lang].call(@master, data.obj, data.args, scope)
+          output = @master._handlers[lang].call(@master, data.obj, data.args, scope, hooks)
         else
           output = "[ERR: No Object Handler]"
       else

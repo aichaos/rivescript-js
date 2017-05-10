@@ -452,3 +452,23 @@ exports.test_stringify_with_objects = (test) ->
   expect = '! version = 2.0\n! local concat = none\n\n> object hello javascript\n\treturn "Hello";\n< object\n\n> object exclaim javascript\n\treturn "!";\n< object\n\n+ my name is *\n- hello there<call>exclaim</call>and i like continues\n'
   test.equal(src, expect)
   test.done()
+
+exports.test_macro_hooks = (test) ->
+  bot = new TestCase(test, """
+    > object redirect javascript
+      return rs.replyPromisified(rs.currentUser(), "finish", null, true, arguments[2]);
+    < object
+    + start
+    - <call>redirect</call>
+    + finish
+    $ GET https://swapi.co/planets/1
+    - Welcome to %var
+  """)
+  afterMatch = (matches) ->
+    for reply, idx in matches.matched.reply
+      matches.matched.reply[idx] = reply.replace('%var', 'foo') 
+    new Promise((resolve)->resolve(''))
+
+  bot.replyPromisified("start", "Welcome to foo", [null, false, {onAfterMatch: afterMatch}])
+  .catch (err) -> test.ok(false, err.stack)
+  .then -> test.done()

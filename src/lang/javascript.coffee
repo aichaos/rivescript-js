@@ -43,11 +43,11 @@ class JSObjectHandler
         @_master.warn "Error evaluating JavaScript object: " + e.message
 
   ##
-  # string call (RiveScript rs, string name, string[] fields)
+  # string call (RiveScript rs, string name, string[] fields, object hooks)
   #
   # Called by the RiveScript object to execute JavaScript code.
   ##
-  call: (rs, name, fields, scope) ->
+  call: (rs, name, fields, scope, hooks) ->
     # We have it?
     if not @_objects[name]
       return @_master.errors.objectNotFound
@@ -56,7 +56,7 @@ class JSObjectHandler
     func = @_objects[name]
     reply = ""
     try
-      reply = func.call(scope, rs, fields)
+      reply = func.call(scope, rs, fields, hooks)
     catch e
       reply = "[ERR: Error when executing JavaScript object: #{e.message}]"
 
