@@ -156,7 +156,7 @@ exports.test_objects_in_conditions = (test) ->
   # First, make sure the sync object works.
   bot.replyPromisified("call sync 1", "Result: true")
   .then -> bot.replyPromisified("call sync 0", "Result: false")
-  .then -> bot.replyPromisified("call async 1", "Result: [ERR: Using async routine with reply: use replyAsync instead]")
+  .then -> bot.replyPromisified("call async 1", "Result: true")
 
   # Test the synchronous object in a conditional.
   .then -> bot.replyPromisified("test sync 1", "True.")
@@ -370,7 +370,7 @@ exports.test_use_reply_with_async_subroutines = (test) ->
     )
   )
 
-  bot.replyPromisified("my name is Rive", "hello there [ERR: Using async routine with reply: use replyAsync instead]")
+  bot.replyPromisified("my name is Rive", "hello there stranger")
   .then -> test.done()
 
 exports.test_errors_in_async_subroutines_with_callbacks = (test) ->

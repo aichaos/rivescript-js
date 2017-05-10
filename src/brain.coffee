@@ -405,19 +405,17 @@ class Brain
       else
         output = @master.errors.objectNotFound
 
-      # if we get a promise back and we are not in the async mode,
-      # leave an error message to suggest using an async version of rs
-      # otherwise, keep promises tucked into a list where we can check on
-      # them later
-      if utils.isAPromise(output)
-        if async
-          promises.push
-            promise: output
-            text: k
-          continue
-        else
-          output = "[ERR: Using async routine with reply: use replyAsync instead]"
-
+      if async
+        # If our output isn't a promise, wrap it
+        if not utils.isAPromise(output)
+          output = new RSVP.Promise((resolve)->resolve(output))
+        promises.push
+          promise: output
+          text: k
+        continue
+      else if utils.isAPromise(output)
+        output = "[ERR: Using async routine with reply: use replyAsync instead]"
+    
       reply = @._replaceCallTags(k, output, reply)
 
     if not async
