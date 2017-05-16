@@ -26,6 +26,8 @@ exports.test_bot_variables = (test) ->
    bot.reply("What are you?", "I'm undefined.")
    bot.reply("Happy birthday!", "Thanks!")
    bot.reply("How old are you?", "I am 6.")
+   bot.botvar("age", "6")
+   bot.botvars({name: "Aiden", age: "6"})
    test.done()
 
 exports.test_global_variables = (test) ->

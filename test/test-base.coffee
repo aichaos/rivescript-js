@@ -60,5 +60,33 @@ class TestCase
     uservar: (name, expected) ->
         value = @rs.getUservar(@username, name);
         @test.equal(value, expected);
+    
+    ##
+    # User variable dump assertion.
+    #
+    # @param expected: The expected value of all data
+    ##
+    uservars: (expected) ->
+        value = @rs.getUservars(@username)
+        @test.deepEqual(value, expected)
+
+    ##
+    # Bot variable assertion.
+    #
+    # @param name: The variable name.
+    # @param expected: The expected value of that name.
+    ##
+    botvar: (name, expected) ->
+        value = @rs.getBotvar(name)
+        @test.equal(value, expected)
+    
+    ##
+    # Bot variable dump assertion.
+    #
+    # @param expected: The expected value of all data
+    ##
+    botvars: (expected) ->
+        value = @rs.getBotvars()
+        @test.deepEqual(value, expected)
 
 module.exports = TestCase

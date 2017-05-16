@@ -828,6 +828,22 @@ class RiveScript
       return @_var[name]
     else
       return "undefined"
+ 
+  ##
+  # void getVariables ()
+  #
+  # Gets all bot variables.
+  ##
+  getVariables: () ->
+    return utils.clone(@_var)
+
+  # Alias for getVariable for consistency with getUservar
+  getBotvar: (name) ->
+    return @getVariable(name)
+  # Alias for getVariables for consistency with getUservars
+  getBotvars: () ->
+    return @getVariables()
+
 
   ##
   # string getUservar (string user, string name)
