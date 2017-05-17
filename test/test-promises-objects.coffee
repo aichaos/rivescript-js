@@ -156,7 +156,7 @@ exports.test_objects_in_conditions = (test) ->
   # First, make sure the sync object works.
   bot.replyPromisified("call sync 1", "Result: true")
   .then -> bot.replyPromisified("call sync 0", "Result: false")
-  .then -> bot.replyPromisified("call async 1", "Result: [ERR: Using async routine with reply: use replyAsync instead]")
+  .then -> bot.replyPromisified("call async 1", "Result: true")
 
   # Test the synchronous object in a conditional.
   .then -> bot.replyPromisified("test sync 1", "True.")
@@ -370,7 +370,7 @@ exports.test_use_reply_with_async_subroutines = (test) ->
     )
   )
 
-  bot.replyPromisified("my name is Rive", "hello there [ERR: Using async routine with reply: use replyAsync instead]")
+  bot.replyPromisified("my name is Rive", "hello there stranger")
   .then -> test.done()
 
 exports.test_errors_in_async_subroutines_with_callbacks = (test) ->
@@ -452,3 +452,23 @@ exports.test_stringify_with_objects = (test) ->
   expect = '! version = 2.0\n! local concat = none\n\n> object hello javascript\n\treturn "Hello";\n< object\n\n> object exclaim javascript\n\treturn "!";\n< object\n\n+ my name is *\n- hello there<call>exclaim</call>and i like continues\n'
   test.equal(src, expect)
   test.done()
+
+exports.test_macro_hooks = (test) ->
+  bot = new TestCase(test, """
+    > object redirect javascript
+      return rs.replyPromisified(rs.currentUser(), "finish", null, true, arguments[2]);
+    < object
+    + start
+    - <call>redirect</call>
+    + finish
+    $ GET https://swapi.co/planets/1
+    - Welcome to %var
+  """)
+  afterMatch = (matches) ->
+    for reply, idx in matches.matched.reply
+      matches.matched.reply[idx] = reply.replace('%var', 'foo') 
+    new Promise((resolve)->resolve(''))
+
+  bot.replyPromisified("start", "Welcome to foo", [null, false, {onAfterMatch: afterMatch}])
+  .catch (err) -> test.ok(false, err.stack)
+  .then -> test.done()

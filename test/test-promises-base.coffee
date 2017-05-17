@@ -33,10 +33,15 @@ class TestCase
     #
     # @param message: The user's input message.
     # @param expected: The expected response.
+    # @param opts: [scope=null, skipBegin=false, hooks={}]
+    #
     ##
-    replyPromisified: (message, expected) ->
-      @rs.replyPromisified(@username, message).then (reply) =>
-         @test.equal(reply, expected)
+    replyPromisified: (message, expected, opts) ->
+      opts = opts ? []
+      args = [@username, message, opts[0] ? null, opts[1] ? false, opts[2] ? {}]
+      @rs.replyPromisified.apply(@rs, args).then (reply) =>
+      # @rs.replyPromisified(@username, message).then (reply) =>
+         @test.equal(reply, expected, "Failed responding to '" + message + "'")
          reply
 
     ##

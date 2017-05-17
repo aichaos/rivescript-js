@@ -75,7 +75,7 @@ class Brain
 
     promise.then (reply) =>
       if reply?
-        reply = @processCallTags(reply, scope, async)
+        reply = @processCallTags(reply, scope, true, hooks)
 
       if not utils.isAPromise(reply)
         @onAfterReply(msg, user, reply)
@@ -101,7 +101,7 @@ class Brain
       # process tags in the afterMatch command
       if matchResults.matched and hooks.onAfterMatch?
         matchResults.matched.afterMatch = (@processTags(user, msg, row, stars, thatstars, step, scope) for row in matchResults.matched.afterMatch)
-        matchResults.matched.afterMatch = (@processCallTags(row, scope, false) for row in matchResults.matched.afterMatch)
+        matchResults.matched.afterMatch = (@processCallTags(row, scope, false, hooks) for row in matchResults.matched.afterMatch)
         promise = hooks.onAfterMatch(matchResults)
 
       promise.then =>
@@ -342,13 +342,14 @@ class Brain
     @_currentUser = undefined
 
   ##
-  # string|Promise processCallTags (string reply, object scope, bool async)
+  # string|Promise processCallTags (string reply, object scope, bool async, object hooks)
   #
   # Process <call> tags in the preprocessed reply string.
   # If `async` is true, processCallTags can handle asynchronous subroutines
-  # and it returns a promise, otherwise a string is returned
+  # and it returns a promise, otherwise a string is returned.
+  # Hooks are passed along so that they can be hadned off to redirects.
   ##
-  processCallTags: (reply, scope, async) ->
+  processCallTags: (reply, scope, async, hooks) ->
     reply = reply.replace(/«__call__»/ig, "<call>")
     reply = reply.replace(/«\/__call__»/ig, "</call>")
     callRe = /<call>([\s\S]+?)<\/call>/ig
@@ -398,25 +399,23 @@ class Brain
         lang = @master._objlangs[data.obj]
         if @master._handlers[lang]
           # We do.
-          output = @master._handlers[lang].call(@master, data.obj, data.args, scope)
+          output = @master._handlers[lang].call(@master, data.obj, data.args, scope, hooks)
         else
           output = "[ERR: No Object Handler]"
       else
         output = @master.errors.objectNotFound
 
-      # if we get a promise back and we are not in the async mode,
-      # leave an error message to suggest using an async version of rs
-      # otherwise, keep promises tucked into a list where we can check on
-      # them later
-      if utils.isAPromise(output)
-        if async
-          promises.push
-            promise: output
-            text: k
-          continue
-        else
-          output = "[ERR: Using async routine with reply: use replyAsync instead]"
-
+      if async
+        # If our output isn't a promise, wrap it
+        if not utils.isAPromise(output)
+          output = new RSVP.Promise((resolve)->resolve(output))
+        promises.push
+          promise: output
+          text: k
+        continue
+      else if utils.isAPromise(output)
+        output = "[ERR: Using async routine with reply: use replyAsync instead]"
+    
       reply = @._replaceCallTags(k, output, reply)
 
     if not async

@@ -34,7 +34,7 @@ class TestCase
     ##
     reply: (message, expected) ->
         reply = @rs.reply(this.username, message)
-        @test.equal(reply, expected);
+        @test.equal(reply, expected, "Failed responding to '" + message + "'")
 
     ##
     # Random reply assertion: check if the answer is in a set of acceptable
