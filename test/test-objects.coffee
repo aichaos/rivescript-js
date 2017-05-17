@@ -70,17 +70,43 @@ exports.test_disabled_js_language = (test) ->
 
 exports.test_get_variable = (test) ->
   bot = new TestCase(test, """
-    ! var test_var = test
+    ! var test_var1 = test
+    ! var test_var2 = alsotest
 
     > object test_get_var javascript
-        var name  = "test_var";
+        var name  = "test_var1";
         return rs.getVariable(name);
+    < object
+
+    > object test_get_vars javascript
+        return JSON.stringify(rs.getVariables())
+    < object
+
+    > object set_var javascript
+        rs.setBotvar('test_var2', 'notatest')
+        return rs.getVariable('test_var2')
+    < object
+
+    > object set_vars javascript
+        rs.setBotvars({test_var1: undefined, foo: 'bar'})
+        return 'ok'
     < object
 
     + show me var
     - <call> test_get_var </call>
+    + show me vars
+    - <call> test_get_vars </call>
+    + set var
+    - <call> set_var </call>
+    + set vars
+    - <call> set_vars </call>
   """)
   bot.reply("show me var", "test")
+  bot.reply("show me vars", '{"test_var1":"test","test_var2":"alsotest"}')
+  bot.reply("set var", "notatest")
+  bot.botvar("test_var2", "notatest")
+  bot.reply("set vars", "ok")
+  bot.reply("show me vars", '{"test_var2":"notatest","foo":"bar"}')
   test.done()
 
 exports.test_uppercase_call = (test) ->

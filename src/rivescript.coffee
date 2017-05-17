@@ -818,7 +818,7 @@ class RiveScript
         @_users[user][key] = data[key]
 
   ##
-  # void getVariable (string name)
+  # string getVariable (string name)
   #
   # Gets a variable. This is equivalent to `<bot name>` in RiveScript.
   ##
@@ -830,12 +830,39 @@ class RiveScript
       return "undefined"
  
   ##
-  # void getVariables ()
+  # object getVariables ()
   #
   # Gets all bot variables.
   ##
   getVariables: () ->
     return utils.clone(@_var)
+
+  ##
+  # void setVariable (string key, string value)
+  #
+  # Set a bot variable, or unset it if value is undefined.
+  ##
+  setVariable: (key, value) ->
+    if value is undefined
+      delete @_var[key]
+    else
+      @_var[key] = value
+
+  ##
+  # void setVariables (object data)
+  #
+  # Set multiple bot variables by providing an object of key/value pairs.
+  # Equivalent to calling `setVariable()` for each pair in the object.
+  ##
+  setVariables: (data) ->
+    for key of data
+      continue unless data.hasOwnProperty key
+
+      if data[key] is undefined
+        delete @_var[key]
+      else
+        @_var[key] = data[key]
+
 
   # Alias for getVariable for consistency with getUservar
   getBotvar: (name) ->
@@ -843,6 +870,12 @@ class RiveScript
   # Alias for getVariables for consistency with getUservars
   getBotvars: () ->
     return @getVariables()
+  # Alias for setVariable for consistency with getUservar
+  setBotvar: (key, value) ->
+    @setVariable(key, value)
+  # Alias for setVariables for consistency with getUservar
+  setBotvars: (data) ->
+    @setVariables(data)
 
 
   ##
