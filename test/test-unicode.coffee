@@ -89,3 +89,22 @@ exports.test_punctuation = (test) ->
   bot.reply("Hello bot", "Hello human!")
   bot.reply("Hello, bot!", "ERR: No Reply Matched")
   test.done()
+
+exports.test_alternatives_and_optionals = (test) ->
+  bot = new TestCase(test, """
+    
+    + [*] to your [*]
+    - Wild.
+
+    + [*] 아침 [*]
+    - UTF8 Wild.
+  """, {"utf8": true})
+
+  bot.reply("foo to your bar", "Wild.")
+  bot.reply("foo to your", "Wild.")
+  bot.reply("to your bar", "Wild.")
+  bot.reply("to your", "Wild.")
+  bot.reply("아침", "UTF8 Wild.")
+  bot.reply("아침 선생님.", "UTF8 Wild.")
+  bot.reply("좋은 아침", "UTF8 Wild.")
+  test.done()

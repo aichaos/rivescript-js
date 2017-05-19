@@ -48,6 +48,7 @@ exports.test_previous = (test) ->
   .then -> bot.replyPromisified("2", "Yes!")
   .then -> bot.replyPromisified("Ask me a question", "How many arms do I have?")
   .then -> bot.replyPromisified("lol", "That isn't a number.")
+  .catch (err) -> test.ok(false, err.stack)
   .then -> test.done()
 
 exports.test_random = (test) ->

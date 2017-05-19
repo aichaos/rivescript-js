@@ -889,6 +889,7 @@ class Brain
   # Prepares a trigger for the regular expression engine.
   ##
   triggerRegexp: (user, regexp) ->
+    boundary = "(?:^|$|\\s|\\b)+"
     # If the trigger is simply '*' then the * needs to become (.*?)
     # to match the blank string too.
     regexp = regexp.replace(/^\*$/, "<zerowidthstar>")
@@ -932,7 +933,7 @@ class Brain
       parts = match[1].split("|")
       opts  = []
       for p in parts
-        opts.push "(?:\\s|\\b)+#{p}(?:\\s|\\b)+"
+        opts.push(boundary + p + boundary);
 
       # If this optional had a star or anything in it, make it non-matching.
       pipes = opts.join("|")
@@ -945,7 +946,7 @@ class Brain
       pipes = pipes.replace(/\[/g, "__lb__").replace(/\]/g, "__rb__")
 
       regexp = regexp.replace(new RegExp("\\s*\\[" + utils.quotemeta(match[1]) + "\\]\\s*"),
-        "(?:#{pipes}|(?:\\b|\\s)+)")
+        "(?:#{pipes}|" + boundary + ")")
       match = regexp.match(/\[(.+?)\]/)
 
     # Restore the literal square brackets.
