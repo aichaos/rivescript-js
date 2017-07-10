@@ -9,7 +9,6 @@
 # Brain logic for RiveScript
 utils = require("./utils")
 inherit_utils = require("./inheritance")
-RSVP = require("rsvp")
 q = require("q")
 _ = require("lodash")
 
@@ -356,7 +355,7 @@ class Brain
     argsRe = /«__call_arg__»([\s\S]*?)«\/__call_arg__»/ig
 
     giveup = 0
-    matches = []
+    callSignatures = []
     promises = []
 
     while match = callRe.exec(reply)
@@ -370,14 +369,13 @@ class Brain
       # get subroutine name
       subroutineNameMatch = (/(\S+)/ig).exec(text)
       subroutineName = subroutineNameMatch[0]
-
       args = []
 
       # get arguments
       while m = argsRe.exec(text)
         args.push(m[1])
 
-      matches.push
+      callSignatures.push
         text: text
         obj: subroutineName
         args: args
@@ -385,7 +383,7 @@ class Brain
         length: match[0].length
 
     # go through all the object calls and run functions
-    for data in matches
+    for data in callSignatures
       output = ""
       if @master._objlangs[data.obj]
         # We do. Do we have a handler for it?
@@ -398,35 +396,27 @@ class Brain
       else
         data.output = @master.errors.objectNotFound
 
-      # if we get a promise back and we are not in the async mode,
-      # leave an error message to suggest using an async version of rs
-      # otherwise, keep promises tucked into a list where we can check on
-      # them later
-      if async
-        promises.push
-          promise: if utils.isAPromise(data.output) then data.output else q(data.output)
-          data: data
-        continue
-      else if utils.isAPromise(data.output)
+      if not async and utils.isAPromise(data.output)
         data.output = "[ERR: Using async routine with reply: use replyAsync instead]"
 
-    if not async
-      # cycle through backwards so indexes in replace command stay the same
-      for data in matches by -1
-          reply = @._replaceCallTags(data, reply)
-      return reply
+    if async
+      return @._resolveCallTagsAsync(callSignatures, reply)
     else
-      # wait for all the promises to be resolved and
-      # return a resulting promise with the final reply
-      return new RSVP.Promise (resolve, reject) =>
-        RSVP.all(p.promise for p in promises).then (results) =>
-          for promise, i in promises by -1
-            promise.data.output = results[i]
-            reply = @_replaceCallTags(promise.data, reply)
+      return @._resolveCallTags(callSignatures, reply)
 
-          resolve(reply)
-        .catch (reason) =>
-          reject(reason)
+  _resolveCallTagsAsync: (callSignatures, reply) ->
+    return q.all(_.map(callSignatures, 'output'))
+      .then (results) =>
+        for result, i in results by -1
+          callSignatures[i].output = result
+          reply = @._replaceCallTags(callSignatures[i], reply)
+        return reply
+
+  _resolveCallTags: (callSignatures, reply) ->
+    # cycle through backwards so indexes in replace command stay the same
+    for data in callSignatures by -1
+        reply = @._replaceCallTags(data, reply)
+    return reply
 
   _replaceCallTags: (data, reply) ->
     return reply.slice(0, data.start) + data.output + reply.slice(data.start + data.length)
