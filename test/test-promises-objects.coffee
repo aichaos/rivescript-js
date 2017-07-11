@@ -434,6 +434,23 @@ exports.test_async_and_sync_subroutines_together = (test) ->
     test.equal(reply, "hello there stranger!")
     test.done()
 
+exports.test_multiple_calls = (test) ->
+  bot = new TestCase(test, """
+    > object hello javascript
+      return Math.random()
+    < object
+    + hello
+    - <call>hello</call> <call>hello</call>
+  """)
+
+  src = bot.rs.replyAsync(bot.username, "hello").then (reply) ->
+      parts = reply.split(' ')
+      test.ok(parts.length == 2)
+      test.ok(Boolean(parseFloat(parts[0])), parts[0])
+      test.ok(Boolean(parseFloat(parts[1])), parts[1])
+      test.ok(parts[0] != parts[1])
+      test.done()
+
 exports.test_stringify_with_objects = (test) ->
   bot = new TestCase(test, """
     > object hello javascript

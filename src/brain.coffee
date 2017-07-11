@@ -9,7 +9,6 @@
 # Brain logic for RiveScript
 utils = require("./utils")
 inherit_utils = require("./inheritance")
-RSVP = require("rsvp")
 q = require("q")
 _ = require("lodash")
 
@@ -356,18 +355,13 @@ class Brain
     argsRe = /«__call_arg__»([\s\S]*?)«\/__call_arg__»/ig
 
     giveup = 0
-    matches = {}
+    callSignatures = []
     promises = []
 
-    while true
+    while match = callRe.exec(reply)
       giveup++
       if giveup >= 50
         @warn "Infinite loop looking for call tag!"
-        break
-
-      match = callRe.exec(reply)
-
-      if not match
         break
 
       text = utils.trim(match[1])
@@ -375,65 +369,57 @@ class Brain
       # get subroutine name
       subroutineNameMatch = (/(\S+)/ig).exec(text)
       subroutineName = subroutineNameMatch[0]
-
       args = []
 
       # get arguments
-      while true
-        m = argsRe.exec(text)
-        if not m
-          break
+      while m = argsRe.exec(text)
         args.push(m[1])
 
-
-      matches[match[1]] =
+      callSignatures.push
         text: text
         obj: subroutineName
         args: args
+        start: match.index
+        length: match[0].length
 
     # go through all the object calls and run functions
-    for k,data of matches
+    for data in callSignatures
       output = ""
       if @master._objlangs[data.obj]
         # We do. Do we have a handler for it?
         lang = @master._objlangs[data.obj]
         if @master._handlers[lang]
           # We do.
-          output = @master._handlers[lang].call(@master, data.obj, data.args, scope, hooks)
+          data.output = @master._handlers[lang].call(@master, data.obj, data.args, scope, hooks)
         else
-          output = "[ERR: No Object Handler]"
+          data.output = "[ERR: No Object Handler]"
       else
-        output = @master.errors.objectNotFound
+        data.output = @master.errors.objectNotFound
 
-      if async
-        # If our output isn't a promise, wrap it
-        if not utils.isAPromise(output)
-          output = new RSVP.Promise((resolve)->resolve(output))
-        promises.push
-          promise: output
-          text: k
-        continue
-      else if utils.isAPromise(output)
-        output = "[ERR: Using async routine with reply: use replyAsync instead]"
-    
-      reply = @._replaceCallTags(k, output, reply)
+      if not async and utils.isAPromise(data.output)
+        data.output = "[ERR: Using async routine with reply: use replyAsync instead]"
 
-    if not async
-      return reply
+    if async
+      return @._resolveCallTagsAsync(callSignatures, reply)
     else
-      # wait for all the promises to be resolved and
-      # return a resulting promise with the final reply
-      return new RSVP.Promise (resolve, reject) =>
-        RSVP.all(p.promise for p in promises).then (results) =>
-          for i in [0...results.length]
-            reply = @_replaceCallTags(promises[i].text, results[i], reply)
+      return @._resolveCallTags(callSignatures, reply)
 
-          resolve(reply)
-        .catch (reason) =>
-          reject(reason)
+  _resolveCallTagsAsync: (callSignatures, reply) ->
+    return q.all(_.map(callSignatures, 'output'))
+      .then (results) =>
+        for result, i in results by -1
+          callSignatures[i].output = result
+          reply = @._replaceCallTags(callSignatures[i], reply)
+        return reply
 
-  _replaceCallTags: (callSignature, callResult, reply) ->
-    return reply.replace(new RegExp("<call>" + utils.quotemeta(callSignature) + "</call>", "i"), callResult)
+  _resolveCallTags: (callSignatures, reply) ->
+    # cycle through backwards so indexes in replace command stay the same
+    for data in callSignatures by -1
+        reply = @._replaceCallTags(data, reply)
+    return reply
+
+  _replaceCallTags: (data, reply) ->
+    return reply.slice(0, data.start) + data.output + reply.slice(data.start + data.length)
 
   _parseCallArgsString: (args) ->
     # turn args string into a list of arguments
