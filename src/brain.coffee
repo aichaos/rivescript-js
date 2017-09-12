@@ -21,6 +21,7 @@ class Brain
     @master = master
     @strict = master._strict
     @utf8   = master._utf8
+    @caseSensitive = master._caseSensitive
 
     # Private variables only relevant to the reply-answering part of RiveScript.
     @_currentUser = null # The current user asking for a message
@@ -585,7 +586,8 @@ class Brain
   formatMessage: (msg, botreply) ->
     # Lowercase it.
     msg = "" + msg
-    msg = msg.toLowerCase()
+    unless @caseSensitive?
+      msg = msg.toLowerCase()
 
     # Run substitutions and sanitize what's left.
     msg = @substitute(msg, "sub")
