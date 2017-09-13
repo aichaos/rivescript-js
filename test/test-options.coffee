@@ -190,3 +190,30 @@ exports.test_no_force_case = (test) ->
     test.equal(e, "Syntax error: Triggers may only contain lowercase letters, numbers, and these symbols: ( | ) [ ] * _ # { } < > = at stream() line 1 near + I am # years old")
 
   test.done()
+
+exports.test_case_sensitive = (test) ->
+  bot = new TestCase(test, """
+    + js *
+    - <call>repl <star></call>
+
+    + say *
+    - Hmm.. <star>
+
+    > object repl javascript
+        var value = args.join('')
+        return eval(value)
+    < object
+  """, { caseSensitive: true, utf8: true })
+
+  bot.rs.unicodePunctuation = new RegExp(/[~]/)
+  bot.reply("js Math.cos(0)", "1")
+  bot.reply("say Bojack Horseman", "Hmm.. Bojack Horseman")
+  test.done()
+
+exports.test_no_case_sensitive = (test) ->
+  bot = new TestCase(test, """
+    + say *
+    - Hmm.. <star>
+  """)
+  bot.reply("say Rick and Morty", "Hmm.. rick and morty")
+  test.done()
