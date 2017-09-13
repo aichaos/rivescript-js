@@ -586,7 +586,7 @@ class Brain
   formatMessage: (msg, botreply) ->
     # Lowercase it.
     msg = "" + msg
-    unless @caseSensitive?
+    unless @caseSensitive is true
       msg = msg.toLowerCase()
 
     # Run substitutions and sanitize what's left.
