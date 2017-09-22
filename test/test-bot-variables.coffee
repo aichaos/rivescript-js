@@ -21,11 +21,11 @@ exports.test_bot_variables = (test) ->
     + happy birthday
     - <bot age=6>Thanks!
    """)
-   bot.reply("What is your name?", "My name is Aiden.")
-   bot.reply("How old are you?", "I am 5.")
-   bot.reply("What are you?", "I'm undefined.")
-   bot.reply("Happy birthday!", "Thanks!")
-   bot.reply("How old are you?", "I am 6.")
+   await bot.reply("What is your name?", "My name is Aiden.")
+   await bot.reply("How old are you?", "I am 5.")
+   await bot.reply("What are you?", "I'm undefined.")
+   await bot.reply("Happy birthday!", "Thanks!")
+   await bot.reply("How old are you?", "I am 6.")
    test.done()
 
 exports.test_global_variables = (test) ->
@@ -38,7 +38,7 @@ exports.test_global_variables = (test) ->
     + set debug mode *
     - <env debug=<star>>Switched to <star>.
   """)
-  bot.reply("Debug mode.", "Debug mode is: false")
-  bot.reply("Set debug mode true", "Switched to true.")
-  bot.reply("Debug mode?", "Debug mode is: true")
+  await bot.reply("Debug mode.", "Debug mode is: false")
+  await bot.reply("Set debug mode true", "Switched to true.")
+  await bot.reply("Debug mode?", "Debug mode is: true")
   test.done()

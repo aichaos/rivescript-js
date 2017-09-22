@@ -12,8 +12,8 @@ exports.test_atomic_triggers = (test) ->
     + what are you
     - I am a RiveScript bot.
   """)
-  bot.reply("Hello bot", "Hello human.")
-  bot.reply("What are you?", "I am a RiveScript bot.")
+  await bot.reply("Hello bot", "Hello human.")
+  await bot.reply("What are you?", "I am a RiveScript bot.")
   test.done()
 
 exports.test_wildcard_triggers = (test) ->
@@ -33,11 +33,11 @@ exports.test_wildcard_triggers = (test) ->
     + i am * years old
     - Say that with fewer words.
   """)
-  bot.reply("my name is Bob", "Nice to meet you, bob.")
-  bot.reply("bob told me to say hi", "Why did bob tell you to say hi?")
-  bot.reply("i am 5 years old", "A lot of people are 5.")
-  bot.reply("i am five years old", "Say that with numbers.")
-  bot.reply("i am twenty five years old", "Say that with fewer words.")
+  await bot.reply("my name is Bob", "Nice to meet you, bob.")
+  await bot.reply("bob told me to say hi", "Why did bob tell you to say hi?")
+  await bot.reply("i am 5 years old", "A lot of people are 5.")
+  await bot.reply("i am five years old", "Say that with numbers.")
+  await bot.reply("i am twenty five years old", "Say that with fewer words.")
   test.done()
 
 exports.test_alternatives_and_optionals = (test) ->
@@ -57,30 +57,30 @@ exports.test_alternatives_and_optionals = (test) ->
     + (yo|hi) [computer|bot] *
     - Matched.
   """)
-  bot.reply("What are you?", "I am a robot.")
-  bot.reply("What is you?", "I am a robot.")
+  await bot.reply("What are you?", "I am a robot.")
+  await bot.reply("What is you?", "I am a robot.")
 
-  bot.reply("What is your home phone number?", "It is 555-1234.")
-  bot.reply("What is your home number?", "It is 555-1234.")
-  bot.reply("What is your cell phone number?", "It is 555-1234.")
-  bot.reply("What is your office number?", "It is 555-1234.")
+  await bot.reply("What is your home phone number?", "It is 555-1234.")
+  await bot.reply("What is your home number?", "It is 555-1234.")
+  await bot.reply("What is your cell phone number?", "It is 555-1234.")
+  await bot.reply("What is your office number?", "It is 555-1234.")
 
-  bot.reply("Can you ask me a question?", "Why is the sky blue?")
-  bot.reply("Please ask me a question?", "Why is the sky blue?")
-  bot.reply("Ask me a question.", "Why is the sky blue?")
+  await bot.reply("Can you ask me a question?", "Why is the sky blue?")
+  await bot.reply("Please ask me a question?", "Why is the sky blue?")
+  await bot.reply("Ask me a question.", "Why is the sky blue?")
 
-  bot.reply("aa", "Matched.")
-  bot.reply("bb", "Matched.")
-  bot.reply("aa bogus", "Matched.")
-  bot.reply("aabogus", "ERR: No Reply Matched")
-  bot.reply("bogus", "ERR: No Reply Matched")
+  await bot.reply("aa", "Matched.")
+  await bot.reply("bb", "Matched.")
+  await bot.reply("aa bogus", "Matched.")
+  await bot.reply("aabogus", "ERR: No Reply Matched")
+  await bot.reply("bogus", "ERR: No Reply Matched")
 
-  bot.reply("hi Aiden", "Matched.")
-  bot.reply("hi bot how are you?", "Matched.")
-  bot.reply("yo computer what time is it?", "Matched.")
-  bot.reply("yoghurt is yummy", "ERR: No Reply Matched")
-  bot.reply("hide and seek is fun", "ERR: No Reply Matched")
-  bot.reply("hip hip hurrah", "ERR: No Reply Matched")
+  await bot.reply("hi Aiden", "Matched.")
+  await bot.reply("hi bot how are you?", "Matched.")
+  await bot.reply("yo computer what time is it?", "Matched.")
+  await bot.reply("yoghurt is yummy", "ERR: No Reply Matched")
+  await bot.reply("hide and seek is fun", "ERR: No Reply Matched")
+  await bot.reply("hip hip hurrah", "ERR: No Reply Matched")
   test.done()
 
 exports.test_trigger_arrays = (test) ->
@@ -97,14 +97,14 @@ exports.test_trigger_arrays = (test) ->
     + i have a @colors *
     - Tell me more about your <star>.
   """)
-  bot.reply("What color is my red shirt?", "Your shirt is red.")
-  bot.reply("What color is my blue car?", "Your car is blue.")
-  bot.reply("What color is my pink house?", "ERR: No Reply Matched")
-  bot.reply("What color is my dark blue jacket?", "Your jacket is dark blue.")
-  bot.reply("What color was Napoleoan's white horse?", "It was white.")
-  bot.reply("What color was my red shirt?", "It was red.")
-  bot.reply("I have a blue car.", "Tell me more about your car.")
-  bot.reply("I have a cyan car.", "ERR: No Reply Matched")
+  await bot.reply("What color is my red shirt?", "Your shirt is red.")
+  await bot.reply("What color is my blue car?", "Your car is blue.")
+  await bot.reply("What color is my pink house?", "ERR: No Reply Matched")
+  await bot.reply("What color is my dark blue jacket?", "Your jacket is dark blue.")
+  await bot.reply("What color was Napoleoan's white horse?", "It was white.")
+  await bot.reply("What color was my red shirt?", "It was red.")
+  await bot.reply("I have a blue car.", "Tell me more about your car.")
+  await bot.reply("I have a cyan car.", "ERR: No Reply Matched")
   test.done()
 
 exports.test_weighted_triggers = (test) ->
@@ -145,14 +145,14 @@ exports.test_weighted_triggers = (test) ->
     + blank
     - Unweighted blank
   """)
-  bot.reply("Hello robot.", "Hi there!")
-  bot.reply("Hello or something.", "Hi there!")
-  bot.reply("Can you run a Google search for Node", "Sure!")
-  bot.reply("Can you run a Google search for Node or something", "Or something. Sure!")
-  bot.reply("something", "Weighted something")
-  bot.reply("nothing", "Weighted nothing")
-  bot.reply("everything", "Weighted everything")
-  bot.reply("blank", "Weighted blank")
+  await bot.reply("Hello robot.", "Hi there!")
+  await bot.reply("Hello or something.", "Hi there!")
+  await bot.reply("Can you run a Google search for Node", "Sure!")
+  await bot.reply("Can you run a Google search for Node or something", "Or something. Sure!")
+  await bot.reply("something", "Weighted something")
+  await bot.reply("nothing", "Weighted nothing")
+  await bot.reply("everything", "Weighted everything")
+  await bot.reply("blank", "Weighted blank")
   test.done()
 
 exports.test_empty_piped_arrays = (test) ->
@@ -182,10 +182,10 @@ exports.test_empty_piped_arrays = (test) ->
   test.deepEqual(errors, expected_errors)
 
   # We also fix these, so these should also work
-  bot.reply("Hey!", "Oh hello there.")
-  bot.reply("sup", "Oh hello there.")
-  bot.reply("Bye!", "Anything else?")
-  bot.reply("Love you", "Anything else?")
+  await bot.reply("Hey!", "Oh hello there.")
+  await bot.reply("sup", "Oh hello there.")
+  await bot.reply("Bye!", "Anything else?")
+  await bot.reply("Love you", "Anything else?")
   test.done()
 
 exports.test_empty_piped_alternations = (test) ->
@@ -217,13 +217,13 @@ exports.test_empty_piped_alternations = (test) ->
   test.deepEqual(errors, expected_errors)
 
   # We also fix these, so these should also work
-  bot.reply("Hey!", "Oh hello there.")
-  bot.reply("sup", "Oh hello there.")
-  bot.reply("that's nice to hear", "Oh nice!")
-  bot.reply("so good", "Oh nice!")
-  bot.reply("You're hot!", "Purrfect.")
-  bot.reply("Bye!", "Anything else?")
-  bot.reply("Love you", "Anything else?")
+  await bot.reply("Hey!", "Oh hello there.")
+  await bot.reply("sup", "Oh hello there.")
+  await bot.reply("that's nice to hear", "Oh nice!")
+  await bot.reply("so good", "Oh nice!")
+  await bot.reply("You're hot!", "Purrfect.")
+  await bot.reply("Bye!", "Anything else?")
+  await bot.reply("Love you", "Anything else?")
   test.done()
 
 
@@ -256,13 +256,13 @@ exports.test_empty_piped_optionals = (test) ->
   test.deepEqual(errors, expected_errors)
 
   # We also fix these, so these should also work
-  bot.reply("Bot say hey to me", "Oh hello there.")
-  bot.reply("bot w hi to me", "Oh hello there.")
-  bot.reply("dog be nice to me", "Oh nice!")
-  bot.reply("Dog don't be good to me", "Oh nice!")
-  bot.reply("Cat should not feel warm to me", "Purrfect.")
-  bot.reply("Bye!", "Anything else?")
-  bot.reply("Love you", "Anything else?")
+  await bot.reply("Bot say hey to me", "Oh hello there.")
+  await bot.reply("bot w hi to me", "Oh hello there.")
+  await bot.reply("dog be nice to me", "Oh nice!")
+  await bot.reply("Dog don't be good to me", "Oh nice!")
+  await bot.reply("Cat should not feel warm to me", "Purrfect.")
+  await bot.reply("Bye!", "Anything else?")
+  await bot.reply("Love you", "Anything else?")
   test.done()
 
 
@@ -288,6 +288,6 @@ exports.test_empty_piped_missing_arrays = (test) ->
   """)
 
   # We also fix these, so these should also work
-  bot.reply("Test One: hi", "Test1 array match")
-  bot.reply("Test Two: yeah", "Multi-array match")
+  await bot.reply("Test One: hi", "Test1 array match")
+  await bot.reply("Test Two: yeah", "Multi-array match")
   test.done()

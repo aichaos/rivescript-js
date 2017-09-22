@@ -44,12 +44,12 @@ exports.test_concat = (test) ->
     ^ world!
   """)
 
-  bot.reply("test concat default", "Helloworld!")
-  bot.reply("test concat space", "Hello world!")
-  bot.reply("test concat none", "Helloworld!")
-  bot.reply("test concat newline", "Hello\nworld!")
-  bot.reply("test concat foobar", "Helloworld!")
-  bot.reply("test concat second file", "Helloworld!")
+  await bot.reply("test concat default", "Helloworld!")
+  await bot.reply("test concat space", "Hello world!")
+  await bot.reply("test concat none", "Helloworld!")
+  await bot.reply("test concat newline", "Hello\nworld!")
+  await bot.reply("test concat foobar", "Helloworld!")
+  await bot.reply("test concat second file", "Helloworld!")
 
   test.done()
 
@@ -67,8 +67,8 @@ exports.test_concat_with_conditionals = (test) ->
     ^ Third B line
   """)
 
-  bot.reply("test a", "First A line\nSecond A line\nThird A line")
-  bot.reply("test b", "First B line\nSecond B line\nThird B line")
+  await bot.reply("test a", "First A line\nSecond A line\nThird A line")
+  await bot.reply("test b", "First B line\nSecond B line\nThird B line")
 
   # Space
   bot = new TestCase(test, """
@@ -83,8 +83,8 @@ exports.test_concat_with_conditionals = (test) ->
     ^ Third B line
   """)
 
-  bot.reply("test a", "First A line Second A line Third A line")
-  bot.reply("test b", "First B line Second B line Third B line")
+  await bot.reply("test a", "First A line Second A line Third A line")
+  await bot.reply("test b", "First B line Second B line Third B line")
 
   # No concat
   bot = new TestCase(test, """
@@ -97,8 +97,8 @@ exports.test_concat_with_conditionals = (test) ->
     ^ Third B line
   """)
 
-  bot.reply("test a", "First A lineSecond A lineThird A line")
-  bot.reply("test b", "First B lineSecond B lineThird B line")
+  await bot.reply("test a", "First A lineSecond A lineThird A line")
+  await bot.reply("test b", "First B lineSecond B lineThird B line")
 
   test.done()
 
@@ -115,8 +115,8 @@ exports.test_concat_space_with_conditionals = (test) ->
     ^ Third B line
   """)
 
-  bot.reply("test a", "First A line\nSecond A line\nThird A line")
-  bot.reply("test b", "First B line\nSecond B line\nThird B line")
+  await bot.reply("test a", "First A line\nSecond A line\nThird A line")
+  await bot.reply("test b", "First B line\nSecond B line\nThird B line")
   test.done()
 
 exports.test_concat_newline_stringify = (test) ->
@@ -169,13 +169,13 @@ exports.test_force_case = (test) ->
     < topic
   """, { forceCase: true })
 
-  bot.reply("hello bot", "Hello human!")
-  bot.reply("i am 5 years old", "A lot of people are 5.")
-  bot.reply("I am 6 years old", "A lot of people are 6.")
+  await bot.reply("hello bot", "Hello human!")
+  await bot.reply("i am 5 years old", "A lot of people are 5.")
+  await bot.reply("I am 6 years old", "A lot of people are 6.")
   bot.rs.setUservar("localuser", "topic", "CapsTopic")
-  bot.reply("hello", "The topic worked!")
-  bot.reply("enter topic", "Enter topic via topic tag.")
-  bot.reply("hello", "The topic worked!")
+  await bot.reply("hello", "The topic worked!")
+  await bot.reply("enter topic", "Enter topic via topic tag.")
+  await bot.reply("hello", "The topic worked!")
   test.done()
 
 exports.test_no_force_case = (test) ->

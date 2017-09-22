@@ -2,6 +2,7 @@ lib/
 dist/
 node_modules/
 .idea/
+test/*.js
 
 #OS X
 .DS_Store

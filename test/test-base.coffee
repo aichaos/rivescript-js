@@ -33,7 +33,7 @@ class TestCase
     # @param expected: The expected response.
     ##
     reply: (message, expected) ->
-        reply = await @rs.reply(this.username, message)
+        reply = await @rs.reply(@username, message)
         @test.equal(reply, expected);
 
     ##
@@ -44,7 +44,7 @@ class TestCase
     # @param expected: Array of expected responses.
     ##
     replyRandom: (message, expected) ->
-      reply = @rs.reply(this.username, message)
+      reply = await @rs.reply(this.username, message)
       for expect in expected
         if reply is expect
           @test.ok(true, "Reply matched one of the expected random outputs.")

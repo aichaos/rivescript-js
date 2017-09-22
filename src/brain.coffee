@@ -59,6 +59,8 @@ class Brain
       if begin.indexOf("{ok}") > -1
         reply = await @_getReply(user, msg, "normal", 0, scope)
         begin = begin.replace(/\{ok\}/g, reply)
+
+      reply = await @processTags(user, msg, begin, [], [], 0, scope)
     else
       reply = await @_getReply(user, msg, "normal", 0, scope)
 
@@ -269,10 +271,10 @@ class Brain
         # See if there are any hard redirects.
         if matched.redirect?
           @say "Redirecting us to #{matched.redirect}"
-          redirect = @processTags(user, msg, matched.redirect, stars, thatstars, step, scope)
+          redirect = await @processTags(user, msg, matched.redirect, stars, thatstars, step, scope)
 
           @say "Pretend user said: #{redirect}"
-          reply = @_getReply(user, redirect, context, step+1, scope)
+          reply = await @_getReply(user, redirect, context, step+1, scope)
           break
 
         # Check the conditionals.
@@ -789,14 +791,14 @@ class Brain
       target = utils.strip match[1]
 
       @say "Inline redirection to: #{target}"
-      subreply = @_getReply(user, target, "normal", step+1, scope)
+      subreply = await @_getReply(user, target, "normal", step+1, scope)
       reply = reply.replace(new RegExp("\\{@" + utils.quotemeta(match[1]) + "\\}", "i"), subreply)
       match = reply.match(/\{@([^\}]*?)\}/)
 
     # Object caller
     reply = reply.replace(/«__call__»/g, "<call>")
     reply = reply.replace(/«\/__call__»/g, "</call>")
-    match = reply.match(/<call>(.+?)<\/call>/)
+    match = reply.match(/<call>([\s\S]+?)<\/call>/)
     giveup = 0
     while match
       giveup++
@@ -804,8 +806,8 @@ class Brain
         @warn "Infinite loop looking for call tags!"
         break
 
-      parts = match[1].split(/\s+/)
-      output = ""
+      parts = utils.trim(match[1]).split(" ")
+      output = @master.errors.objectNotFound
       obj    = parts[0]
 
       # Make the args shell-like.
@@ -824,6 +826,8 @@ class Brain
           catch e
             @warn e.message
             output = "[ERR: Error raised by object macro]"
+        else
+          output = "[ERR: No Object Handler]"
 
       reply = reply.replace(match[0], output)
       match = reply.match(/<call>(.+?)<\/call>/)
@@ -873,28 +877,28 @@ class Brain
       subpattern = pattern.substring(0, li)
 
       # If finds the pattern in sub object replace and stop to look
-      result = subs[subpattern];
+      result = subs[subpattern]
       if result!=undefined
-          msg = msg.replace(subpattern, result)
+        msg = msg.replace(subpattern, result)
       else
         # Otherwise Look for substitutions in a subpattern
         while subpattern.indexOf(" ") > -1
-            subgiveup++
-            # Give up if there are too many substitutions (for safety)
-            if subgiveup >= 1000
-                @warn("Too many loops when handling substitutions!")
-                break
+          subgiveup++
+          # Give up if there are too many substitutions (for safety)
+          if subgiveup >= 1000
+            @warn("Too many loops when handling substitutions!")
+            break
 
-              li = subpattern.lastIndexOf(" ");
-              subpattern = subpattern.substring(0, li);
+          li = subpattern.lastIndexOf(" ")
+          subpattern = subpattern.substring(0, li)
 
-              # If finds the subpattern in sub object replace and stop to look
-              result = subs[subpattern];
-              if result!=undefined
-                  msg = msg.replace(subpattern, result)
-                  break
+          # If finds the subpattern in sub object replace and stop to look
+          result = subs[subpattern]
+          if result!=undefined
+            msg = msg.replace(subpattern, result)
+            break
 
-              tries++;
+          tries++
 
       fi = pattern.indexOf(" ")
       pattern = pattern.substring(fi+1)
@@ -902,8 +906,8 @@ class Brain
 
     # After all loops, see if just one word is in the pattern
     result = subs[pattern]
-    if result!=undefined
-        msg = msg.replace(pattern, result)
+    if result != undefined
+      msg = msg.replace(pattern, result)
 
     return msg
 

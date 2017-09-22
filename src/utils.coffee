@@ -198,4 +198,4 @@ exports.clone = (obj) ->
 # Summary: It will look for a second space in the string
 ##
 exports.nIndexOf = (string, match, index) ->
-   return string.split(match, index).join(match).length
+  return string.split(match, index).join(match).length

@@ -516,7 +516,7 @@ class RiveScript
       internal = "_#{type}" # so "global" maps to this._global
       for name, value of vars
         if type=='sub' || type=='person'
-          @[internal+"max"] = Math.max(@[internal+"max"], name.split(" ").length);
+          @[internal+"max"] = Math.max(@[internal+"max"], name.split(" ").length)
         continue unless vars.hasOwnProperty name
         if value is "<undef>"
           delete @[internal][name]
@@ -964,9 +964,9 @@ class RiveScript
   # This will return `undefined` if the user cant be find
   ##
   getUserTopicTriggers: (user) ->
-    @userVars = this.getUservars(user);
+    @userVars = this.getUservars(user)
     if @userVars?
-      return inherit_utils.getTopicTriggers(this, @userVars.topic);
+      return inherit_utils.getTopicTriggers(this, @userVars.topic)
     return undefined
 
   ##

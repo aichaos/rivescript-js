@@ -28,17 +28,17 @@ exports.test_addition = (test) ->
     ^ <mult counter=2>
     ^ multing
   """)
-  bot.reply("test counter", "counter set")
-  bot.reply("show", "counter = 0")
-  bot.reply("add", "adding")
-  bot.reply("show", "counter = 1")
-  bot.reply("sub", "subbing")
-  bot.reply("show", "counter = 0")
+  await bot.reply("test counter", "counter set")
+  await bot.reply("show", "counter = 0")
+  await bot.reply("add", "adding")
+  await bot.reply("show", "counter = 1")
+  await bot.reply("sub", "subbing")
+  await bot.reply("show", "counter = 0")
 
-  bot.reply("div", "divving")
-  bot.reply("show", "counter = 5")
+  await bot.reply("div", "divving")
+  await bot.reply("show", "counter = 5")
 
-  bot.reply("mult", "multing")
-  bot.reply("show", "counter = 20")
+  await bot.reply("mult", "multing")
+  await bot.reply("show", "counter = 20")
 
   test.done()

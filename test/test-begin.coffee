@@ -53,10 +53,10 @@ exports.test_conditional_begin_block = (test) ->
     + my name is *
     - <set name=<formal>>Hello, <get name>.
   """)
-  bot.reply("Hello bot.", "Hello human.")
+  await bot.reply("Hello bot.", "Hello human.")
   bot.uservar("met", "true")
   bot.uservar("name", "undefined")
-  bot.reply("My name is bob", "Hello, Bob.")
+  await bot.reply("My name is bob", "Hello, Bob.")
   bot.uservar("name", "Bob")
-  bot.reply("Hello Bot", "Bob: Hello human.")
+  await bot.reply("Hello Bot", "Bob: Hello human.")
   test.done()

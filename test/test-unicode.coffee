@@ -43,15 +43,15 @@ exports.test_unicode = (test) ->
     - Änd thät wäs thë ënd öf hïm.
   """, {"utf8": true})
 
-  bot.reply("äh", "What's the matter?")
-  bot.reply("ブラッキー", "エーフィ")
-  bot.reply("knock knock", "Who's there?")
-  bot.reply("Orange", "Orange who?")
-  bot.reply("banana", "Haha! Banana!")
-  bot.reply("tëll më ä pöëm", "Thërë öncë wäs ä män nämëd Tïm")
-  bot.reply("more", "Whö nëvër qüïtë lëärnëd höw tö swïm")
-  bot.reply("more", "Hë fëll öff ä döck, änd sänk lïkë ä röck")
-  bot.reply("more", "Änd thät wäs thë ënd öf hïm.")
+  await bot.reply("äh", "What's the matter?")
+  await bot.reply("ブラッキー", "エーフィ")
+  await bot.reply("knock knock", "Who's there?")
+  await bot.reply("Orange", "Orange who?")
+  await bot.reply("banana", "Haha! Banana!")
+  await bot.reply("tëll më ä pöëm", "Thërë öncë wäs ä män nämëd Tïm")
+  await bot.reply("more", "Whö nëvër qüïtë lëärnëd höw tö swïm")
+  await bot.reply("more", "Hë fëll öff ä döck, änd sänk lïkë ä röck")
+  await bot.reply("more", "Änd thät wäs thë ënd öf hïm.")
   test.done()
 
 exports.test_wildcards = (test) ->
@@ -66,12 +66,12 @@ exports.test_wildcards = (test) ->
     - No match.
   """, {utf8: true})
 
-  bot.reply("My name is Aiden", "Nice to meet you, aiden.")
-  bot.reply("My name is Bảo", "Nice to meet you, bảo.")
-  bot.reply("My name is 5", "No match.")
+  await bot.reply("My name is Aiden", "Nice to meet you, aiden.")
+  await bot.reply("My name is Bảo", "Nice to meet you, bảo.")
+  await bot.reply("My name is 5", "No match.")
 
-  bot.reply("I am five years old", "No match.")
-  bot.reply("I am 5 years old", "A lot of people are 5 years old.")
+  await bot.reply("I am five years old", "No match.")
+  await bot.reply("I am 5 years old", "A lot of people are 5 years old.")
   test.done()
 
 exports.test_punctuation = (test) ->
@@ -80,12 +80,12 @@ exports.test_punctuation = (test) ->
     - Hello human!
   """, {"utf8": true})
 
-  bot.reply("Hello bot", "Hello human!")
-  bot.reply("Hello, bot!", "Hello human!")
-  bot.reply("Hello: Bot", "Hello human!")
-  bot.reply("Hello... bot?", "Hello human!")
+  await bot.reply("Hello bot", "Hello human!")
+  await bot.reply("Hello, bot!", "Hello human!")
+  await bot.reply("Hello: Bot", "Hello human!")
+  await bot.reply("Hello... bot?", "Hello human!")
 
   bot.rs.unicodePunctuation = new RegExp(/xxx/g)
-  bot.reply("Hello bot", "Hello human!")
-  bot.reply("Hello, bot!", "ERR: No Reply Matched")
+  await bot.reply("Hello bot", "Hello human!")
+  await bot.reply("Hello, bot!", "ERR: No Reply Matched")
   test.done()

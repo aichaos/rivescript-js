@@ -58,7 +58,7 @@
   "scripts": {
     "prepublish": "npm run build",
     "build": "coffee -bo lib src",
-    "test": "grunt test"
+    "test": "npm run build; coffee -bc test; nodeunit test/test-*.js"
   },
   "dependencies": {
     "fs-readdir-recursive": "^1.0.0",

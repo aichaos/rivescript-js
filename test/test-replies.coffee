@@ -36,16 +36,16 @@ exports.test_previous = (test) ->
     + *
     - I don't know.
   """)
-  bot.reply("knock knock", "Who's there?")
-  bot.reply("Canoe", "Canoe who?")
-  bot.reply("Canoe help me with my homework?", "Haha! Canoe help me with my homework!")
-  bot.reply("hello", "I don't know.")
-  bot.reply("Ask me a question", "How many arms do I have?")
-  bot.reply("1", "No!")
-  bot.reply("Ask me a question", "How many arms do I have?")
-  bot.reply("2", "Yes!")
-  bot.reply("Ask me a question", "How many arms do I have?")
-  bot.reply("lol", "That isn't a number.")
+  await bot.reply("knock knock", "Who's there?")
+  await bot.reply("Canoe", "Canoe who?")
+  await bot.reply("Canoe help me with my homework?", "Haha! Canoe help me with my homework!")
+  await bot.reply("hello", "I don't know.")
+  await bot.reply("Ask me a question", "How many arms do I have?")
+  await bot.reply("1", "No!")
+  await bot.reply("Ask me a question", "How many arms do I have?")
+  await bot.reply("2", "Yes!")
+  await bot.reply("Ask me a question", "How many arms do I have?")
+  await bot.reply("lol", "That isn't a number.")
   test.done()
 
 exports.test_random = (test) ->
@@ -57,8 +57,8 @@ exports.test_random = (test) ->
     + test random tag
     - This sentence has a random {random}word|bit{/random}.
   """)
-  bot.replyRandom("test random response", ["One.", "Two."])
-  bot.replyRandom("test random tag", [
+  await bot.replyRandom("test random response", ["One.", "Two."])
+  await bot.replyRandom("test random tag", [
     "This sentence has a random word.",
     "This sentence has a random bit.",
   ])
@@ -72,7 +72,7 @@ exports.test_continuations = (test) ->
     ^ He fell off a dock, and sank like a rock,\\s
     ^ and that was the end of him.
   """)
-  bot.reply("Tell me a poem.", "There once was a man named Tim,
+  await bot.reply("Tell me a poem.", "There once was a man named Tim,
       who never quite learned how to swim.
       He fell off a dock, and sank like a rock,
       and that was the end of him.")
@@ -96,11 +96,11 @@ exports.test_redirects = (test) ->
     + hola
     - {@ hello }
   """)
-  bot.reply("hello", "Hi there!")
-  bot.reply("hey", "Hi there!")
-  bot.reply("hi there", "Hi there!")
-  bot.reply("howdy", "Hi there!")
-  bot.reply("hola", "Hi there!")
+  await bot.reply("hello", "Hi there!")
+  await bot.reply("hey", "Hi there!")
+  await bot.reply("hi there", "Hi there!")
+  await bot.reply("howdy", "Hi there!")
+  await bot.reply("hola", "Hi there!")
   test.done()
 
 exports.test_conditionals = (test) ->
@@ -121,7 +121,7 @@ exports.test_conditionals = (test) ->
     - No.
   """)
   age_q = "What can I do?"
-  bot.reply(age_q, "I don't know.")
+  await bot.reply(age_q, "I don't know.")
 
   ages =
       '16' : "Not much of anything."
@@ -134,12 +134,12 @@ exports.test_conditionals = (test) ->
   for age of ages
       if (!ages.hasOwnProperty(age))
           continue
-      bot.reply("I am " + age + " years old.", "OK.")
-      bot.reply(age_q, ages[age])
+      await bot.reply("I am " + age + " years old.", "OK.")
+      await bot.reply(age_q, ages[age])
 
-  bot.reply("Am I your master?", "No.")
+  await bot.reply("Am I your master?", "No.")
   bot.rs.setUservar(bot.username, "master", "true")
-  bot.reply("Am I your master?", "Yes.")
+  await bot.reply("Am I your master?", "Yes.")
   test.done()
 
 exports.test_embedded_tags = (test) ->
@@ -156,11 +156,11 @@ exports.test_embedded_tags = (test) ->
     + html test
     - <set name=<b>Name</b>>This has some non-RS <em>tags</em> in it.
   """)
-  bot.reply("What is my name?", "Your name is undefined, right?")
-  bot.reply("My name is Alice.", "OK.")
-  bot.reply("My name is Bob.", "I thought your name was Alice?")
-  bot.reply("What is my name?", "Your name is Bob, right?")
-  bot.reply("HTML Test", "This has some non-RS <em>tags</em> in it.")
+  await bot.reply("What is my name?", "Your name is undefined, right?")
+  await bot.reply("My name is Alice.", "OK.")
+  await bot.reply("My name is Bob.", "I thought your name was Alice?")
+  await bot.reply("What is my name?", "Your name is Bob, right?")
+  await bot.reply("HTML Test", "This has some non-RS <em>tags</em> in it.")
   test.done()
 
 exports.test_set_uservars = (test) ->
@@ -175,8 +175,8 @@ exports.test_set_uservars = (test) ->
       "name": "Aiden",
       "age": 5,
   })
-  bot.reply("What is my name?", "Your name is Aiden.")
-  bot.reply("How old am I?", "You are 5.")
+  await bot.reply("What is my name?", "Your name is Aiden.")
+  await bot.reply("How old am I?", "You are 5.")
   test.done()
 
 exports.test_questionmark = (test) ->
@@ -184,7 +184,7 @@ exports.test_questionmark = (test) ->
     + google *
     - <a href="https://www.google.com/search?q=<star>">Results are here</a>
   """)
-  bot.reply("google coffeescript",
+  await bot.reply("google coffeescript",
     '<a href="https://www.google.com/search?q=coffeescript">Results are here</a>'
   )
   test.done()
@@ -213,22 +213,22 @@ exports.test_reply_arrays = (test) ->
     + random format *
     - (@format)
   """)
-  bot.replyRandom("test random array", [
+  await bot.replyRandom("test random array", [
     "Testing alpha array.", "Testing beta array.", "Testing gamma array.",
   ])
-  bot.replyRandom("test two random arrays", [
+  await bot.replyRandom("test two random arrays", [
     "Testing another alpha array.", "Testing another beta array.",
     "Testing another gamma array.", "Trying another alpha array.",
     "Trying another beta array.", "Trying another gamma array.",
   ])
-  bot.reply("test nonexistant array", "This (@array) does not exist.")
-  bot.replyRandom("test more arrays", [
+  await bot.reply("test nonexistant array", "This (@array) does not exist.")
+  await bot.replyRandom("test more arrays", [
     "I'm testing more alpha (@arrays).", "I'm testing more beta (@arrays).",
     "I'm testing more gamma (@arrays).", "I'm trying more alpha (@arrays).",
     "I'm trying more beta (@arrays).", "I'm trying more gamma (@arrays)."
   ])
-  bot.reply("test weird syntax", "This (@ greek) shouldn't work, and neither should this @test.")
-  bot.replyRandom("random format hello world", [
+  await bot.reply("test weird syntax", "This (@ greek) shouldn't work, and neither should this @test.")
+  await bot.replyRandom("random format hello world", [
     "HELLO WORLD", "hello world", "Hello World", "Hello world",
   ])
   test.done()
