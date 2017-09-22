@@ -52,20 +52,12 @@
     "email": "root@kirsle.net"
   },
   "devDependencies": {
-    "grunt": "~1.0.1",
-    "grunt-contrib-uglify": "~3.1.0",
-    "grunt-contrib-watch": "~1.0.0",
-    "grunt-contrib-connect": "~1.0.2",
-    "grunt-contrib-nodeunit": "~1.0.0",
     "coffeescript": "~2.0.0",
-    "grunt-contrib-coffee": "~1.0.0",
-    "grunt-browserify": "~5.2.0",
-    "grunt-contrib-clean": "~1.1.0",
-    "coffeelint": "~1.16.0",
-    "grunt-coffeelint": "0.0.16"
+    "coffeelint": "~1.16.0"
   },
   "scripts": {
-    "prepublish": "grunt dist",
+    "prepublish": "npm run build",
+    "build": "coffee -bo lib src",
     "test": "grunt test"
   },
   "dependencies": {
