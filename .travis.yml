@@ -9,5 +9,5 @@ node_js:
   - "0.12"
   - "iojs"
 before_install:
-  - npm install -g babel-cli webpack uglify-js coffeescript
+  - npm install -g babel-cli webpack uglify-js coffeescript nodeunit
 script: npm run test
