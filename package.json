@@ -52,17 +52,25 @@
     "email": "root@kirsle.net"
   },
   "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-preset-env": "^1.6.0",
+    "coffeelint": "~1.16.0",
     "coffeescript": "~2.0.0",
-    "coffeelint": "~1.16.0"
+    "uglify-js": "^3.1.1",
+    "webpack": "^3.6.0"
   },
   "scripts": {
     "prepublish": "npm run build",
     "build": "coffee -bo lib src",
-    "test": "npm run build; coffee -bc test; nodeunit test/test-*.js"
+    "lint": "coffeelint src",
+    "test": "npm run build; coffee -bc test; nodeunit test/test-*.js",
+    "webpack": "babel lib -d lib.babel; webpack",
+    "uglify": "uglifyjs -o dist/rivescript.min.js dist/rivescript.js",
+    "dist": "npm run build; npm run webpack; npm run uglify",
+    "clean": "rm -rf dist lib lib.babel node_modules"
   },
   "dependencies": {
-    "fs-readdir-recursive": "^1.0.0",
-    "rsvp": "^4.0.1"
+    "fs-readdir-recursive": "^1.0.0"
   },
   "typings": "rivescript.d.ts"
 }

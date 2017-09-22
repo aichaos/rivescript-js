@@ -31,7 +31,6 @@ utils   = require "./utils"
 sorting = require "./sorting"
 inherit_utils = require "./inheritance"
 JSObjectHandler = require "./lang/javascript"
-RSVP = require("rsvp")
 readDir = require("fs-readdir-recursive")
 
 ##
@@ -261,7 +260,13 @@ class RiveScript
   ##
   # Promise Promise
   #
-  # Alias for `RSVP.Promise` for use in async object macros.
+  # **DEPRECATED**
+  #
+  # Backwards compatible alias to the native JavaScript `Promise` object.
+  #
+  # `rs.Promise` used to refer to an `RSVP.Promise` which acted as a polyfill
+  # for older systems. In new code, return a native Promise directly from your
+  # object macros.
   #
   # This enables you to create a JavaScript object macro that returns a promise
   # for asynchronous tasks (e.g. polling a web API or database). Example:
@@ -283,7 +288,7 @@ class RiveScript
   # });
   # ```
   ##
-  Promise: RSVP.Promise
+  Promise: Promise
 
   ##
   # private void runtime ()

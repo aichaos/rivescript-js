@@ -9,7 +9,6 @@
 # Brain logic for RiveScript
 utils = require("./utils")
 inherit_utils = require("./inheritance")
-RSVP = require("rsvp")
 
 ##
 # Brain (RiveScript master)

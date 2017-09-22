@@ -105,9 +105,9 @@ bot.loadFile("brain/testsuite.rive", loading_done, loading_error);
 // Load a list of files all at once (the best alternative to loadDirectory
 // for the web!)
 bot.loadFile([
-	"brain/begin.rive",
-	"brain/admin.rive",
-	"brain/clients.rive"
+  "brain/begin.rive",
+  "brain/admin.rive",
+  "brain/clients.rive"
 ], loading_done, loading_error);
 
 // All file loading operations are asynchronous, so you need handlers
@@ -115,19 +115,20 @@ bot.loadFile([
 // with multiple file names), the success function is called only when ALL
 // the files have finished loading.
 function loading_done (batch_num) {
-	console.log("Batch #" + batch_num + " has finished loading!");
+  console.log("Batch #" + batch_num + " has finished loading!");
 
-	// Now the replies must be sorted!
-	bot.sortReplies();
+  // Now the replies must be sorted!
+  bot.sortReplies();
 
-	// And now we're free to get a reply from the brain!
-	var reply = bot.reply("local-user", "Hello, bot!");
-	console.log("The bot says: " + reply);
+  // And now we're free to get a reply from the brain!
+  var reply = bot.reply("local-user", "Hello, bot!").then(function(reply) {
+    console.log("The bot says: " + reply);
+  });
 }
 
 // It's good to catch errors too!
 function loading_error (error) {
-	console.log("Error when loading files: " + error);
+  console.log("Error when loading files: " + error);
 }
 ```
 
@@ -177,18 +178,20 @@ may work right now, a future update will probably rigidly enforce this).
 
 ## BUILDING
 
-Grunt options:
+I use npm run scripts to handle various build tasks.
 
-* `grunt` - Compiles the CoffeeScript in the `src/` folder into JavaScript in
-  the `lib/` folder.
-* `grunt clean` - Cleans the `lib/` and `dist/` directories.
-* `grunt buildclean` - Cleans and rebuilds the project.
-* `grunt lint` - Runs CoffeeScript linting.
-* `grunt watch` - For development - watches CoffeeScript source files and
-  automatically builds them on change.
-* `grunt server` - Starts a local web server and opens `eg/chat.html`
-  for local testing and demoing.
-* `grunt test` - Run unit tests.
+* `npm run build` - Compiles the CoffeeScript in the `src/` folder into
+  ES2015+ JavaScript in the `lib/` folder.
+* `npm run lint` - Runs `coffeelint` on the source.
+* `npm run test` - Builds RiveScript, compiles the CoffeeScript unit test files,
+  and runs them with `nodeunit`
+* `npm run dist` - Produces a full distributable build. CoffeeScript is compiled,
+  Babel translates it to ES5-compatible code, and webpack/uglify is applied.
+* `npm run webpack` - Runs Babel to take the ES2015+ code in `lib/` and output
+  ES5-compatible code in `lib.babel/`, and then runs `webpack` to create
+  `dist/rivescript.js`
+* `npm run uglify` - Minifies `dist/rivescript.js` to `dist/rivescript.min.js`
+* `npm run clean` - Clean up all the build files.
 
 ## GRUNT SERVER
 
