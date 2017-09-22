@@ -33,11 +33,11 @@ class Brain
 
 
   ##
-  # string reply (string user, string msg[, scope])
+  # Promise reply (string user, string msg[, scope])
   #
-  # Fetch a reply for the user.
+  # Fetch a reply for the user. This returns a Promise that may be awaited on.
   ##
-  reply: (user, msg, scope, async) ->
+  reply: (user, msg, scope) ->
     @say "Asked to reply to [#{user}] #{msg}"
 
     # Store the current user's ID.
@@ -53,29 +53,15 @@ class Brain
 
     # If the BEGIN block exists, consult it first.
     if @master._topics.__begin__
-      begin = @_getReply(user, "request", "begin", 0, scope)
+      begin = await @_getReply(user, "request", "begin", 0, scope)
 
       # OK to continue?
       if begin.indexOf("{ok}") > -1
-        reply = @_getReply(user, msg, "normal", 0, scope)
+        reply = await @_getReply(user, msg, "normal", 0, scope)
         begin = begin.replace(/\{ok\}/g, reply)
-
-      reply = begin
-      reply = @processTags(user, msg, reply, [], [], 0, scope)
     else
-      reply = @_getReply(user, msg, "normal", 0, scope)
+      reply = await @_getReply(user, msg, "normal", 0, scope)
 
-    reply = @processCallTags(reply, scope, async)
-
-    if not utils.isAPromise(reply)
-      @onAfterReply(msg, user, reply)
-    else
-      reply.then (result) =>
-        @onAfterReply(msg, user, result)
-
-    return reply
-
-  onAfterReply: (msg, user, reply) ->
     # Save their reply history
     @master._users[user].__history__.input.pop()
     @master._users[user].__history__.input.unshift(msg)
@@ -84,172 +70,13 @@ class Brain
 
     # Unset the current user ID.
     @_currentUser = undefined
+    return reply
+
+  onAfterReply: (msg, user, reply) ->
+
 
   ##
-  # string|Promise processCallTags (string reply, object scope, bool async)
-  #
-  # Process <call> tags in the preprocessed reply string.
-  # If `async` is true, processCallTags can handle asynchronous subroutines
-  # and it returns a promise, otherwise a string is returned
-  ##
-  processCallTags: (reply, scope, async) ->
-    reply = reply.replace(/«__call__»/ig, "<call>")
-    reply = reply.replace(/«\/__call__»/ig, "</call>")
-    callRe = /<call>([\s\S]+?)<\/call>/ig
-    argsRe = /«__call_arg__»([\s\S]*?)«\/__call_arg__»/ig
-
-    giveup = 0
-    matches = {}
-    promises = []
-
-    while true
-      giveup++
-      if giveup >= 50
-        @warn "Infinite loop looking for call tag!"
-        break
-
-      match = callRe.exec(reply)
-
-      if not match
-        break
-
-      text = utils.trim(match[1])
-
-      # get subroutine name
-      subroutineNameMatch = (/(\S+)/ig).exec(text)
-      subroutineName = subroutineNameMatch[0]
-
-      args = []
-
-      # get arguments
-      while true
-        m = argsRe.exec(text)
-        if not m
-          break
-        args.push(m[1])
-
-
-      matches[match[1]] =
-        text: text
-        obj: subroutineName
-        args: args
-
-    # go through all the object calls and run functions
-    for k,data of matches
-      output = ""
-      if @master._objlangs[data.obj]
-        # We do. Do we have a handler for it?
-        lang = @master._objlangs[data.obj]
-        if @master._handlers[lang]
-          # We do.
-          output = @master._handlers[lang].call(@master, data.obj, data.args, scope)
-        else
-          output = "[ERR: No Object Handler]"
-      else
-        output = @master.errors.objectNotFound
-
-      # if we get a promise back and we are not in the async mode,
-      # leave an error message to suggest using an async version of rs
-      # otherwise, keep promises tucked into a list where we can check on
-      # them later
-      if utils.isAPromise(output)
-        if async
-          promises.push
-            promise: output
-            text: k
-          continue
-        else
-          output = "[ERR: Using async routine with reply: use replyAsync instead]"
-
-      reply = @._replaceCallTags(k, output, reply)
-
-    if not async
-      return reply
-    else
-      # wait for all the promises to be resolved and
-      # return a resulting promise with the final reply
-      return new RSVP.Promise (resolve, reject) =>
-        RSVP.all(p.promise for p in promises).then (results) =>
-          for i in [0...results.length]
-            reply = @_replaceCallTags(promises[i].text, results[i], reply)
-
-          resolve(reply)
-        .catch (reason) =>
-          reject(reason)
-
-  _replaceCallTags: (callSignature, callResult, reply) ->
-    return reply.replace(new RegExp("<call>" + utils.quotemeta(callSignature) + "</call>", "i"), callResult)
-
-  _parseCallArgsString: (args) ->
-    # turn args string into a list of arguments
-    result = []
-    buff = ""
-    insideAString = false
-    spaceRe = /\s/ig
-    doubleQuoteRe = /"/ig
-
-    flushBuffer = () ->
-      if buff.length isnt 0
-        result.push(buff)
-      buff = ""
-
-    for c in args
-      if c.match(spaceRe) and not insideAString
-        flushBuffer()
-        continue
-      if c.match(doubleQuoteRe)
-        if insideAString
-          flushBuffer()
-        insideAString = not insideAString
-        continue
-      buff = buff + c
-
-    flushBuffer()
-
-    return result
-
-  _wrapArgumentsInCallTags: (reply) ->
-    # wrap arguments inside <call></call> in «__call_arg__»«/__call_arg__»
-    callRegEx = /<call>\s*(.*?)\s*<\/call>/ig
-    callArgsRegEx = /<call>\s*[^\s]+ (.*)<\/call>/ig
-
-    callSignatures = []
-
-    while true
-      match = callRegEx.exec(reply)
-
-      if not match
-        break
-
-      originalCallSignature = match[0]
-      wrappedCallSignature = originalCallSignature
-
-      while true
-        argsMatch = callArgsRegEx.exec(originalCallSignature)
-        if not argsMatch
-          break
-
-        originalArgs = argsMatch[1]
-        args = @_parseCallArgsString(originalArgs)
-        wrappedArgs = []
-
-        for a in args
-          wrappedArgs.push "«__call_arg__»#{a}«/__call_arg__»"
-
-        wrappedCallSignature = wrappedCallSignature.replace(originalArgs,
-          wrappedArgs.join(' '))
-
-      callSignatures.push
-        original: originalCallSignature
-        wrapped: wrappedCallSignature
-
-    for cs in callSignatures
-      reply = reply.replace cs.original, cs.wrapped
-
-    reply
-
-  ##
-  # string _getReply (string user, string msg, string context, int step, scope)
+  # Promise _getReply (string user, string msg, string context, int step, scope)
   #
   # The internal reply method. DO NOT CALL THIS DIRECTLY.
   #
@@ -444,9 +271,6 @@ class Brain
           @say "Redirecting us to #{matched.redirect}"
           redirect = @processTags(user, msg, matched.redirect, stars, thatstars, step, scope)
 
-          # Execute and resolve *synchronous* <call> tags.
-          redirect = @processCallTags(redirect, scope, false)
-
           @say "Pretend user said: #{redirect}"
           reply = @_getReply(user, redirect, context, step+1, scope)
           break
@@ -463,15 +287,8 @@ class Brain
               potreply = halves[1].trim()
 
               # Process tags all around
-              left  = @processTags(user, msg, left, stars, thatstars, step, scope)
-              right = @processTags(user, msg, right, stars, thatstars, step, scope)
-
-              # Execute any <call> tags in the conditions. We explicitly send
-              # `false` as the async parameter, because we can't run async
-              # object macros in conditionals; we need the result NOW
-              # for comparison.
-              left  = @processCallTags(left, scope, false)
-              right = @processCallTags(right, scope, false)
+              left  = await @processTags(user, msg, left, stars, thatstars, step, scope)
+              right = await @processTags(user, msg, right, stars, thatstars, step, scope)
 
               # Defaults?
               if left.length is 0
@@ -755,9 +572,6 @@ class Brain
   #                     string[] botstars, int step, scope)
   #
   # Process tags in a reply element.
-  #
-  # All the tags get processed here except for `<call>` tags which have
-  # a separate subroutine (refer to `processCallTags` for more info)
   ##
   processTags: (user, msg, reply, st, bst, step, scope) ->
     # Prepare the stars and botstars.
@@ -788,9 +602,6 @@ class Brain
         result)
       match = reply.match(/\(@([A-Za-z0-9_]+)\)/i)
     reply = reply.replace(/\x00@([A-Za-z0-9_]+)\x00/g, "(@$1)")
-
-    # Wrap args inside call tags
-    reply = @_wrapArgumentsInCallTags(reply)
 
     # Tag shortcuts.
     reply = reply.replace(/<person>/ig,    "{person}<star>{/person}")
@@ -977,13 +788,46 @@ class Brain
 
       target = utils.strip match[1]
 
-      # Resolve any *synchronous* <call> tags right now before redirecting.
-      target = @processCallTags(target, scope, false)
-
       @say "Inline redirection to: #{target}"
       subreply = @_getReply(user, target, "normal", step+1, scope)
       reply = reply.replace(new RegExp("\\{@" + utils.quotemeta(match[1]) + "\\}", "i"), subreply)
       match = reply.match(/\{@([^\}]*?)\}/)
+
+    # Object caller
+    reply = reply.replace(/«__call__»/g, "<call>")
+    reply = reply.replace(/«\/__call__»/g, "</call>")
+    match = reply.match(/<call>(.+?)<\/call>/)
+    giveup = 0
+    while match
+      giveup++
+      if giveup >= 50
+        @warn "Infinite loop looking for call tags!"
+        break
+
+      parts = match[1].split(/\s+/)
+      output = ""
+      obj    = parts[0]
+
+      # Make the args shell-like.
+      args = []
+      if parts.length > 1
+        args = utils.parseCallArgs(parts[1..].join(" "))
+
+      # Do we know this object?
+      if obj of @master._objlangs
+        # We do, but do we have a handler for that language?
+        lang = @master._objlangs[obj]
+        if lang of @master._handlers
+          # We do.
+          try
+            output = await @master._handlers[lang].call(@master, obj, args, scope)
+          catch e
+            @warn e.message
+            output = "[ERR: Error raised by object macro]"
+
+      reply = reply.replace(match[0], output)
+      match = reply.match(/<call>(.+?)<\/call>/)
+
 
     return reply
 

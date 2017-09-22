@@ -22,7 +22,7 @@
 ##
 
 # Constants
-VERSION  = "1.17.2"
+VERSION  = "2.0.0"
 
 # Helper modules
 Parser  = require "./parser"
@@ -989,13 +989,17 @@ class RiveScript
   ##############################################################################
 
   ##
-  # string reply (string username, string message[, scope])
+  # Promise reply (string username, string message[, scope])
   #
   # Fetch a reply from the RiveScript brain. The message doesn't require any
   # special pre-processing to be done to it, i.e. it's allowed to contain
   # punctuation and weird symbols. The username is arbitrary and is used to
   # uniquely identify the user, in the case that you may have multiple
   # distinct users chatting with your bot.
+  #
+  # **Changed in version 2.0.0:** this function used to return a string, but
+  # therefore didn't support async object macros or session managers. This
+  # function now returns a Promise (obsoleting the `replyAsync()` function).
   #
   # The optional `scope` parameter will be passed down into any JavaScript
   # object macros that the RiveScript code executes. If you pass the special
@@ -1005,12 +1009,29 @@ class RiveScript
   # or attributes that your code has access to, from the location that `reply()`
   # was called. For an example of this, refer to the `eg/scope` directory in
   # the source distribution of RiveScript-JS.
+  #
+  # Example:
+  #
+  # ```javascript
+  # // Normal usage as a promise
+  # bot.reply(username, message, this).then(function(reply) {
+  #     console.log("Bot>", reply);
+  # });
+  #
+  # // Async-Await usage in an async function.
+  # async function getReply(username, message) {
+  #     var reply = await bot.reply(username, message);
+  #     console.log("Bot>", reply);
+  # }
+  # ```
   ##
   reply: (user, msg, scope) ->
-    return @brain.reply(user, msg, scope)
+    return await @brain.reply(user, msg, scope)
 
   ##
   # Promise replyAsync (string username, string message [[, scope], callback])
+  #
+  # **Obsolete as of v2.0.0** -- use `reply()` instead in new code.
   #
   # Asyncronous version of reply. Use replyAsync if at least one of the subroutines
   # used with the `<call>` tag returns a promise.
@@ -1038,7 +1059,8 @@ class RiveScript
   # ```
   ##
   replyAsync: (user, msg, scope, callback) ->
-    reply = @brain.reply(user, msg, scope, true)
+    @warn "DEPRECATED FUNCTION: RiveScript.replyAsync() is deprecated; use reply() instead"
+    reply = @brain.reply(user, msg, scope)
     if callback
       reply.then (result) =>
         callback.call @, null, result

@@ -60,7 +60,7 @@ module.exports = (grunt) ->
 
   # Grunt plugins
   grunt.loadNpmTasks("grunt-contrib-connect")  # Simple web server
-  grunt.loadNpmTasks("grunt-contrib-coffee")   # CoffeeScript compiler
+  grunt.loadNpmTasks("grunt-coffee")   # CoffeeScript compiler
   grunt.loadNpmTasks("grunt-browserify")       # Browserify
   grunt.loadNpmTasks("grunt-contrib-uglify")   # Minify JS
   grunt.loadNpmTasks("grunt-coffeelint")       # CoffeeScript Linter

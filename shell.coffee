@@ -10,7 +10,7 @@
 readline = require "readline"
 fs = require "fs"
 RiveScript = require "./src/rivescript"
-CoffeeObjectHandler = require "./lib/lang/coffee"
+CoffeeObjectHandler = require "./src/lang/coffee"
 
 ################################################################################
 # Accept command line parameters.
@@ -106,10 +106,20 @@ rl.on "line", (cmd) ->
   else if cmd is "/quit"
     process.exit 0
   else
-    reply = if (bot and bot.ready) then bot.reply("localuser", cmd) else "ERR: Bot not ready yet"
-    console.log "Bot> #{reply}"
-
+    if bot and bot.ready
+      bot.reply("localuser", cmd).then (reply) ->
+        console.log "Bot> #{reply}"
+        rl.prompt()
+      .catch (e) ->
+        console.error "Reply exception"
+        console.error e
+        rl.prompt()
+    else
+      console.log "ERR: Bot not ready yet"
+      rl.prompt()
+    return
   rl.prompt()
+
 .on "close", () ->
   console.log ""
   process.exit 0

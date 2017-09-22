@@ -33,7 +33,7 @@ class TestCase
     # @param expected: The expected response.
     ##
     reply: (message, expected) ->
-        reply = @rs.reply(this.username, message)
+        reply = await @rs.reply(this.username, message)
         @test.equal(reply, expected);
 
     ##

@@ -129,6 +129,46 @@ exports.stringFormat = (type, string) ->
   return content
 
 ##
+# []string parseCallArgs
+#
+# Parse a string and return shell-like arguments as an array. Normally this
+# means each word in the string becomes an item in the result, but quoted
+# sections of the input will come back as a single item.
+#
+# Example:
+#
+# ```javascript
+# console.log( parseCallArgs('please google "writing chat bot"'));
+# // ["please", "google", "writing chat bot"]
+# ```
+##
+exports.parseCallArgs = (str) ->
+  result = []
+  buff   = ""
+  insideAString = false
+  spaceRe       = /\s/ig
+  doubleQuoteRe = /"/ig
+
+  flushBuffer = () ->
+    if buff.length isnt 0
+      result.push buff
+    buff = ""
+
+  for c in str
+    if c.match(spaceRe) and not insideAString
+      flushBuffer()
+      continue
+    if c.match(doubleQuoteRe)
+      if insideAString
+        flushBuffer()
+      insideAString = not insideAString
+      continue
+    buff += c
+
+  flushBuffer()
+  return result
+
+##
 # object clone (object)
 #
 # Clone an object.
@@ -143,17 +183,6 @@ exports.clone = (obj) ->
     copy[key] = exports.clone(obj[key])
 
   return copy
-
-##
-# boolean isAPromise (object)
-#
-# Determines if obj looks like a promise
-##
-exports.isAPromise = (obj) ->
-  return obj and obj.then and obj.catch and obj.finally and
-  typeof obj.then is 'function' and
-  typeof obj.catch is 'function' and
-  typeof obj.finally is 'function'
 
 ##
 # int nIndexOf (string, string match, int index)

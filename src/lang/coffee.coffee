@@ -6,7 +6,7 @@
 # http://www.rivescript.com/
 "use strict"
 
-coffee = require "coffee-script"
+coffee = require "coffeescript"
 
 ##
 # CoffeeObjectHandler (RiveScript master)
