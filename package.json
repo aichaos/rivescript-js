@@ -56,18 +56,19 @@
     "babel-preset-env": "^1.6.0",
     "coffeelint": "~1.16.0",
     "coffeescript": "~2.0.0",
+    "commander": "^2.11.0",
     "uglify-js": "^3.1.1",
     "webpack": "^3.6.0"
   },
   "scripts": {
     "prepublish": "npm run build",
-    "build": "coffee -bo lib src",
+    "build": "coffee -bo lib.es6/ src/ && babel lib.es6 -d lib",
     "lint": "coffeelint src",
     "test": "npm run build; coffee -bc test; nodeunit test/test-*.js",
-    "webpack": "babel lib -d lib.babel; webpack",
+    "webpack": "webpack",
     "uglify": "uglifyjs -o dist/rivescript.min.js dist/rivescript.js",
     "dist": "npm run build; npm run webpack; npm run uglify",
-    "clean": "rm -rf dist lib lib.babel node_modules"
+    "clean": "rm -rf dist lib lib.es6"
   },
   "dependencies": {
     "fs-readdir-recursive": "^1.0.0"

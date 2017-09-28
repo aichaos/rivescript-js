@@ -1,5 +1,5 @@
 module.exports = {
-	entry: "./lib.babel/rivescript.js",
+	entry: "./lib/rivescript.js",
 	output: {
 		filename: "./dist/rivescript.js"
 	},
