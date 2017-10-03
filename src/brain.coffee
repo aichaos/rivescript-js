@@ -348,7 +348,7 @@ class Brain
             @say "Try to match lastReply (#{lastReply}) to #{botside}"
 
             # Match?
-            match = lastReply.match(new RegExp("^#{botside}$"))
+            match = lastReply.match(new RegExp("^#{botside}$", 'i'))
             if match
               # Huzzah! See if OUR message is right too.
               @say "Bot side matched!"
@@ -402,7 +402,7 @@ class Brain
             isMatch = true
         else
           # Non-atomic triggers always need the regexp.
-          match = msg.match(new RegExp("^#{regexp}$"))
+          match = msg.match(new RegExp("^#{regexp}$", 'i'))
           if match
             # The regexp matched!
             isMatch = true

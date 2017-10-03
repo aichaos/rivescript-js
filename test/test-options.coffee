@@ -208,6 +208,7 @@ exports.test_case_sensitive = (test) ->
   bot.rs.unicodePunctuation = new RegExp(/[~]/)
   bot.reply("js Math.cos(0)", "1")
   bot.reply("say Bojack Horseman", "Hmm.. Bojack Horseman")
+  bot.reply("SAY hello HELLO", "Hmm.. hello HELLO")
   test.done()
 
 exports.test_no_case_sensitive = (test) ->
