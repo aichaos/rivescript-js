@@ -121,3 +121,24 @@ exports.test_topic_inheritance = (test) ->
   bot.reply("Say stuff.", RS_ERR_MATCH)
 
   test.done()
+
+exports.test_topic_inheritance = (test) ->
+  bot = new TestCase(test, """
+    > topic random
+        + unrandom
+        - {topic=unrandom}<@>
+        + *
+        - Random.
+    < topic
+  """)
+  bot.reply('unrandom', 'Random.')
+  bot.extend("""
+    > topic unrandom
+      + *
+      - Unrandom.
+    < topic
+  """)
+  bot.reply('unrandom', 'Unrandom.')
+  bot.purgeTopic('unrandom')
+  bot.reply('unrandom', 'Random.')
+  test.done()

@@ -27,6 +27,15 @@ class TestCase
         @rs.sortReplies()
 
     ##
+    # Remove a single topic from the bot
+    #
+    # @param string: Name of the topic to remove
+    ##
+    purgeTopic: (topic) ->
+        @rs.removeTopic(topic)
+        @rs.sortReplies()
+
+    ##
     # Reply assertion: check if the answer to the message is what you expected.
     #
     # @param message: The user's input message.
@@ -34,7 +43,7 @@ class TestCase
     ##
     reply: (message, expected) ->
         reply = @rs.reply(this.username, message)
-        @test.equal(reply, expected, "Failed responding to '" + message + "'")
+        @test.equal(reply, expected, "Failed responding to '" + message + "' Expected '" + expected + "' got '" + reply + "'")
 
     ##
     # Random reply assertion: check if the answer is in a set of acceptable

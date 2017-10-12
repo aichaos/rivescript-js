@@ -564,6 +564,22 @@ class RiveScript
         @_handlers[object.language].load(object.name, object.code)
 
   ##
+  # void removeTopic(string topic)
+  #
+  # If you've loaded a topic that's no longer needed, it can be excised via
+  # this function and a subsequent call to sortReplies().  Note that you
+  # can't remove other side-effects of the parse() function, just the
+  # contents of a topic.  Bad things might happen if other topics inherited
+  # from this topic.
+  #
+  ##
+  removeTopic: (topic) ->
+    delete @_topics[topic]
+    delete @_inherits[topic]
+    delete @_includes[topic]
+    delete @_thats[topic]
+    
+  ##
   # void sortReplies()
   #
   # After you have finished loading your RiveScript code, call this method to
