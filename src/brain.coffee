@@ -1021,6 +1021,7 @@ class Brain
   # a separate subroutine (refer to `processCallTags` for more info)
   ##
   processTagsPromisified: (user, msg, reply, st, bst, step, scope, hooks) ->
+    {replacements: replacements, result: reply} = utils.extractRaw(reply)
     # Prepare the stars and botstars.
     stars = [""]
     stars.push.apply(stars, st)
@@ -1240,7 +1241,8 @@ class Brain
         @say "Inline redirection to: #{target}"
         @_getReplyWithHooks(user, target, "normal", step+1, scope, hooks).then (subreply) =>
           reply = reply.replace(new RegExp("\\{@" + utils.quotemeta(match[1]) + "\\}", "i"), subreply)
-    , q(reply))
+    , q(reply)).then =>
+      utils.restoreRaw(reply, replacements)
 
   ##
   # string processTags (string user, string msg, string reply, string[] stars,
