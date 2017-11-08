@@ -9,7 +9,8 @@
 # Brain logic for RiveScript
 utils = require("./utils")
 inherit_utils = require("./inheritance")
-RSVP = require("rsvp")
+q = require("q")
+_ = require("lodash")
 
 ##
 # Brain (RiveScript master)
@@ -31,13 +32,267 @@ class Brain
   warn: (message, filename, lineno) ->
     @master.warn message, filename, lineno
 
+  ##
+  # Promise reply (string user, string msg[, scope, skipBegin])
+  #
+  # Fetch a reply for the user, respecting hooks and using promises
+  ##
+  replyPromisified: (user, msg, scope, async, skipBegin, hooks = {}) ->
+    @say "Asked to reply to [#{user}] #{msg}"
+
+    # Store the current user's ID.
+    @_currentUser = user
+
+    # Format their message.
+    msg   = @formatMessage(msg)
+    promise = q(msg)
+
+    # Set initial match to be undefined
+    if @master.getUservars(user)
+      @master._users[user].__initialmatch__ = undefined
+
+    # If the BEGIN block exists, consult it first.
+    if not skipBegin and @master._topics.__begin__
+      promise = promise.then (reply) =>
+        @say "Begin #{reply}"
+        @_getReplyWithHooks(user, "request", "begin", 0, scope, hooks)
+      .then (begin) =>
+        @say "After Begin #{begin}"
+
+        if !begin then return
+
+        # OK to continue?
+        if begin.indexOf("{ok}") > -1
+          @_getReplyWithHooks(user, msg, "normal", 0, scope, hooks).then (reply) =>
+            reply = begin.replace(/\{ok\}/g, reply)
+            return @processTagsPromisified(user, msg, reply,  [], [], 0, scope, hooks)
+        else
+          return @processTagsPromisified(user, msg, begin,  [], [], 0, scope, hooks)
+    else
+      promise = promise.then (reply) =>
+        @_getReplyWithHooks(user, reply, "normal", 0, scope, hooks)
+
+    promise.then (reply) =>
+      if reply?
+        reply = @processCallTags(reply, scope, true, hooks)
+
+      if not utils.isAPromise(reply)
+        @onAfterReply(msg, user, reply)
+      else
+        return reply.then (result) =>
+          @onAfterReply(msg, user, result)
+          reply
+      reply
+
+  ##
+  # Promise<string> _getReplyWithHooks 
+  #
+  # Get a reply and call hooks along the way
+  ##
+  _getReplyWithHooks: (user, msg, context, step, scope, hooks) ->
+    @say "Reply: #{msg} step: #{step}"
+    matchResults = @_getMatch(user, msg, context, step, scope)
+    stars        = matchResults.stars
+    thatstars    = matchResults.thatstars
+    promise      = q()
+
+    if matchResults.matched?
+      # process tags in the afterMatch command
+      if matchResults.matched and hooks.onAfterMatch?
+        matchResults.matched.afterMatch = (@processTags(user, msg, row, stars, thatstars, step, scope) for row in matchResults.matched.afterMatch)
+        matchResults.matched.afterMatch = (@processCallTags(row, scope, false, hooks) for row in matchResults.matched.afterMatch)
+        promise = hooks.onAfterMatch(matchResults)
+
+      promise.then =>
+        @_getReplyPromisified(user, msg, context, step || 0, scope, matchResults, hooks)
+    else
+      q(@master.errors.replyNotMatched)
+
+  ##
+  # string _getReply (string user, string msg, string context, int step, scope)
+  #
+  # The internal reply method. DO NOT CALL THIS DIRECTLY.
+  #
+  # * user, msg and scope are the same as reply()
+  # * context = "normal" or "begin"
+  # * step = the recursion depth
+  # * scope = the call scope for object macros
+  # * matched = allow passing in a manual match
+  ##
+  _getReplyPromisified: (user, msg, context, step, scope, matchResults, hooks) ->
+
+    # Avoid deep recursion.
+    if step > @master._depth
+      return @master.errors.deepRecursion
+
+    # If we haven't passed in a manual match
+    if !matchResults
+      matchResults = @_getMatch(user, msg, context, step, scope)
+
+    matched    = matchResults.matched
+    stars      = matchResults.stars
+    thatstars  = matchResults.thatstars
+    foundMatch = Boolean(matched)
+
+    @say "Reducing #{matched.condition}"
+    _.reduce(matched.condition, (promise, condition) =>
+      promise.then (result) =>
+        halves = condition.split(/\s*=>\s*/)
+        if result isnt false and halves.length is 2
+          @_checkCondition(user, halves[0], msg, stars, thatstars, step, scope).then (result) =>
+            if result is true
+              matched.reply = [halves[1]]
+              # break out of promise loop
+              return false
+        else
+          return result
+    , q()).then =>
+
+      # Process tags for the BEGIN block.
+      if context is "begin"
+        # The BEGIN block can set {topic} and user vars.
+        reply = _.get(matched, 'reply.0')
+
+        @say "Matched in begin #{reply}"
+
+        # Topic setter
+        match = reply.match(/\{topic=(.+?)\}/i)
+        giveup = 0
+        while match
+          giveup++
+          if giveup >= 50
+            @warn "Infinite loop looking for topic tag!"
+            break
+          name = match[1]
+          @master.setUservar(user, "topic", name)
+          reply = reply.replace(new RegExp("{topic=" + utils.quotemeta(name) + "}", "ig"), "")
+          match = reply.match(/\{topic=(.+?)\}/i)
+
+        # Set user vars
+        match = reply.match(/<set (.+?)=(.+?)>/i)
+        giveup = 0
+        while match
+          giveup++
+          if giveup >= 50
+            @warn "Infinite loop looking for set tag!"
+            break
+          name = match[1]
+          value = match[2]
+          @master.setUservar(user, name, value)
+          reply = reply.replace(new RegExp("<set " + utils.quotemeta(name) + "=" + utils.quotemeta(value) + ">", "ig"), "")
+          match = reply.match(/<set (.+?)=(.+?)>/i)
+        return q(reply)
+
+      # Did we match?
+      if matched
+        # Keep the current match
+        @master._users[user].__last_triggers__.push matched
+
+        # See if there are any hard redirects.
+        if matched.redirect?
+          @say "Redirecting us to #{matched.redirect}"
+          return @processTagsPromisified(user, msg, matched.redirect, stars, thatstars, step, scope, hooks).then (redirect) =>
+            # Execute and resolve *synchronous* <call> tags.
+            redirect = @processCallTags(redirect, scope, false)
+            @say "Pretend user said: #{redirect}"
+            return @_getReplyWithHooks(user, redirect, context, step+1, scope, hooks)
+        else
+          length = _.get(matched, 'reply.length')
+          
+          if length is 1
+            @say "Returning first reply #{matched.reply[0]}"
+            return matched.reply[0]
+          else if length  > 1
+            # Process weights in the replies.
+            bucket = []
+            for rep in matched.reply
+              weight = 1
+              match = rep.match(/\{weight=(\d+?)\}/i)
+              if match
+                weight = match[1]
+                if weight <= 0
+                  @warn "Can't have a weight <= 0!"
+                  weight = 1
+
+              for i in [0..weight]
+                bucket.push rep
+
+            # Get a random reply.
+            choice = parseInt(Math.random() * bucket.length)
+            return bucket[choice]
+          else if _.get(matched, 'reply.length', 0) is 0
+            return @master.errors.replyNotFound
+      else
+        return q(@master.errors.replyNotMatched)
+    .then (reply) =>
+      # begin tags are special and are handled above
+      if context isnt "begin"
+        @say "Processing tags #{reply}"
+        @processTagsPromisified(user, msg, reply, stars, thatstars, step, scope, hooks)
+      else
+        return reply
+
+  _checkCondition: (user, condition, msg, stars, thatstars, step, scope) ->
+    @say "Check Condition #{condition}"
+    condition = condition.match(/^(.+?)\s+(==|eq|!=|ne|<>|<|<=|>|>=)\s+(.*?)$/)
+    passed    = false
+    if condition
+      left = utils.strip(condition[1])
+      eq   = condition[2]
+      right = utils.strip(condition[3])
+
+      # Process tags all around
+      left  = @processTags(user, msg, left, stars, thatstars, step, scope)
+      right = @processTags(user, msg, right, stars, thatstars, step, scope)
+
+      # Execute any <call> tags in the conditions. We explicitly send
+      # `false` as the async parameter, because we can't run async
+      # object macros in conditionals; we need the result NOW
+      # for comparison.
+      left  = @processCallTags(left, scope, false)
+      right = @processCallTags(right, scope, false)
+
+      # Defaults?
+      if left.length is 0
+        left = "undefined"
+      if right.length is 0
+        right = "undefined"
+
+      @say "Check if #{left} #{eq} #{right}"
+
+      # Validate it
+      passed = false
+      if eq is "eq" or eq is "=="
+        if left is right
+          passed = true
+      else if eq is "ne" or eq is "!=" or eq is "<>"
+        if left isnt right
+          passed = true
+      else
+        # Dealing with numbers here
+        try
+          left = parseInt left
+          right = parseInt right
+          if eq is "<" and left < right
+            passed = true
+          else if eq is "<=" and left <= right
+            passed = true
+          else if eq is ">" and left > right
+            passed = true
+          else if eq is ">=" and left >= right
+            passed = true
+        catch e
+          @warn "Failed to evaluate numeric condition!"
+
+    # OK?
+    q(passed)
 
   ##
   # string reply (string user, string msg[, scope])
   #
   # Fetch a reply for the user.
   ##
-  reply: (user, msg, scope, async) ->
+  reply: (user, msg, scope, async, skipBegin) ->
     @say "Asked to reply to [#{user}] #{msg}"
 
     # Store the current user's ID.
@@ -52,7 +307,7 @@ class Brain
       @master._users[user].__initialmatch__ = undefined
 
     # If the BEGIN block exists, consult it first.
-    if @master._topics.__begin__
+    if not skipBegin and @master._topics.__begin__
       begin = @_getReply(user, "request", "begin", 0, scope)
 
       # OK to continue?
@@ -86,31 +341,27 @@ class Brain
     @_currentUser = undefined
 
   ##
-  # string|Promise processCallTags (string reply, object scope, bool async)
+  # string|Promise processCallTags (string reply, object scope, bool async, object hooks)
   #
   # Process <call> tags in the preprocessed reply string.
   # If `async` is true, processCallTags can handle asynchronous subroutines
-  # and it returns a promise, otherwise a string is returned
+  # and it returns a promise, otherwise a string is returned.
+  # Hooks are passed along so that they can be hadned off to redirects.
   ##
-  processCallTags: (reply, scope, async) ->
+  processCallTags: (reply, scope, async, hooks) ->
     reply = reply.replace(/«__call__»/ig, "<call>")
     reply = reply.replace(/«\/__call__»/ig, "</call>")
     callRe = /<call>([\s\S]+?)<\/call>/ig
     argsRe = /«__call_arg__»([\s\S]*?)«\/__call_arg__»/ig
 
     giveup = 0
-    matches = {}
+    callSignatures = []
     promises = []
 
-    while true
+    while match = callRe.exec(reply)
       giveup++
       if giveup >= 50
         @warn "Infinite loop looking for call tag!"
-        break
-
-      match = callRe.exec(reply)
-
-      if not match
         break
 
       text = utils.trim(match[1])
@@ -118,67 +369,57 @@ class Brain
       # get subroutine name
       subroutineNameMatch = (/(\S+)/ig).exec(text)
       subroutineName = subroutineNameMatch[0]
-
       args = []
 
       # get arguments
-      while true
-        m = argsRe.exec(text)
-        if not m
-          break
+      while m = argsRe.exec(text)
         args.push(m[1])
 
-
-      matches[match[1]] =
+      callSignatures.push
         text: text
         obj: subroutineName
         args: args
+        start: match.index
+        length: match[0].length
 
     # go through all the object calls and run functions
-    for k,data of matches
+    for data in callSignatures
       output = ""
       if @master._objlangs[data.obj]
         # We do. Do we have a handler for it?
         lang = @master._objlangs[data.obj]
         if @master._handlers[lang]
           # We do.
-          output = @master._handlers[lang].call(@master, data.obj, data.args, scope)
+          data.output = @master._handlers[lang].call(@master, data.obj, data.args, scope, hooks)
         else
-          output = "[ERR: No Object Handler]"
+          data.output = "[ERR: No Object Handler]"
       else
-        output = @master.errors.objectNotFound
+        data.output = @master.errors.objectNotFound
 
-      # if we get a promise back and we are not in the async mode,
-      # leave an error message to suggest using an async version of rs
-      # otherwise, keep promises tucked into a list where we can check on
-      # them later
-      if utils.isAPromise(output)
-        if async
-          promises.push
-            promise: output
-            text: k
-          continue
-        else
-          output = "[ERR: Using async routine with reply: use replyAsync instead]"
+      if not async and utils.isAPromise(data.output)
+        data.output = "[ERR: Using async routine with reply: use replyAsync instead]"
 
-      reply = @._replaceCallTags(k, output, reply)
-
-    if not async
-      return reply
+    if async
+      return @._resolveCallTagsAsync(callSignatures, reply)
     else
-      # wait for all the promises to be resolved and
-      # return a resulting promise with the final reply
-      return new RSVP.Promise (resolve, reject) =>
-        RSVP.all(p.promise for p in promises).then (results) =>
-          for i in [0...results.length]
-            reply = @_replaceCallTags(promises[i].text, results[i], reply)
+      return @._resolveCallTags(callSignatures, reply)
 
-          resolve(reply)
-        .catch (reason) =>
-          reject(reason)
+  _resolveCallTagsAsync: (callSignatures, reply) ->
+    return q.all(_.map(callSignatures, 'output'))
+      .then (results) =>
+        for result, i in results by -1
+          callSignatures[i].output = result
+          reply = @._replaceCallTags(callSignatures[i], reply)
+        return reply
 
-  _replaceCallTags: (callSignature, callResult, reply) ->
-    return reply.replace(new RegExp("<call>" + utils.quotemeta(callSignature) + "</call>", "i"), callResult)
+  _resolveCallTags: (callSignatures, reply) ->
+    # cycle through backwards so indexes in replace command stay the same
+    for data in callSignatures by -1
+        reply = @._replaceCallTags(data, reply)
+    return reply
+
+  _replaceCallTags: (data, reply) ->
+    return reply.slice(0, data.start) + data.output + reply.slice(data.start + data.length)
 
   _parseCallArgsString: (args) ->
     # turn args string into a list of arguments
@@ -248,17 +489,7 @@ class Brain
 
     reply
 
-  ##
-  # string _getReply (string user, string msg, string context, int step, scope)
-  #
-  # The internal reply method. DO NOT CALL THIS DIRECTLY.
-  #
-  # * user, msg and scope are the same as reply()
-  # * context = "normal" or "begin"
-  # * step = the recursion depth
-  # * scope = the call scope for object macros
-  ##
-  _getReply: (user, msg, context, step, scope) ->
+  _getMatch: (user, msg, context, step, scope) ->
     # Needed to sort replies?
     if not @master._sorted.topics
       @warn "You forgot to call sortReplies()!"
@@ -279,10 +510,6 @@ class Brain
       @warn "User #{user} was in an empty topic named '#{topic}'"
       topic = "random"
       @master.setUservar(user, "topic", topic)
-
-    # Avoid deep recursion.
-    if step > @master._depth
-      return @master.errors.deepRecursion
 
     # Are we in the BEGIN block?
     if context is "begin"
@@ -432,6 +659,39 @@ class Brain
 
       # Also initialize __last_triggers__ which will keep all matched triggers
       @master._users[user].__last_triggers__ = []
+
+    return _.cloneDeep({
+      matched: matched
+      stars: stars
+      thatstars: thatstars
+    })
+
+
+  ##
+  # string _getReply (string user, string msg, string context, int step, scope)
+  #
+  # The internal reply method. DO NOT CALL THIS DIRECTLY.
+  #
+  # * user, msg and scope are the same as reply()
+  # * context = "normal" or "begin"
+  # * step = the recursion depth
+  # * scope = the call scope for object macros
+  # * matched = allow passing in a manual match
+  ##
+  _getReply: (user, msg, context, step, scope, matchResults) ->
+
+    # Avoid deep recursion.
+    if step > @master._depth
+      return @master.errors.deepRecursion
+
+    # If we haven't passed in a manual match
+    if !matchResults
+      matchResults = @_getMatch(user, msg, context, step, scope)
+
+    matched = matchResults.matched
+    stars = matchResults.stars
+    thatstars = matchResults.thatstars
+    foundMatch = Boolean(matched)
 
     # Did we match?
     if matched
@@ -615,6 +875,7 @@ class Brain
   # Prepares a trigger for the regular expression engine.
   ##
   triggerRegexp: (user, regexp) ->
+    boundary = "(?:^|$|\\s|\\b)+"
     # If the trigger is simply '*' then the * needs to become (.*?)
     # to match the blank string too.
     regexp = regexp.replace(/^\*$/, "<zerowidthstar>")
@@ -658,7 +919,7 @@ class Brain
       parts = match[1].split("|")
       opts  = []
       for p in parts
-        opts.push "(?:\\s|\\b)+#{p}(?:\\s|\\b)+"
+        opts.push(boundary + p + boundary);
 
       # If this optional had a star or anything in it, make it non-matching.
       pipes = opts.join("|")
@@ -671,7 +932,7 @@ class Brain
       pipes = pipes.replace(/\[/g, "__lb__").replace(/\]/g, "__rb__")
 
       regexp = regexp.replace(new RegExp("\\s*\\[" + utils.quotemeta(match[1]) + "\\]\\s*"),
-        "(?:#{pipes}|(?:\\b|\\s)+)")
+        "(?:#{pipes}|" + boundary + ")")
       match = regexp.match(/\[(.+?)\]/)
 
     # Restore the literal square brackets.
@@ -749,6 +1010,239 @@ class Brain
     regexp = regexp.replace(/\|{2,}/mg, '|')
 
     return regexp
+
+  ##
+  # string processTags (string user, string msg, string reply, string[] stars,
+  #                     string[] botstars, int step, scope)
+  #
+  # Process tags in a reply element.
+  #
+  # All the tags get processed here except for `<call>` tags which have
+  # a separate subroutine (refer to `processCallTags` for more info)
+  ##
+  processTagsPromisified: (user, msg, reply, st, bst, step, scope, hooks) ->
+    {replacements: replacements, result: reply} = utils.extractRaw(reply)
+    # Prepare the stars and botstars.
+    stars = [""]
+    stars.push.apply(stars, st)
+    botstars = [""]
+    botstars.push.apply(botstars, bst)
+    if stars.length is 1
+      stars.push "undefined"
+    if botstars.length is 1
+      botstars.push "undefined"
+
+    # Turn arrays into randomized sets.
+    match = reply.match(/\(@([A-Za-z0-9_]+)\)/i)
+    giveup = 0
+    while match
+      if giveup++ > @master._depth
+        @warn "Infinite loop looking for arrays in reply!"
+        break
+
+      name = match[1]
+      if @master._array[name]
+        result = "{random}" + @master._array[name].join("|") + "{/random}"
+      else
+        result = "\x00@#{name}\x00" # Dummy it out so we can reinsert it later.
+
+      reply = reply.replace(new RegExp("\\(@" + utils.quotemeta(name) + "\\)", "ig")
+        result)
+      match = reply.match(/\(@([A-Za-z0-9_]+)\)/i)
+    reply = reply.replace(/\x00@([A-Za-z0-9_]+)\x00/g, "(@$1)")
+
+    # Wrap args inside call tags
+    reply = @_wrapArgumentsInCallTags(reply)
+
+    # Tag shortcuts.
+    reply = reply.replace(/<person>/ig,    "{person}<star>{/person}")
+    reply = reply.replace(/<@>/ig,         "{@<star>}")
+    reply = reply.replace(/<formal>/ig,    "{formal}<star>{/formal}")
+    reply = reply.replace(/<sentence>/ig,  "{sentence}<star>{/sentence}")
+    reply = reply.replace(/<uppercase>/ig, "{uppercase}<star>{/uppercase}")
+    reply = reply.replace(/<lowercase>/ig, "{lowercase}<star>{/lowercase}")
+
+    # Weight and star tags.
+    reply = reply.replace(/\{weight=\d+\}/ig, "") # Remove {weight}s
+    reply = reply.replace(/<star>/ig, stars[1])
+    reply = reply.replace(/<botstar>/ig, botstars[1])
+    for i in [1..stars.length]
+      reply = reply.replace(new RegExp("<star#{i}>", "ig"), stars[i])
+    for i in [1..botstars.length]
+      reply = reply.replace(new RegExp("<botstar#{i}>", "ig"), botstars[i])
+
+    # <input> and <reply>
+    reply = reply.replace(/<input>/ig, @master._users[user].__history__.input[0] || "undefined")
+    reply = reply.replace(/<reply>/ig, @master._users[user].__history__.reply[0] || "undefined")
+    for i in [1..9]
+      if reply.indexOf("<input#{i}>") > -1
+        reply = reply.replace(new RegExp("<input#{i}>", "ig"),
+          @master._users[user].__history__.input[i])
+      if reply.indexOf("<reply#{i}>") > -1
+        reply = reply.replace(new RegExp("<reply#{i}>", "ig"),
+          @master._users[user].__history__.reply[i])
+
+    # <id> and escape codes
+    reply = reply.replace(/<id>/ig, user)
+    reply = reply.replace(/\\s/ig, " ")
+    reply = reply.replace(/\\n/ig, "\n")
+    reply = reply.replace(/\\#/ig, "#")
+
+    # {random}
+    match = reply.match(/\{random\}(.+?)\{\/random\}/i)
+    giveup = 0
+    while match
+      if giveup++ > @master._depth
+        @warn "Infinite loop looking for random tag!"
+        break
+
+      random = []
+      text   = match[1]
+      if text.indexOf("|") > -1
+        random = text.split("|")
+      else
+        random = text.split(" ")
+
+      output = random[ parseInt(Math.random() * random.length) ]
+
+      reply = reply.replace(new RegExp("\\{random\\}" + utils.quotemeta(text) + "\\{\\/random\\}", "ig")
+        output)
+      match = reply.match(/\{random\}(.+?)\{\/random\}/i)
+
+    # Person substitutions & string formatting
+    formats = ["person", "formal", "sentence", "uppercase", "lowercase"]
+    for type in formats
+      match = reply.match(new RegExp("{#{type}}(.+?){/#{type}}", "i"))
+      giveup = 0
+      while match
+        giveup++
+        if giveup >= 50
+          @warn "Infinite loop looking for #{type} tag!"
+          break
+
+        content = match[1]
+        if type is "person"
+          replace = @substitute content, "person"
+        else
+          replace = utils.stringFormat type, content
+
+        reply = reply.replace(new RegExp("{#{type}}" + utils.quotemeta(content) + "{/#{type}}", "ig"), replace)
+        match = reply.match(new RegExp("{#{type}}(.+?){/#{type}}", "i"))
+
+    # Handle all variable-related tags with an iterative regexp approach, to
+    # allow for nesting of tags in arbitrary ways (think <set a=<get b>>)
+    # Dummy out the <call> tags first, because we don't handle them right here.
+    reply = reply.replace(/<call>/ig, "«__call__»")
+    reply = reply.replace(/<\/call>/ig, "«/__call__»")
+
+    while true
+      # This regexp will match a <tag> which contains no other tag inside it,
+      # i.e. in the case of <set a=<get b>> it will match <get b> but not the
+      # <set> tag, on the first pass. The second pass will get the <set> tag,
+      # and so on.
+      match = reply.match(/<([^<]+?)>/)
+      if not match
+        break # No remaining tags!
+
+      match = match[1]
+      parts = match.split(" ")
+      tag   = parts[0].toLowerCase()
+      data  = ""
+      if parts.length > 1
+        data = parts.slice(1).join(" ")
+      insert = ""
+
+      # Handle the tags.
+      if tag is "bot" or tag is "env"
+        # <bot> and <env> tags are similar
+        target = if tag is "bot" then @master._var else @master._global
+        if data.indexOf("=") > -1
+          # Assigning a variable
+          parts = data.split("=", 2)
+          @say "Set #{tag} variable #{parts[0]} = #{parts[1]}"
+          target[parts[0]] = parts[1]
+        else
+          # Getting a bot/env variable
+          insert = target[data] or "undefined"
+      else if tag is "set"
+        # <set> user vars
+        parts = data.split("=", 2)
+        @say "Set uservar #{parts[0]} = #{parts[1]}"
+        @master.setUservar(user, parts[0], parts[1])
+      else if tag is "add" or tag is "sub" or tag is "mult" or tag is "div"
+        # Math operator tags
+        parts = data.split("=")
+        name  = parts[0]
+        value = parts[1]
+
+        # Initialize the variable?
+        if @master.getUservar(user, name) is "undefined"
+          @master.setUservar(user, name, 0)
+
+        # Sanity check
+        value = parseInt(value)
+        if isNaN(value)
+          insert = "[ERR: Math can't '#{tag}' non-numeric value '#{value}']"
+        else if isNaN(parseInt(@master.getUservar(user, name)))
+          insert = "[ERR: Math can't '#{tag}' non-numeric user variable '#{name}']"
+        else
+          result = parseInt(@master.getUservar(user, name))
+          if tag is "add"
+            result += value
+          else if tag is "sub"
+            result -= value
+          else if tag is "mult"
+            result *= value
+          else if tag is "div"
+            if value is 0
+              insert = "[ERR: Can't Divide By Zero]"
+            else
+              result /= value
+
+          # No errors?
+          if insert is ""
+            @master.setUservar(user, name, result)
+      else if tag is "get"
+        insert = @master.getUservar(user, data)
+      else
+        # Unrecognized tag, preserve it
+        insert = "\x00#{match}\x01"
+
+      reply = reply.replace(new RegExp("<#{utils.quotemeta(match)}>"), insert)
+
+    # Recover mangled HTML-like tags
+    reply = reply.replace(/\x00/g, "<")
+    reply = reply.replace(/\x01/g, ">")
+
+    # Topic setter
+    match = reply.match(/\{topic=(.+?)\}/i)
+    giveup = 0
+    while match
+      giveup++
+      if giveup >= 50
+        @warn "Infinite loop looking for topic tag!"
+        break
+
+      name = match[1]
+      @master.setUservar(user, "topic", name)
+      reply = reply.replace(new RegExp("{topic=" + utils.quotemeta(name) + "}", "ig"), "")
+      match = reply.match(/\{topic=(.+?)\}/i) # Look for more
+
+    # Inline redirector
+    redirects = reply.match(/\{@([^\}]*?)\}/g)
+    _.reduce( redirects, (promise, redirect) =>
+      promise.then =>
+        match = redirect.match(/\{@([^\}]*?)\}/)
+        target = utils.strip match[1]
+
+        # Resolve any *synchronous* <call> tags right now before redirecting.
+        target = @processCallTags(target, scope, false)
+
+        @say "Inline redirection to: #{target}"
+        @_getReplyWithHooks(user, target, "normal", step+1, scope, hooks).then (subreply) =>
+          reply = reply.replace(new RegExp("\\{@" + utils.quotemeta(match[1]) + "\\}", "i"), subreply)
+    , q(reply)).then =>
+      utils.restoreRaw(reply, replacements)
 
   ##
   # string processTags (string user, string msg, string reply, string[] stars,

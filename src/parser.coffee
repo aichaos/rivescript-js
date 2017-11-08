@@ -52,6 +52,7 @@ class Parser
   #       "triggers": [ // array of triggers
   #         {
   #           "trigger": "hello bot",
+  #           "afterMatch": [], // array of lines to pass to any afterMatch processor
   #           "reply": [], // array of replies
   #           "condition": [], // array of conditions
   #           "redirect": "",  // @ redirect command
@@ -106,9 +107,16 @@ class Parser
       space: " "
 
     # Go through the lines of code.
+    # Note that we'll use a "while" and a manual iterator instead of a loop
+    #   so we can jump ahead if necessary.  Regular coffeescript for loops 
+    #   prevent that behavior.
     lines = code.split "\n"
-    for line, lp in lines
-      lineno = lp + 1
+    lineno = 0
+
+    while lineno < lines.length
+      lineno = lineno + 1
+      lp = lineno - 1
+      line = lines[lp]
 
       # Strip the line.
       line = utils.strip line
@@ -315,6 +323,9 @@ class Parser
               fields = fields.filter (val)-> val != ''
 
               ast.begin.array[name] = fields
+                
+              # Skip ahead to the end of the array declaration found in our lookahead
+              lineno = lineno + li # li should be the last index in the lookahead loop
 
             when "sub"
               # Substitutions
@@ -411,10 +422,22 @@ class Parser
             trigger: line
             reply: []
             condition: []
+            afterMatch: []
             redirect: null
             previous: isThat
           ast.topics[topic].triggers.push curTrig
+        when "$"
+          # $ afterMatch
+          if curTrig is null
+            @warn "afterMatch found before trigger", filename, lineno
+            continue
 
+          # Warn if we also saw a hard redirect.
+          if curTrig.redirect isnt null
+            @warn "You can't mix @Redirects with $Preprocessors", filename, lineno
+
+          @say "\tTrigger afterMatch: #{line}"
+          curTrig.afterMatch.push line
         when "-"
           # - Response
           if curTrig is null

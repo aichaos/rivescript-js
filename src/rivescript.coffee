@@ -564,6 +564,22 @@ class RiveScript
         @_handlers[object.language].load(object.name, object.code)
 
   ##
+  # void removeTopic(string topic)
+  #
+  # If you've loaded a topic that's no longer needed, it can be excised via
+  # this function and a subsequent call to sortReplies().  Note that you
+  # can't remove other side-effects of the parse() function, just the
+  # contents of a topic.  Bad things might happen if other topics inherited
+  # from this topic.
+  #
+  ##
+  removeTopic: (topic) ->
+    delete @_topics[topic]
+    delete @_inherits[topic]
+    delete @_includes[topic]
+    delete @_thats[topic]
+    
+  ##
   # void sortReplies()
   #
   # After you have finished loading your RiveScript code, call this method to
@@ -818,7 +834,7 @@ class RiveScript
         @_users[user][key] = data[key]
 
   ##
-  # void getVariable (string name)
+  # string getVariable (string name)
   #
   # Gets a variable. This is equivalent to `<bot name>` in RiveScript.
   ##
@@ -828,6 +844,55 @@ class RiveScript
       return @_var[name]
     else
       return "undefined"
+ 
+  ##
+  # object getVariables ()
+  #
+  # Gets all bot variables.
+  ##
+  getVariables: () ->
+    return utils.clone(@_var)
+
+  ##
+  # void setVariable (string key, string value)
+  #
+  # Set a bot variable, or unset it if value is undefined.
+  ##
+  setVariable: (key, value) ->
+    if value is undefined
+      delete @_var[key]
+    else
+      @_var[key] = value
+
+  ##
+  # void setVariables (object data)
+  #
+  # Set multiple bot variables by providing an object of key/value pairs.
+  # Equivalent to calling `setVariable()` for each pair in the object.
+  ##
+  setVariables: (data) ->
+    for key of data
+      continue unless data.hasOwnProperty key
+
+      if data[key] is undefined
+        delete @_var[key]
+      else
+        @_var[key] = data[key]
+
+
+  # Alias for getVariable for consistency with getUservar
+  getBotvar: (name) ->
+    return @getVariable(name)
+  # Alias for getVariables for consistency with getUservars
+  getBotvars: () ->
+    return @getVariables()
+  # Alias for setVariable for consistency with getUservar
+  setBotvar: (key, value) ->
+    @setVariable(key, value)
+  # Alias for setVariables for consistency with getUservar
+  setBotvars: (data) ->
+    @setVariables(data)
+
 
   ##
   # string getUservar (string user, string name)
@@ -989,7 +1054,7 @@ class RiveScript
   ##############################################################################
 
   ##
-  # string reply (string username, string message[, scope])
+  # string reply (string username, string message[, scope, skipBegin])
   #
   # Fetch a reply from the RiveScript brain. The message doesn't require any
   # special pre-processing to be done to it, i.e. it's allowed to contain
@@ -1005,9 +1070,17 @@ class RiveScript
   # or attributes that your code has access to, from the location that `reply()`
   # was called. For an example of this, refer to the `eg/scope` directory in
   # the source distribution of RiveScript-JS.
+  #
+  # The option `skipBegin` parameter can be used to skip any begin blocks.
+  # This is useful for when calling reply from within a macro (when begin
+  # has already been processed) or when executing a system call where the
+  # implementor purposefully wishes to avoid the begin block.
   ##
-  reply: (user, msg, scope) ->
-    return @brain.reply(user, msg, scope)
+  reply: (user, msg, scope, skipBegin) ->
+    return @brain.reply(user, msg, scope, false, skipBegin)
+
+  replyPromisified: (user, msg, scope, skipBegin, hooks) ->
+    return @brain.replyPromisified(user, msg, scope, false, skipBegin, hooks)
 
   ##
   # Promise replyAsync (string username, string message [[, scope], callback])

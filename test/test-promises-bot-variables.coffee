@@ -1,4 +1,4 @@
-TestCase = require("./test-base")
+TestCase = require("./test-promises-base")
 
 ################################################################################
 # Bot Variable Tests
@@ -21,14 +21,13 @@ exports.test_bot_variables = (test) ->
     + happy birthday
     - <bot age=6>Thanks!
    """)
-   bot.reply("What is your name?", "My name is Aiden.")
-   bot.reply("How old are you?", "I am 5.")
-   bot.reply("What are you?", "I'm undefined.")
-   bot.reply("Happy birthday!", "Thanks!")
-   bot.reply("How old are you?", "I am 6.")
-   bot.botvar("age", "6")
-   bot.botvars({name: "Aiden", age: "6"})
-   test.done()
+   bot.replyPromisified("What is your name?", "My name is Aiden.")
+   .then -> bot.replyPromisified("How old are you?", "I am 5.")
+   .then -> bot.replyPromisified("What are you?", "I'm undefined.")
+   .then -> bot.replyPromisified("Happy birthday!", "Thanks!")
+   .then -> bot.replyPromisified("How old are you?", "I am 6.")
+   .catch (err) -> test.ok(false, err.stack)
+   .then -> test.done()
 
 exports.test_global_variables = (test) ->
   bot = new TestCase(test, """
@@ -40,7 +39,8 @@ exports.test_global_variables = (test) ->
     + set debug mode *
     - <env debug=<star>>Switched to <star>.
   """)
-  bot.reply("Debug mode.", "Debug mode is: false")
-  bot.reply("Set debug mode true", "Switched to true.")
-  bot.reply("Debug mode?", "Debug mode is: true")
-  test.done()
+  bot.replyPromisified("Debug mode.", "Debug mode is: false")
+  .then -> bot.replyPromisified("Set debug mode true", "Switched to true.")
+  .then -> bot.replyPromisified("Debug mode?", "Debug mode is: true")
+  .catch (err) -> test.ok(false, err.stack)
+  .then -> test.done()

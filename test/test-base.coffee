@@ -27,6 +27,15 @@ class TestCase
         @rs.sortReplies()
 
     ##
+    # Remove a single topic from the bot
+    #
+    # @param string: Name of the topic to remove
+    ##
+    purgeTopic: (topic) ->
+        @rs.removeTopic(topic)
+        @rs.sortReplies()
+
+    ##
     # Reply assertion: check if the answer to the message is what you expected.
     #
     # @param message: The user's input message.
@@ -34,7 +43,7 @@ class TestCase
     ##
     reply: (message, expected) ->
         reply = @rs.reply(this.username, message)
-        @test.equal(reply, expected);
+        @test.equal(reply, expected, "Failed responding to '" + message + "' Expected '" + expected + "' got '" + reply + "'")
 
     ##
     # Random reply assertion: check if the answer is in a set of acceptable
@@ -60,5 +69,33 @@ class TestCase
     uservar: (name, expected) ->
         value = @rs.getUservar(@username, name);
         @test.equal(value, expected);
+    
+    ##
+    # User variable dump assertion.
+    #
+    # @param expected: The expected value of all data
+    ##
+    uservars: (expected) ->
+        value = @rs.getUservars(@username)
+        @test.deepEqual(value, expected)
+
+    ##
+    # Bot variable assertion.
+    #
+    # @param name: The variable name.
+    # @param expected: The expected value of that name.
+    ##
+    botvar: (name, expected) ->
+        value = @rs.getBotvar(name)
+        @test.equal(value, expected)
+    
+    ##
+    # Bot variable dump assertion.
+    #
+    # @param expected: The expected value of all data
+    ##
+    botvars: (expected) ->
+        value = @rs.getBotvars()
+        @test.deepEqual(value, expected)
 
 module.exports = TestCase

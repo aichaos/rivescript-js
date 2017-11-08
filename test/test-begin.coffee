@@ -60,3 +60,18 @@ exports.test_conditional_begin_block = (test) ->
   bot.uservar("name", "Bob")
   bot.reply("Hello Bot", "Bob: Hello human.")
   test.done()
+
+exports.test_skip_begin_block = (test) ->
+  bot = new TestCase(test, """
+    > begin
+        + request
+        - Nope.
+    < begin
+
+    + hello bot
+    - Hello human.
+  """)
+
+  reply = bot.rs.reply(bot.username, "Hello bot.", null, true)
+  test.equal(reply, "Hello human.");
+  test.done()

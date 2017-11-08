@@ -1,4 +1,4 @@
-TestCase = require("./test-base")
+TestCase = require("./test-promises-base")
 
 ################################################################################
 # Object Macro Tests
@@ -46,13 +46,13 @@ exports.test_js_objects = (test) ->
     + test perl
     - Perl: <call>foreign</call>
   """)
-  bot.reply("Test nolang", "Nolang: Test w/o language.")
-  bot.reply("Test wlang", "Wlang: Test w/ language.")
-  bot.reply("Reverse hello world.", "dlrow olleh")
-  bot.reply("Test broken", "Broken: [ERR: Object Not Found]")
-  bot.reply("Test fake", "Fake: [ERR: Object Not Found]")
-  bot.reply("Test perl", "Perl: [ERR: Object Not Found]")
-  test.done()
+  bot.replyPromisified("Test nolang", "Nolang: Test w/o language.")
+  .then -> bot.replyPromisified("Test wlang", "Wlang: Test w/ language.")
+  .then -> bot.replyPromisified("Reverse hello world.", "dlrow olleh")
+  .then -> bot.replyPromisified("Test broken", "Broken: [ERR: Object Not Found]")
+  .then -> bot.replyPromisified("Test fake", "Fake: [ERR: Object Not Found]")
+  .then -> bot.replyPromisified("Test perl", "Perl: [ERR: Object Not Found]")
+  .then -> test.done()
 
 exports.test_disabled_js_language = (test) ->
   bot = new TestCase(test, """
@@ -63,51 +63,26 @@ exports.test_disabled_js_language = (test) ->
     + test
     - Result: <call>test</call>
   """)
-  bot.reply("test", "Result: JavaScript here!")
-  bot.rs.setHandler("javascript", undefined)
-  bot.reply("test", "Result: [ERR: No Object Handler]")
-  test.done()
+  bot.replyPromisified("test", "Result: JavaScript here!")
+  .then -> 
+    bot.rs.setHandler("javascript", undefined)
+    bot.replyPromisified("test", "Result: [ERR: No Object Handler]")
+  .then -> test.done()
 
 exports.test_get_variable = (test) ->
   bot = new TestCase(test, """
-    ! var test_var1 = test
-    ! var test_var2 = alsotest
+    ! var test_var = test
 
     > object test_get_var javascript
-        var name  = "test_var1";
+        var name  = "test_var";
         return rs.getVariable(name);
-    < object
-
-    > object test_get_vars javascript
-        return JSON.stringify(rs.getVariables())
-    < object
-
-    > object set_var javascript
-        rs.setBotvar('test_var2', 'notatest')
-        return rs.getVariable('test_var2')
-    < object
-
-    > object set_vars javascript
-        rs.setBotvars({test_var1: undefined, foo: 'bar'})
-        return 'ok'
     < object
 
     + show me var
     - <call> test_get_var </call>
-    + show me vars
-    - <call> test_get_vars </call>
-    + set var
-    - <call> set_var </call>
-    + set vars
-    - <call> set_vars </call>
   """)
-  bot.reply("show me var", "test")
-  bot.reply("show me vars", '{"test_var1":"test","test_var2":"alsotest"}')
-  bot.reply("set var", "notatest")
-  bot.botvar("test_var2", "notatest")
-  bot.reply("set vars", "ok")
-  bot.reply("show me vars", '{"test_var2":"notatest","foo":"bar"}')
-  test.done()
+  bot.replyPromisified("show me var", "test")
+  .then -> test.done()
 
 exports.test_uppercase_call = (test) ->
   bot = new TestCase(test, """
@@ -132,18 +107,18 @@ exports.test_uppercase_call = (test) ->
     + *
     - Hello there. <call>test <star></call>
   """)
-  bot.reply("hello", "Hello there. The object result.")
-
-  bot.rs.setVariable("mood", "happy")
-  bot.reply("hello", "Hello there. The object result.")
-
-  bot.rs.setVariable("mood", "angry")
-  bot.reply("hello", "HELLO THERE. The object result.")
-
-  bot.rs.setVariable("mood", "sad")
-  bot.reply("hello", "hello there. The object result.")
-
-  test.done()
+  bot.replyPromisified("hello", "Hello there. The object result.")
+  .then -> 
+    bot.rs.setVariable("mood", "happy")
+    bot.replyPromisified("hello", "Hello there. The object result.")
+  .then ->
+    bot.rs.setVariable("mood", "angry")
+    bot.replyPromisified("hello", "HELLO THERE. The object result.")
+  .then ->
+    bot.rs.setVariable("mood", "sad")
+    bot.replyPromisified("hello", "hello there. The object result.")
+  .catch (err) -> test.ok(false, err.stack)
+  .then -> test.done()
 
 exports.test_objects_in_conditions = (test) ->
   bot = new TestCase(test, """
@@ -179,28 +154,28 @@ exports.test_objects_in_conditions = (test) ->
     - Result: <call>test_async_condition <star></call>
   """)
   # First, make sure the sync object works.
-  bot.reply("call sync 1", "Result: true")
-  bot.reply("call sync 0", "Result: false")
-  bot.reply("call async 1", "Result: [ERR: Using async routine with reply: use replyAsync instead]")
+  bot.replyPromisified("call sync 1", "Result: true")
+  .then -> bot.replyPromisified("call sync 0", "Result: false")
+  .then -> bot.replyPromisified("call async 1", "Result: true")
 
   # Test the synchronous object in a conditional.
-  bot.reply("test sync 1", "True.")
-  bot.reply("test sync 2", "False.")
-  bot.reply("test sync 0", "False.")
-  bot.reply("test sync x", "False.")
+  .then -> bot.replyPromisified("test sync 1", "True.")
+  .then -> bot.replyPromisified("test sync 2", "False.")
+  .then -> bot.replyPromisified("test sync 0", "False.")
+  .then -> bot.replyPromisified("test sync x", "False.")
 
   # Test the async object on its own and then in a conditional. This code looks
   # ugly, but `test.done()` must be called only when all tests have resolved
   # so we have to nest a couple of the promise-based tests this way.
-  bot.rs.replyAsync(bot.username, "call async 1").then((reply) ->
-    test.equal(reply, "Result: true")
+  .then -> bot.rs.replyAsync(bot.username, "call async 1").then((reply) ->
+      test.equal(reply, "Result: true")
 
-    # Now test that it still won't work in a conditional even with replyAsync.
-    bot.rs.replyAsync(bot.username, "test async 1").then((reply) ->
-      test.equal(reply, "Call failed.")
-      test.done()
+      # Now test that it still won't work in a conditional even with replyAsync.
+      bot.rs.replyAsync(bot.username, "test async 1").then((reply) ->
+        test.equal(reply, "Call failed.")
+        test.done()
+      )
     )
-  )
 
 exports.test_objects_in_redirects = (test) ->
   bot = new TestCase(test, """
@@ -218,10 +193,11 @@ exports.test_objects_in_redirects = (test) ->
     + inline to *
     - "<sentence>": {@ <call>echo <star></call>}
   """)
-  bot.reply("hello bot", "Hello human.")
-  bot.reply("Redirect to Hello Bot", "Hello human.")
-  bot.reply("Inline to hello bot", '"Hello bot": Hello human.')
-  test.done()
+  bot.replyPromisified("hello bot", "Hello human.")
+  .then -> bot.replyPromisified("Redirect to Hello Bot", "Hello human.")
+  .then -> bot.replyPromisified("Inline to hello bot", '"Hello bot": Hello human.')
+  .catch (err) -> test.ok(false, err.stack)
+  .then -> test.done()
 
 exports.test_line_breaks_in_call = (test) ->
   bot = new TestCase(test, """
@@ -240,9 +216,9 @@ exports.test_line_breaks_in_call = (test) ->
     + test botvar newline
     - <call>macro "<bot name>"</call>
   """)
-  bot.reply("test literal newline", "argumentwith\nnewline")
-  bot.reply("test botvar newline", "name with\\nnew line")
-  test.done()
+  bot.replyPromisified("test literal newline", "argumentwith\nnewline")
+  .then -> bot.replyPromisified("test botvar newline", "name with\\nnew line")
+  .then -> test.done()
 
 exports.test_js_string_in_setSubroutine = (test) ->
   bot = new TestCase(test, """
@@ -253,8 +229,8 @@ exports.test_js_string_in_setSubroutine = (test) ->
   input = "hello there"
 
   bot.rs.setSubroutine("helper", ["return 'person';"])
-  bot.reply("hello", "hello person")
-  test.done()
+  bot.replyPromisified("hello", "hello person")
+  .then -> test.done()
 
 exports.test_function_in_setSubroutine = (test) ->
   bot = new TestCase(test, """
@@ -268,10 +244,10 @@ exports.test_function_in_setSubroutine = (test) ->
     test.equal(rs, bot.rs)
     test.equal(args.length, 1)
     test.equal(args[0], "rive")
-    test.done()
   )
 
-  bot.reply(input, "hello person")
+  bot.replyPromisified(input, "hello person")
+    .then -> test.done()
 
 exports.test_function_in_setSubroutine_return_value = (test) ->
   bot = new TestCase(test, """
@@ -283,8 +259,8 @@ exports.test_function_in_setSubroutine_return_value = (test) ->
     "person"
   )
 
-  bot.reply("hello", "hello person")
-  test.done()
+  bot.replyPromisified("hello", "hello person")
+  .then -> test.done()
 
 exports.test_arguments_in_setSubroutine = (test) ->
   bot = new TestCase(test, """
@@ -299,8 +275,8 @@ exports.test_arguments_in_setSubroutine = (test) ->
     args[0]
   )
 
-  bot.reply("my name is thomas edison", "hello thomas edison")
-  test.done()
+  bot.replyPromisified("my name is thomas edison", "hello thomas edison")
+  .then -> test.done()
 
 exports.test_quoted_strings_arguments_in_setSubroutine = (test) ->
   bot = new TestCase(test, """
@@ -316,8 +292,8 @@ exports.test_quoted_strings_arguments_in_setSubroutine = (test) ->
     args[0]
   )
 
-  bot.reply("my name is thomas edison", "hello thomas edison")
-  test.done()
+  bot.replyPromisified("my name is thomas edison", "hello thomas edison")
+  .then -> test.done()
 
 exports.test_arguments_with_funky_spacing_in_setSubroutine = (test) ->
   bot = new TestCase(test, """
@@ -333,8 +309,8 @@ exports.test_arguments_with_funky_spacing_in_setSubroutine = (test) ->
     args[0]
   )
 
-  bot.reply("my name is thomas edison", "hello thomas edison")
-  test.done()
+  bot.replyPromisified("my name is thomas edison", "hello thomas edison")
+  .then -> test.done()
 
 exports.test_promises_in_objects = (test) ->
   bot = new TestCase(test, """
@@ -394,8 +370,8 @@ exports.test_use_reply_with_async_subroutines = (test) ->
     )
   )
 
-  bot.reply("my name is Rive", "hello there [ERR: Using async routine with reply: use replyAsync instead]")
-  test.done()
+  bot.replyPromisified("my name is Rive", "hello there stranger")
+  .then -> test.done()
 
 exports.test_errors_in_async_subroutines_with_callbacks = (test) ->
   bot = new TestCase(test, """
@@ -458,6 +434,23 @@ exports.test_async_and_sync_subroutines_together = (test) ->
     test.equal(reply, "hello there stranger!")
     test.done()
 
+exports.test_multiple_calls = (test) ->
+  bot = new TestCase(test, """
+    > object hello javascript
+      return Math.random()
+    < object
+    + hello
+    - <call>hello</call> <call>hello</call>
+  """)
+
+  src = bot.rs.replyAsync(bot.username, "hello").then (reply) ->
+      parts = reply.split(' ')
+      test.ok(parts.length == 2)
+      test.ok(Boolean(parseFloat(parts[0])), parts[0])
+      test.ok(Boolean(parseFloat(parts[1])), parts[1])
+      test.ok(parts[0] != parts[1])
+      test.done()
+
 exports.test_stringify_with_objects = (test) ->
   bot = new TestCase(test, """
     > object hello javascript
@@ -476,3 +469,23 @@ exports.test_stringify_with_objects = (test) ->
   expect = '! version = 2.0\n! local concat = none\n\n> object hello javascript\n\treturn "Hello";\n< object\n\n> object exclaim javascript\n\treturn "!";\n< object\n\n+ my name is *\n- hello there<call>exclaim</call>and i like continues\n'
   test.equal(src, expect)
   test.done()
+
+exports.test_macro_hooks = (test) ->
+  bot = new TestCase(test, """
+    > object redirect javascript
+      return rs.replyPromisified(rs.currentUser(), "finish", null, true, arguments[2]);
+    < object
+    + start
+    - <call>redirect</call>
+    + finish
+    $ GET https://swapi.co/planets/1
+    - Welcome to %var
+  """)
+  afterMatch = (matches) ->
+    for reply, idx in matches.matched.reply
+      matches.matched.reply[idx] = reply.replace('%var', 'foo') 
+    new Promise((resolve)->resolve(''))
+
+  bot.replyPromisified("start", "Welcome to foo", [null, false, {onAfterMatch: afterMatch}])
+  .catch (err) -> test.ok(false, err.stack)
+  .then -> test.done()
