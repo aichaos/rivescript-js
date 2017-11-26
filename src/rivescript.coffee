@@ -33,6 +33,7 @@ inherit_utils = require "./inheritance"
 JSObjectHandler = require "./lang/javascript"
 RSVP = require("rsvp")
 readDir = require("fs-readdir-recursive")
+jQuery = require("jquery")
 
 ##
 # RiveScript (hash options)
@@ -393,7 +394,7 @@ class RiveScript
   # Load a file using ajax. DO NOT CALL THIS DIRECTLY.
   _ajaxLoadFile: (loadCount, file, onSuccess, onError) ->
     # Make the ajax request with jQuery. TODO: don't use jQuery.
-    $.ajax
+    jQuery.ajax
       url: file
       dataType: "text"
       success: (data, textStatus, xhr) =>
