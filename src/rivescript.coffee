@@ -394,28 +394,31 @@ class RiveScript
   _ajaxLoadFile: (loadCount, file, onSuccess, onError) ->
 
     xhr = new XMLHttpRequest();
-    xhr.open('GET', file);
+    xhr.open "GET", file, true
     xhr.onreadystatechange  = () ->
+      console.log(xhr.readyState);
+
       if xhr.readyState is 4
-        if xhr.status == 200
+        if xhr.status is 200
+            console.log('we hebben status 200');
 
-          @say "Loading file #{file} complete."
+            @say "Loading file #{file} complete."
 
-          # Parse it!
-          @parse file, data, onError
+            # Parse it!
+            @parse file, data, onError
 
-          # Log that we've received this file.
-          delete @_pending[loadCount][file]
+            # Log that we've received this file.
+            delete @_pending[loadCount][file]
 
-          # All gone?
-          if Object.keys(@_pending[loadCount]).length is 0
-            if typeof(onSuccess) is "function"
-              onSuccess.call undefined, loadCount
+            # All gone?
+            if Object.keys(@_pending[loadCount]).length is 0
+              if typeof(onSuccess) is "function"
+                onSuccess.call undefined, loadCount
 
-        else
-          @say "Ajax error! #{textStatus}; #{errorThrown}"
-          if typeof(onError) is "function"
-            onError.call undefined, textStatus, loadCount
+          else
+            @say "Ajax error! #{textStatus}; #{errorThrown}"
+            if typeof(onError) is "function"
+              onError.call undefined, textStatus, loadCount
 
 
   # Load a file using node. DO NOT CALL THIS DIRECTLY.
