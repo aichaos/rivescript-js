@@ -33,7 +33,6 @@ inherit_utils = require "./inheritance"
 JSObjectHandler = require "./lang/javascript"
 RSVP = require("rsvp")
 readDir = require("fs-readdir-recursive")
-jQuery = require("jquery")
 
 ##
 # RiveScript (hash options)
@@ -393,27 +392,31 @@ class RiveScript
 
   # Load a file using ajax. DO NOT CALL THIS DIRECTLY.
   _ajaxLoadFile: (loadCount, file, onSuccess, onError) ->
-    # Make the ajax request with jQuery. TODO: don't use jQuery.
-    jQuery.ajax
-      url: file
-      dataType: "text"
-      success: (data, textStatus, xhr) =>
-        @say "Loading file #{file} complete."
 
-        # Parse it!
-        @parse file, data, onError
+    xhr = new XMLHttpRequest();
+    xhr.open('GET', file);
+    xhr.onreadystatechange  = () ->
+      if xhr.readyState is 4
+        if xhr.status == 200
 
-        # Log that we've received this file.
-        delete @_pending[loadCount][file]
+          @say "Loading file #{file} complete."
 
-        # All gone?
-        if Object.keys(@_pending[loadCount]).length is 0
-          if typeof(onSuccess) is "function"
-            onSuccess.call undefined, loadCount
-      error: (xhr, textStatus, errorThrown) =>
-        @say "Ajax error! #{textStatus}; #{errorThrown}"
-        if typeof(onError) is "function"
-          onError.call undefined, textStatus, loadCount
+          # Parse it!
+          @parse file, data, onError
+
+          # Log that we've received this file.
+          delete @_pending[loadCount][file]
+
+          # All gone?
+          if Object.keys(@_pending[loadCount]).length is 0
+            if typeof(onSuccess) is "function"
+              onSuccess.call undefined, loadCount
+
+        else
+          @say "Ajax error! #{textStatus}; #{errorThrown}"
+          if typeof(onError) is "function"
+            onError.call undefined, textStatus, loadCount
+
 
   # Load a file using node. DO NOT CALL THIS DIRECTLY.
   _nodeLoadFile: (loadCount, file, onSuccess, onError) ->
