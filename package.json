@@ -69,7 +69,7 @@
     "test": "grunt test"
   },
   "dependencies": {
-		"jquery": "^3.2.1",
+    "jquery": "^3.2.1",
     "fs-readdir-recursive": "^1.0.0",
     "rsvp": "^3.1.0"
   },
