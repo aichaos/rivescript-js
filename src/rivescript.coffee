@@ -392,27 +392,34 @@ class RiveScript
 
   # Load a file using ajax. DO NOT CALL THIS DIRECTLY.
   _ajaxLoadFile: (loadCount, file, onSuccess, onError) ->
-    # Make the ajax request with jQuery. TODO: don't use jQuery.
-    $.ajax
-      url: file
-      dataType: "text"
-      success: (data, textStatus, xhr) =>
-        @say "Loading file #{file} complete."
 
-        # Parse it!
-        @parse file, data, onError
+    xhr = new XMLHttpRequest();
+    xhr.open "GET", file, true
+    xhr.onreadystatechange  = () =>
 
-        # Log that we've received this file.
-        delete @_pending[loadCount][file]
+      if xhr.readyState is 4
+        if xhr.status in [0, 200]
 
-        # All gone?
-        if Object.keys(@_pending[loadCount]).length is 0
-          if typeof(onSuccess) is "function"
-            onSuccess.call undefined, loadCount
-      error: (xhr, textStatus, errorThrown) =>
-        @say "Ajax error! #{textStatus}; #{errorThrown}"
-        if typeof(onError) is "function"
-          onError.call undefined, textStatus, loadCount
+          @say "Loading file #{file} complete."
+
+          # Parse it!
+          @parse file, xhr.responseText, onError
+
+          # Log that we've received this file.
+          delete @_pending[loadCount][file]
+
+          # All gone?
+          if Object.keys(@_pending[loadCount]).length is 0
+            if typeof(onSuccess) is "function"
+              onSuccess.call undefined, loadCount
+
+        else
+          @say "Ajax error! #{xhr.statusText}; #{xhr.status}"
+          if typeof(onError) is "function"
+            onError.call undefined, xhr.statusText, loadCount
+
+    xhr.send null
+
 
   # Load a file using node. DO NOT CALL THIS DIRECTLY.
   _nodeLoadFile: (loadCount, file, onSuccess, onError) ->
