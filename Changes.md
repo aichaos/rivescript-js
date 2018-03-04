@@ -1,5 +1,13 @@
 # Changes
 
+* 1.19.0 2018-03-04
+  - Add the new `?Keyword` command to work around the problem that Unicode
+    text wouldn't match properly with optional wildcards. For example,
+    `+ [*] 你好 [*]` wasn't able to match messages containing the word "你好"
+    in the same way as it would if the keyword were using only ASCII symbols.
+    Now, the command `? 你好` will allow you to match that keyword anywhere in
+    a user's message. (PR #256)
+
 * 1.18.0 2017-11-27
   - Fix an infinite loop when using a number as a substitution (PR #206)
   - Optimize substitution algorithm (including person substitutions) to be
