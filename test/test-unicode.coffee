@@ -74,6 +74,35 @@ exports.test_wildcards = (test) ->
   bot.reply("I am 5 years old", "A lot of people are 5 years old.")
   test.done()
 
+# The ?Keyword works around `+ [*] keyword [*]` syntax not working with Unicode.
+exports.test_unicode_keyword = (test) ->
+  bot = new TestCase(test, """
+    ? 你好
+    - Matched 你好 keyword.
+
+    ? пиво
+    - Matched пиво keyword.
+
+    ? some ascii
+    - Matched some ascii keyword.
+  """, {utf8: true})
+
+  bot.reply("你好", "Matched 你好 keyword.")
+  bot.reply("a 你好 b", "Matched 你好 keyword.")
+  bot.reply("你好你好你好", "Matched 你好 keyword.")
+
+  bot.reply("пиво", "Matched пиво keyword.")
+  bot.reply("x пиво y", "Matched пиво keyword.")
+  bot.reply("xпивоy", "Matched пиво keyword.")
+  bot.reply("пивопивопиво", "Matched пиво keyword.")
+
+  bot.reply("some ascii", "Matched some ascii keyword.")
+  bot.reply("want some ascii?", "Matched some ascii keyword.")
+  bot.reply("some ascii is ok", "Matched some ascii keyword.")
+  bot.reply("send some ascii to me", "Matched some ascii keyword.")
+
+  test.done()
+
 exports.test_punctuation = (test) ->
   bot = new TestCase(test, """
     + hello bot
