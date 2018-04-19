@@ -664,7 +664,7 @@ class Parser
         else if line.match(/[^A-Za-z0-9_\-\s]/)
           return "Topics should contain only letters and numbers in forceCase mode"
       else if parts[0] is "object"
-        if line.match(/[^A-Za-z0-9\_\-\s]/)
+        if line.match(/[^A-Za-z0-9_\-\s]/)
           return "Objects can only contain numbers and letters"
     else if cmd is "+" or cmd is "%" or cmd is "@"
       # + Trigger, % Previous, @ Redirect
