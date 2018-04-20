@@ -182,6 +182,8 @@ class Parser
             "*#{line}*",
             "[*]#{line}*",
             "*#{line}[*]",
+            "#{line}*",
+            "*#{line}",
         ]
         cmd = "+"
         line = "(" + variants.join("|") + ")"
