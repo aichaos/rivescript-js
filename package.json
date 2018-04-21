@@ -69,8 +69,7 @@
     "test": "grunt test"
   },
   "dependencies": {
-    "fs-readdir-recursive": "^1.0.0",
-    "rsvp": "^3.1.0"
+    "fs-readdir-recursive": "^1.0.0"
   },
   "typings": "rivescript.d.ts"
 }
