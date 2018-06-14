@@ -180,18 +180,28 @@ may work right now, a future update will probably rigidly enforce this).
 
 I use npm run scripts to handle various build tasks.
 
-* `npm run build` - Compiles the CoffeeScript in the `src/` folder into
-  ES2015+ JavaScript in the `lib/` folder.
-* `npm run lint` - Runs `coffeelint` on the source.
-* `npm run test` - Builds RiveScript, compiles the CoffeeScript unit test files,
-  and runs them with `nodeunit`
-* `npm run dist` - Produces a full distributable build. CoffeeScript is compiled,
-  Babel translates it to ES5-compatible code, and webpack/uglify is applied.
-* `npm run webpack` - Runs Babel to take the ES2015+ code in `lib/` and output
-  ES5-compatible code in `lib.babel/`, and then runs `webpack` to create
-  `dist/rivescript.js`
+* `npm run build` - Compiles the ES2015+ sources from `src/` with Babel and
+  outputs them into `lib/`
+* `npm run test` - Builds the source with Babel per above, builds the ES2015+
+  test scripts in `test/` and outputs them into `test.babel/` and then runs
+  `nodeunit` on it.
+* `npm run dist` - Produces a full distributable build. Source is built with
+  Babel and then handed off to webpack and uglify for browser builds.
+* `npm run webpack` - Creates `dist/rivescript.js` from the ES2015+ sources
+  directly from `src/` (using `babel-loader`). This command is independent from
+  `npm run build` and could be run without leaving any ES5 code sitting around.
 * `npm run uglify` - Minifies `dist/rivescript.js` to `dist/rivescript.min.js`
 * `npm run clean` - Clean up all the build files.
+
+If your local Node version is >= 7 (supports Async/Await), you can run the
+ES2015+ sources directly without needing to run any npm scripts. For that
+purpose, I have a Makefile.
+
+* `make setup` - sets up the dev environment, installs dependencies, etc.
+* `make run` - runs `shell.js` pointed at the example brain. This script runs
+  natively on the ES2015+ sources, no build steps needed.
+* `make test` - runs `nodeunit` on the ES2015+ test sources directly without
+  building them as `npm run test` would.
 
 ## GRUNT SERVER
 

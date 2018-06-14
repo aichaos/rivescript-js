@@ -1,7 +1,19 @@
+const path = require("path");
+
 module.exports = {
-	entry: "./lib/rivescript.js",
+	entry: ["babel-polyfill", "./src/rivescript.js"],
 	output: {
-		filename: "./dist/rivescript.js"
+		filename: "rivescript.js",
+		path: path.resolve(__dirname, "dist"),
+		library: "RiveScript"
+	},
+	module: {
+		rules: [
+			{
+				test: /\.js$/,
+				loader: "babel-loader"
+			}
+		]
 	},
 	node: {
 		fs: "empty"

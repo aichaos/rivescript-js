@@ -3,12 +3,15 @@
 /******************************************************************************
  * Interactive RiveScript Shell for quickly testing your RiveScript bot.      *
  *                                                                            *
+ * Requires Node 7 or greater with async/await support. This module can be    *
+ * built and webpacked with Node <= 6 but this shell script won't run.        *
+ *                                                                            *
  * Usage: node shell.js /path/to/brain                                        *
  ******************************************************************************/
 
 var readline = require("readline"),
 	fs = require("fs"),
-	RiveScript = require("./lib/rivescript");
+	RiveScript = require("./src/rivescript");
 
 //------------------------------------------------------------------------------
 // Accept command line parameters.
