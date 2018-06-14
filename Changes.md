@@ -1,5 +1,27 @@
 # Changes
 
+* 1.19.0 2018-03-04
+  - Add the new `?Keyword` command to work around the problem that Unicode
+    text wouldn't match properly with optional wildcards. For example,
+    `+ [*] 你好 [*]` wasn't able to match messages containing the word "你好"
+    in the same way as it would if the keyword were using only ASCII symbols.
+    Now, the command `? 你好` will allow you to match that keyword anywhere in
+    a user's message. (PR #256)
+
+* 1.18.0 2017-11-27
+  - Fix an infinite loop when using a number as a substitution (PR #206)
+  - Optimize substitution algorithm (including person substitutions) to be
+    more performant when you have a large set of substitutions defined (PR #208)
+  - Add support for defining a global concatenation option when constructing
+    the RiveScript object. This will set the default concat mode when
+    parsing files that didn't define their own local mode (PR #209)
+  - Add API function `lastTriggers(username)` to retrieve the full set of
+    triggers that were last matched for that user. For example, if some triggers
+    redirected to others, all the triggers that were touched will be
+    returned by this function (PR #217)
+  - Remove dependency on jQuery for loading files in a web environment and
+    instead use a standard `XMLHttpRequest` (PR #251)
+
 * 1.17.2 2017-01-19
   - Fix `<call>` tags not working inside of the `@Redirect` command and the
     inline redirect `{@}` tag. Note that only *synchronous* object macros that

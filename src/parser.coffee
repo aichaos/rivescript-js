@@ -169,6 +169,24 @@ class Parser
       if line.indexOf(" //") > -1
         line = utils.strip(line.split(" //")[0])
 
+      # Allow the ?Keyword command to work around UTF-8 bugs for users who
+      # wanted to use `+ [*] keyword [*]` with Unicode symbols that don't match
+      # properly with the usual "optional wildcard" syntax.
+      if cmd is "?"
+        # The ?Keyword command is really an alias to +Trigger with some workarounds
+        # to make it match the keyword _anywhere_, in every variation so it works
+        # with Unicode strings.
+        variants = [
+            line,
+            "[*]#{line}[*]",
+            "*#{line}*",
+            "[*]#{line}*",
+            "*#{line}[*]",
+        ]
+        cmd = "+"
+        line = "(" + variants.join("|") + ")"
+        @say "Rewrote ?Keyword as +Trigger: #{line}"
+
       # In the event of a +Trigger, if we are force-lowercasing it, then do so
       # now before the syntax check.
       if @master._forceCase is true and cmd is "+"
@@ -646,7 +664,7 @@ class Parser
         else if line.match(/[^A-Za-z0-9_\-\s]/)
           return "Topics should contain only letters and numbers in forceCase mode"
       else if parts[0] is "object"
-        if line.match(/[^A-Za-z0-9\_\-\s]/)
+        if line.match(/[^A-Za-z0-9_\-\s]/)
           return "Objects can only contain numbers and letters"
     else if cmd is "+" or cmd is "%" or cmd is "@"
       # + Trigger, % Previous, @ Redirect

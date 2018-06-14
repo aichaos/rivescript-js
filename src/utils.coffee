@@ -54,7 +54,7 @@ exports.word_count = (trigger, all) ->
   if all
     words = trigger.split /\s+/
   else
-    words = trigger.split /[\s\*\#\_\|]+/
+    words = trigger.split /[\s\*\#_\|]+/
 
   wc = 0
   for word in words
