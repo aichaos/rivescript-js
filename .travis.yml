@@ -5,9 +5,6 @@ node_js:
   - "7"
   - "6"
   - "5"
-  - "4"
-  - "0.12"
-  - "iojs"
 before_install:
   - npm install -g babel-cli webpack uglify-js coffeescript nodeunit
 script: npm run test
