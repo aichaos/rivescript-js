@@ -2,6 +2,9 @@
 
 ! version = 2.0
 
+// <call>setvar $username $key $value</call>
+// Set a user variable for $username.
+// Equivalent to <set $key=$value> but for a specific username.
 > object setvar javascript
 	// Example of how to get the current user's ID and set
 	// variables for them.
@@ -11,6 +14,8 @@
 	rs.setUservar(uid, name, value);
 < object
 
+// <call>add $a $b</call>
+// Adds two integers and returns the result.
 > object add javascript
 	// Demonstrats that JS objects can return numbers.
 	var a = parseInt(args[0]);
@@ -18,6 +23,8 @@
 	return a + b;
 < object
 
+// <call>await-me $timeout $message</call>
+// Resolves $message after $timeout seconds.
 > object await-me javascript
 	var timeout = args[0];
 	var message = args[1];
@@ -28,6 +35,24 @@
 		setTimeout(function() {
 			resolve(message);
 		}, timeout*1000);
+	});
+< object
+
+// <call>wait-limited $timeout $maxTimeout</call>
+// If the $timeout > $maxTimeout, it resolves "too long" immediately.
+// Otherwise it waits $timeout seconds and resolves "done"
+> object wait-limited javascript
+	var timeout = parseInt(args[0]);
+	var max     = parseInt(args[1]);
+
+	return new Promise(function(resolve, reject) {
+		if (timeout > max) {
+			resolve("too long");
+		} else {
+			setTimeout(function() {
+				resolve("done");
+			}, timeout*1000);
+		}
 	});
 < object
 
@@ -45,3 +70,7 @@
 * <call>await-me 2 2</call> == 2 => Two seconds.
 * <call>await-me 3 3</call> == 2 => Three seconds.
 - I can't figure that out.
+
++ can you wait # seconds
+* <call>wait-limited <star> 6</call> == done => I can!
+- No the longest I'll wait is 6 seconds.
