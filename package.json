@@ -13,18 +13,18 @@
   ],
   "homepage": "https://www.rivescript.com/",
   "author": "Noah Petherbridge <root@kirsle.net> (https://www.kirsle.net/)",
-  "main": "lib/rivescript.js",
+  "main": "src/rivescript.js",
   "files": [
     "README.md",
     "LICENSE",
     "Changes.md",
     "rivescript.d.ts",
-    "lib/",
+    "src/",
     "dist/",
     "docs/"
   ],
   "directories": {
-    "lib": "lib",
+    "lib": "src",
     "doc": "docs"
   },
   "repository": {
