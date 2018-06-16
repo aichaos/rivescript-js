@@ -22,7 +22,7 @@ near future.
 */
 
 // Constants
-const VERSION = "2.0.0-alpha.2";
+const VERSION = "2.0.0-alpha.3";
 
 // Helper modules
 const Parser = require("./parser");
