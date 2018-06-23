@@ -7,114 +7,211 @@ TestCase = require("./test-base");
 // RiveScript API Tests
 //###############################################################################
 exports.test_load_directory_recursively = function(test) {
-  var bot;
-  bot = new TestCase(test, "+ *\n- No, this failed.");
-  return bot.rs.loadDirectory('./test/fixtures', async function() {
-    bot.rs.sortReplies();
-    await bot.reply("Did the root directory rivescript load?", "Yes, the root directory rivescript loaded.");
-    await bot.reply("Did the recursive directory rivescript load?", "Yes, the recursive directory rivescript loaded.");
-    return test.done();
-  }, function() {
-    return test.equal(true, false); // Throw error
-  });
+    var bot;
+    bot = new TestCase(test, `
+        + *
+        - No, this failed.
+	`);
+    return bot.rs.loadDirectory('./test/fixtures', async function() {
+        bot.rs.sortReplies();
+        await bot.reply("Did the root directory rivescript load?", "Yes, the root directory rivescript loaded.");
+        await bot.reply("Did the recursive directory rivescript load?", "Yes, the recursive directory rivescript loaded.");
+        return test.done();
+    }, function() {
+        return test.equal(true, false); // Throw error
+    });
 };
 
 exports.test_default_error_messages = async function(test) {
-  var DEF_NOT_FOUND, DEF_NOT_MATCH, DEF_NO_OBJECT, DEF_RECURSION, bot;
-  bot = new TestCase(test, "+ condition only\n* <get name> == Aiden => Your name is Aiden!\n\n+ recursion\n- {@recursion}\n\n+ impossible object\n- Here we go: <call>unhandled</call>\n\n> object unhandled rust\n  return \"Hello world\"\n< object");
-  DEF_NOT_FOUND = "ERR: No Reply Found";
-  DEF_NOT_MATCH = "ERR: No Reply Matched";
-  DEF_NO_OBJECT = "[ERR: Object Not Found]";
-  DEF_RECURSION = "ERR: Deep Recursion Detected";
-  await bot.reply("condition only", DEF_NOT_FOUND);
-  await bot.reply("hello bot", DEF_NOT_MATCH);
-  await bot.reply("impossible object", `Here we go: ${DEF_NO_OBJECT}`);
-  await bot.reply("recursion", DEF_RECURSION);
-  // Set some error handlers manually, one at a time.
-  bot.rs.errors.replyNotFound = "I didn't find a reply!";
-  await bot.reply("condition only", "I didn't find a reply!");
-  await bot.reply("hello bot", DEF_NOT_MATCH);
-  await bot.reply("impossible object", `Here we go: ${DEF_NO_OBJECT}`);
-  await bot.reply("recursion", DEF_RECURSION);
-  bot.rs.errors.replyNotMatched = "I don't even know what to say to that!";
-  await bot.reply("condition only", "I didn't find a reply!");
-  await bot.reply("hello bot", "I don't even know what to say to that!");
-  await bot.reply("impossible object", `Here we go: ${DEF_NO_OBJECT}`);
-  await bot.reply("recursion", DEF_RECURSION);
-  bot.rs.errors.objectNotFound = "I can't handle this object!";
-  await bot.reply("condition only", "I didn't find a reply!");
-  await bot.reply("hello bot", "I don't even know what to say to that!");
-  await bot.reply("impossible object", "Here we go: I can't handle this object!");
-  await bot.reply("recursion", DEF_RECURSION);
-  bot.rs.errors.deepRecursion = "I'm going too far down the rabbit hole.";
-  await bot.reply("condition only", "I didn't find a reply!");
-  await bot.reply("hello bot", "I don't even know what to say to that!");
-  await bot.reply("impossible object", "Here we go: I can't handle this object!");
-  await bot.reply("recursion", "I'm going too far down the rabbit hole.");
-  return test.done();
+    var DEF_NOT_FOUND, DEF_NOT_MATCH, DEF_NO_OBJECT, DEF_RECURSION, bot;
+    bot = new TestCase(test, `
+        + condition only
+        * <get name> == Aiden => Your name is Aiden!
+
+        + recursion
+        - {@recursion}
+
+        + impossible object
+        - Here we go: <call>unhandled</call>
+
+        > object unhandled rust
+          return \"Hello world\"
+        < object
+	`);
+    DEF_NOT_FOUND = "ERR: No Reply Found";
+    DEF_NOT_MATCH = "ERR: No Reply Matched";
+    DEF_NO_OBJECT = "[ERR: Object Not Found]";
+    DEF_RECURSION = "ERR: Deep Recursion Detected";
+    await bot.reply("condition only", DEF_NOT_FOUND);
+    await bot.reply("hello bot", DEF_NOT_MATCH);
+    await bot.reply("impossible object", `Here we go: ${DEF_NO_OBJECT}`);
+    await bot.reply("recursion", DEF_RECURSION);
+    // Set some error handlers manually, one at a time.
+    bot.rs.errors.replyNotFound = "I didn't find a reply!";
+    await bot.reply("condition only", "I didn't find a reply!");
+    await bot.reply("hello bot", DEF_NOT_MATCH);
+    await bot.reply("impossible object", `Here we go: ${DEF_NO_OBJECT}`);
+    await bot.reply("recursion", DEF_RECURSION);
+    bot.rs.errors.replyNotMatched = "I don't even know what to say to that!";
+    await bot.reply("condition only", "I didn't find a reply!");
+    await bot.reply("hello bot", "I don't even know what to say to that!");
+    await bot.reply("impossible object", `Here we go: ${DEF_NO_OBJECT}`);
+    await bot.reply("recursion", DEF_RECURSION);
+    bot.rs.errors.objectNotFound = "I can't handle this object!";
+    await bot.reply("condition only", "I didn't find a reply!");
+    await bot.reply("hello bot", "I don't even know what to say to that!");
+    await bot.reply("impossible object", "Here we go: I can't handle this object!");
+    await bot.reply("recursion", DEF_RECURSION);
+    bot.rs.errors.deepRecursion = "I'm going too far down the rabbit hole.";
+    await bot.reply("condition only", "I didn't find a reply!");
+    await bot.reply("hello bot", "I don't even know what to say to that!");
+    await bot.reply("impossible object", "Here we go: I can't handle this object!");
+    await bot.reply("recursion", "I'm going too far down the rabbit hole.");
+    return test.done();
 };
 
 exports.test_error_constructor_configuration = async function(test) {
-  var bot;
-  bot = new TestCase(test, "+ condition only\n* <get name> == Aiden => Your name is Aiden!\n\n+ recursion\n- {@recursion}\n\n+ impossible object\n- Here we go: <call>unhandled</call>\n\n> object unhandled rust\n  return \"Hello world\"\n< object", {
-    errors: {
-      replyNotFound: "I didn't find a reply!",
-      replyNotMatched: "I don't even know what to say to that!",
-      objectNotFound: "I can't handle this object!",
-      deepRecursion: "I'm going too far down the rabbit hole."
-    }
-  });
-  await bot.reply("condition only", "I didn't find a reply!");
-  await bot.reply("hello bot", "I don't even know what to say to that!");
-  await bot.reply("impossible object", "Here we go: I can't handle this object!");
-  await bot.reply("recursion", "I'm going too far down the rabbit hole.");
-  return test.done();
+    var bot;
+    bot = new TestCase(test, `
+        + condition only
+        * <get name> == Aiden => Your name is Aiden!
+
+        + recursion
+        - {@recursion}
+
+        + impossible object
+        - Here we go: <call>unhandled</call>
+
+        > object unhandled rust
+          return \"Hello world\"
+        < object
+    `, {
+        errors: {
+            replyNotFound: "I didn't find a reply!",
+            replyNotMatched: "I don't even know what to say to that!",
+            objectNotFound: "I can't handle this object!",
+            deepRecursion: "I'm going too far down the rabbit hole."
+        }
+    });
+    await bot.reply("condition only", "I didn't find a reply!");
+    await bot.reply("hello bot", "I don't even know what to say to that!");
+    await bot.reply("impossible object", "Here we go: I can't handle this object!");
+    await bot.reply("recursion", "I'm going too far down the rabbit hole.");
+    return test.done();
 };
 
 exports.test_redirect_with_undefined_input = async function(test) {
-  var bot;
-  // <@> test
-  bot = new TestCase(test, "+ test\n- {topic=test}{@hi}\n\n> topic test\n  + hi\n  - hello\n\n  + *\n  - {topic=random}<@>\n< topic\n\n+ *\n- Wildcard \"<star>\"!");
-  await bot.reply("test", "hello");
-  await bot.reply("?", "Wildcard \"\"!");
-  // empty variable test
-  bot = new TestCase(test, "! var globaltest = set test name test\n\n+ test\n- {topic=test}{@<get test_name>}\n\n+ test without redirect\n- {topic=test}<get test_name>\n\n+ set test name *\n- <set test_name=<star>>{@test}\n\n+ get global test\n@ <bot globaltest>\n\n+ get bad global test\n@ <bot badglobaltest>\n\n> topic test\n  + test\n  - hello <get test_name>!{topic=random}\n\n  + *\n  - {topic=random}<@>\n< topic\n\n+ *\n- Wildcard \"<star>\"!");
-  // No variable set, should go through wildcard
-  await bot.reply("test", "Wildcard \"undefined\"!");
-  await bot.reply("test without redirect", "undefined");
-  // Variable set, should respond with text
-  await bot.reply("set test name test", "hello test!");
-  // Different variable set, should get wildcard
-  await bot.reply("set test name newtest", "Wildcard \"newtest\"!");
-  // Test redirects using bot variable.
-  await bot.reply("get global test", "hello test!");
-  await bot.reply("get bad global test", "Wildcard \"undefined\"!");
-  return test.done();
+    var bot;
+    // <@> test
+    bot = new TestCase(test, `
+        + test
+        - {topic=test}{@hi}
+
+        > topic test
+          + hi
+          - hello
+
+          + *
+          - {topic=random}<@>
+        < topic
+
+        + *
+        - Wildcard \"<star>\"!
+	`);
+    await bot.reply("test", "hello");
+    await bot.reply("?", "Wildcard \"\"!");
+    // empty variable test
+    bot = new TestCase(test, `
+        ! var globaltest = set test name test
+
+        + test
+        - {topic=test}{@<get test_name>}
+
+        + test without redirect
+        - {topic=test}<get test_name>
+
+        + set test name *
+        - <set test_name=<star>>{@test}
+
+        + get global test
+        @ <bot globaltest>
+
+        + get bad global test
+        @ <bot badglobaltest>
+
+        > topic test
+          + test
+          - hello <get test_name>!{topic=random}
+
+          + *
+          - {topic=random}<@>
+        < topic
+
+        + *
+        - Wildcard \"<star>\"!
+	`);
+    // No variable set, should go through wildcard
+    await bot.reply("test", "Wildcard \"undefined\"!");
+    await bot.reply("test without redirect", "undefined");
+    // Variable set, should respond with text
+    await bot.reply("set test name test", "hello test!");
+    // Different variable set, should get wildcard
+    await bot.reply("set test name newtest", "Wildcard \"newtest\"!");
+    // Test redirects using bot variable.
+    await bot.reply("get global test", "hello test!");
+    await bot.reply("get bad global test", "Wildcard \"undefined\"!");
+    return test.done();
 };
 
 exports.test_initialmatch = async function(test) {
-  var bot;
-  bot = new TestCase(test, "! array thanks = thanks|thank you\n\n+ (hello|ni hao)\n@ hi\n\n+ hi\n- Oh hi. {@phrase}\n\n+ phrase\n- How are you?\n\n+ good\n- That's great.\n\n+ @thanks{weight=2}\n- No problem. {@phrase}\n\n+ *\n- I don't know.");
-  await bot.reply("Hello?", "Oh hi. How are you?");
-  bot.uservar("__lastmatch__", "phrase");
-  bot.uservar("__initialmatch__", "(hello|ni hao)");
-  await bot.reply("Good!", "That's great.");
-  bot.uservar("__lastmatch__", "good");
-  bot.uservar("__initialmatch__", "good");
-  await bot.reply("Thanks!", "No problem. How are you?");
-  bot.uservar("__lastmatch__", "phrase");
-  bot.uservar("__initialmatch__", "@thanks{weight=2}");
-  return test.done();
+    var bot;
+    bot = new TestCase(test, `
+        ! array thanks = thanks|thank you
+
+        + (hello|ni hao)
+        @ hi
+
+        + hi
+        - Oh hi. {@phrase}
+
+        + phrase
+        - How are you?
+
+        + good
+        - That's great.
+
+        + @thanks{weight=2}
+        - No problem. {@phrase}
+
+        + *
+        - I don't know.
+	`);
+    await bot.reply("Hello?", "Oh hi. How are you?");
+    bot.uservar("__lastmatch__", "phrase");
+    bot.uservar("__initialmatch__", "(hello|ni hao)");
+    await bot.reply("Good!", "That's great.");
+    bot.uservar("__lastmatch__", "good");
+    bot.uservar("__initialmatch__", "good");
+    await bot.reply("Thanks!", "No problem. How are you?");
+    bot.uservar("__lastmatch__", "phrase");
+    bot.uservar("__initialmatch__", "@thanks{weight=2}");
+    return test.done();
 };
 
 exports.test_valid_history = async function(test) {
-  var bot;
-  bot = new TestCase(test, "+ hello\n- Hi!\n\n+ bye\n- Goodbye!");
-  await bot.reply("Hello", "Hi!");
-  // Intentionally set a bad history.
-  bot.rs.setUservar(bot.username, "__history__", {
-    "input": ["Hello"]
-  });
-  await bot.reply("Bye!", "Goodbye!");
-  return test.done();
+    var bot;
+    bot = new TestCase(test, `
+        + hello
+        - Hi!
+
+        + bye
+        - Goodbye!
+	`);
+    await bot.reply("Hello", "Hi!");
+    // Intentionally set a bad history.
+    bot.rs.setUservar(bot.username, "__history__", {
+        "input": ["Hello"]
+    });
+    await bot.reply("Bye!", "Goodbye!");
+    return test.done();
 };

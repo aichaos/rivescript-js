@@ -638,11 +638,11 @@ class Brain {
 				break;
 			}
 			let ref = ["input", "reply"];
-			for (k = 0, len1 = ref.length; k < len1; k++) {
+			for (let k = 0, len1 = ref.length; k < len1; k++) {
 				let type = ref[k];
 				for (let i = 1; i <= 9; i++) {
 					if (regexp.indexOf(`<${type}${i}>`) > -1) {
-						regexp = regexp.replace(new RegExp(`<${type}${i}>`, "g"), self.master._users[user].__history__[type][i]);
+						regexp = regexp.replace(new RegExp(`<${type}${i}>`, "g"), self.master._users[user].__history__[type][i-1]);
 					}
 				}
 			}
@@ -730,10 +730,10 @@ class Brain {
 		reply = reply.replace(/<reply>/ig, self.master._users[user].__history__.reply[0] || "undefined");
 		for (let i = 1; i <= 9; i++) {
 			if (reply.indexOf(`<input${i}>`) > -1) {
-				reply = reply.replace(new RegExp(`<input${i}>`, "ig"), self.master._users[user].__history__.input[i]);
+				reply = reply.replace(new RegExp(`<input${i}>`, "ig"), self.master._users[user].__history__.input[i-1]);
 			}
 			if (reply.indexOf(`<reply${i}>`) > -1) {
-				reply = reply.replace(new RegExp(`<reply${i}>`, "ig"), self.master._users[user].__history__.reply[i]);
+				reply = reply.replace(new RegExp(`<reply${i}>`, "ig"), self.master._users[user].__history__.reply[i-1]);
 			}
 		}
 
