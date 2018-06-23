@@ -1,16 +1,9 @@
 # Changes
 
-## 2.0.0-alpha.2 - June 16 2018
+## 2.0.0 Alpha Release
 
 This is a major new version of RiveScript. It adds async/await support and
 makes the API asynchronous everywhere.
-
-- Decaffeinate the source code from CoffeeScript back into native JavaScript.
-- Add async/await support into the reply process, which enables support for
-  a lot of new async features, including use of `<call>` tags in
-  `*Condition` checks and for replacing the user variable session manager
-  with one backed by a database.
-- **Deprecated:** `replyAsync()`. See details below.
 
 ### Backwards Incompatible Changes
 
@@ -68,7 +61,23 @@ before to get the string reply:
 +    })
 ```
 
-## 1.19.0 - March 4 2018
+### 2.0.0-alpha.2 - June 16 2018
+
+- Decaffeinate the source code from CoffeeScript back into native JavaScript.
+- Add async/await support into the reply process, which enables support for
+  a lot of new async features, including use of `<call>` tags in
+  `*Condition` checks and for replacing the user variable session manager
+  with one backed by a database.
+- **Deprecated:** `replyAsync()`. See details below.
+
+### 2.0.0-alpha.3 - June 23 2018
+
+- Fix a runtime error when `<input>` is used in a trigger.
+- Reformatted the unit tests to use ES2015 multi-line string literals.
+
+## 1.0.0 Releases
+
+### 1.19.0 - March 4 2018
 
 - Add the new `?Keyword` command to work around the problem that Unicode
   text wouldn't match properly with optional wildcards. For example,
@@ -77,7 +86,7 @@ before to get the string reply:
   Now, the command `? 你好` will allow you to match that keyword anywhere in
   a user's message. (PR #256)
 
-## 1.18.0 - November 27 2017
+### 1.18.0 - November 27 2017
 
 - Fix an infinite loop when using a number as a substitution (PR #206)
 - Optimize substitution algorithm (including person substitutions) to be
@@ -92,14 +101,14 @@ before to get the string reply:
 - Remove dependency on jQuery for loading files in a web environment and
   instead use a standard `XMLHttpRequest` (PR #251)
 
-## 1.17.2 - January 19 2017
+### 1.17.2 - January 19 2017
 
 - Fix `<call>` tags not working inside of the `@Redirect` command and the
   inline redirect `{@}` tag. Note that only *synchronous* object macros that
   return a string response are allowed in these, just like in `*Condition`
   commands (PR #203)
 
-## 1.17.1 - December 12 2016
+### 1.17.1 - December 12 2016
 
 - Fix sorting algorithm for triggers with `%Previous`, making their sort order
   deterministic and correct regardless of the order they appeared in the
@@ -109,7 +118,7 @@ before to get the string reply:
   which was incorrect because bot variables are global and have no relation
   to a particular username.
 
-## 1.17.0 - October 11 2016
+### 1.17.0 - October 11 2016
 
 - Fix accidental double-piped wildcards caused by missing arrays (PR #176).
 - Fix tags like `{uppercase}` in the BEGIN block from affecting object macros
@@ -121,7 +130,7 @@ before to get the string reply:
 - In case of deep recursion while scanning topic inheritance trees, the error
   now includes the current topic that it gave up on (bug #167).
 
-## 1.16.0 - September 6 2016
+### 1.16.0 - September 6 2016
 
 - Add TypeScript declaration files (PR #162).
 - Add a `--watch` option to `shell.js` to automatically reload the bot's
@@ -130,7 +139,7 @@ before to get the string reply:
   data into the RiveScript library and potentially raising an exception
   from within there; bug #165).
 
-## 1.15.0 - August 7 2016
+### 1.15.0 - August 7 2016
 
 - Add a new contructor option, `forceCase`, which will force-lowercase your
   triggers during parse time, enabling authors to use uppercase letters in
@@ -151,7 +160,7 @@ before to get the string reply:
 - Add more documentation to the `rs.Promise` function, including a full
   example of how to use the `replyAsync()` method (bug #144).
 
-## 1.14.0 - July 9 2016
+### 1.14.0 - July 9 2016
 
 - Add a new API function: `getUserTopicTriggers` returns a list of triggers
   available from a user's current topic, including triggers that came from
@@ -164,7 +173,7 @@ before to get the string reply:
   using RiveScript with Hubot.
 - Add a new ASCII logo to the header output of `shell.js` and `shell.coffee`
 
-## 1.13.0 - June 14 2016
+### 1.13.0 - June 14 2016
 
 - Fix the `<call>` tags not being executed on the left side of conditionals,
   so that `<call>test</call> == true => Success` types of conditions should
@@ -180,19 +189,19 @@ before to get the string reply:
   the original trigger that the user matched instead of a redirected trigger
   (PR #127).
 
-## 1.12.2 - May 16 2016
+### 1.12.2 - May 16 2016
 
 - Call the error handler on `loadDirectory()` when the directory doesn't exist
   or isn't a directory (bug #117).
 - Include the `dist/` directory on npm for easy web browser embedding using
   unpkg.
 
-## 1.12.1 - May 5 2016
+### 1.12.1 - May 5 2016
 
 - Fix the `<call>...</call>` regular expression to match line break characters
   and preserve them in the argument list sent to an object macro (bug #108).
 
-## 1.12.0 - April 17 2016
+### 1.12.0 - April 17 2016
 
 - Fix the `stringify()` function to also escape newlines on conditionals.
 - Various fixes to "pipe syntax" for arrays, optionals and alternations;
@@ -202,7 +211,7 @@ before to get the string reply:
 - Added additional documentation for the usage of `deparse()` and related
   functions to the `eg/deparse` directory.
 
-## 1.10.0 - March 30 2016
+### 1.10.0 - March 30 2016
 
 - Fix a bug where `! local concat` settings wouldn't apply to the first
   continuation of a conditional (bug #88)
@@ -219,7 +228,7 @@ before to get the string reply:
 - Add command line arguments to `shell.js` and `shell.coffee`: use `--debug`
   to enable verbose debug logging and `--utf8` to enable UTF-8 mode.
 
-## 1.8.0 - March 18 2016
+### 1.8.0 - March 18 2016
 
 - Update the way the `args` array works in JavaScript object macros: it now
   uses a shell-style array where quoted strings come in as one array element,
@@ -230,24 +239,24 @@ before to get the string reply:
 - Fix a bug when looking for `%Previous` tags, so that if the current topic
   has no `%Previous` trigger RiveScript won't bother looking for them.
 
-## 1.6.0 - March 8 2016
+### 1.6.0 - March 8 2016
 
 - Update the `deparse()` and `stringify()` functions to include the source
   code of JavaScript object macros in the output.
 - Update the `loadDirectory()` function to load RiveScript files recursively.
 
-## 1.4.0 - February 11 2016
+### 1.4.0 - February 11 2016
 
 - Add support for asynchronous object macros (using promises via RSVP.js),
   and the accompanying `replyAsync()` function and example code.
 - Add ability to use an array in a reply element as a shortcut for random
   text: `- (@myArray)` translates to `- {random}my|array|content{/random}`.
 
-## 1.2.1 - February 3 2016
+### 1.2.1 - February 3 2016
 
 - Fix `setSubroutine()` not accepting a function object as an argument.
 
-## 1.2.0 - December 29 2015
+### 1.2.0 - December 29 2015
 
 - Fix looping over object keys by adding a check for `hasOwnProperty()`, to
   prevent third party JavaScript libraries from modifying the root `Object`
@@ -259,24 +268,24 @@ before to get the string reply:
 - Add methods `deparse()`, `stringify()` and `write()` to assist with user
   interface development (bug #61)
 
-## 1.1.8 - December 28 2015
+### 1.1.8 - December 28 2015
 
 - Trim leading and trailing whitespace from the user's message at the end of
   `formatMessage()` (bug #53)
 - Fix `<add>` and `<sub>` tags using inverted logic and not actually adding or
   subtracting numbers (bug #55)
 
-## 1.1.7 - November 19 2015
+### 1.1.7 - November 19 2015
 
 - Add `@` to the list of characters that disqualifies a trigger from being
   considered "atomic"
 
-## 1.1.6 - October 10 2015
+### 1.1.6 - October 10 2015
 
 - Fix the regexp used when matching optionals so that the triggers don't match
   on inputs where they shouldn't. (RiveScript-JS issue #46)
 
-## 1.1.4 - September 9 2015
+### 1.1.4 - September 9 2015
 
 - Fix a crash if a topic tries to inherit or include a topic which doesn't
   exist. Instead, a warning is given to the console when this case is
@@ -284,13 +293,13 @@ before to get the string reply:
 - Add common punctuation filter for UTF-8 mode, with the ability to override
   the punctuation regexp if the user needs to.
 
-## 1.1.2 - June 18 2015
+### 1.1.2 - June 18 2015
 
 - Fix a space split issue when parsing tags such as <set> and <get>.
 - Fix quotemeta issue that caused an infinite loop when tags contained a
   question mark character.
 
-## 1.1.0 - April 22 2015
+### 1.1.0 - April 22 2015
 
 - Add experimental support for UTF-8.
 - Fix various bugs and port over unit tests from Perl/Python versions.
@@ -311,17 +320,17 @@ before to get the string reply:
   (file scoped)
 - Rewrite code base in CoffeeScript and restructure internal data layout.
 
-## 1.0.4 - November 25 2014
+### 1.0.4 - November 25 2014
 
 - Relicense project under the MIT License.
 
-## 1.0.3 - February 5 2014
+### 1.0.3 - February 5 2014
 
 - Create a `_clone()` function to clone user variables for `getUservars()`
   and `freezeUservars()` instead of needing a dependency on
   `jQuery.extend()`
 
-## 1.0.2 - November 25 2013
+### 1.0.2 - November 25 2013
 
 - Change preferred file extension for RiveScript documents to `.rive`.
   Backwards compatibility for loading `.rs` is still included.
@@ -329,7 +338,7 @@ before to get the string reply:
   current user's ID (to be able to programmatically set/retrieve
   variables for example).
 
-## 1.0.0 - August 3 2012
+### 1.0.0 - August 3 2012
 
 - Initial version completed.
 
