@@ -11,6 +11,29 @@ pairs for building up a bot's intelligence.
 This library can be used both in a web browser or as a Node module.
 See the `eg/` folder for examples.
 
+## NOTICE: CHANGES IN v2.0.0 ALPHA
+
+This branch is currently the alpha version of RiveScript v2.0.0. The
+biggest change was adding the use of async/await throughout the codebase,
+which necessarily had to break backwards compatibility with some of the
+RiveScript API.
+
+* `reply()` now returns a Promise instead of a string, like `replyAsync()`
+  did before.
+* **SOON:** `loadFile()` and `loadDirectory()` will also become
+  Promise-based instead of callback-based.
+
+This means your use of `reply()` will need to be updated to use the
+Promise. If you are already using `replyAsync()`, just replace the
+function name with `reply()` and it works the same way.
+
+```diff
+- var reply = bot.reply(username, message);
++ bot.reply(username, message).then(function(reply) {
+    console.log("Bot> ", reply);
++ });
+```
+
 ## DOCUMENTATION
 
 There is generated Markdown and HTML documentation of the modules in the
@@ -33,11 +56,11 @@ For the web you can use the unpkg:
 <script src="https://unpkg.com/rivescript@latest/dist/rivescript.min.js"></script>
 ```
 
-The GitHub repository for this project only includes the CoffeeScript sources.
-To download a compiled JavaScript release of this library, check the
+The git repository for this project includes ES2015+ source code. For
+ES5 builds targeting older browsers and Node versions, check the
 [Releases](https://github.com/aichaos/rivescript-js/releases) tab. The compiled
-distribution includes a `lib/` directory with JavaScript sources to use with
-node, and a `dist/` directory containing a "browserified" script that can be
+distribution includes a `lib/` directory with ES5 sources to use with
+node <= 6, and a `dist/` directory containing a "browserified" script that can be
 used on a web page.
 
 To use on the web, just load `dist/rivescript.min.js` with a `<script>` tag
@@ -69,14 +92,6 @@ have your RiveScript documents. Example:
 
 ```bash
 node shell.js eg/brain
-```
-
-There is also a CoffeeScript version of `shell.js` which works the same way. The
-key difference is that when running the Coffee version, RiveScript object macros
-written in CoffeeScript may be used (for example, see `eg/brain/coffee.rive`).
-
-```bash
-coffee shell.coffee eg/brain
 ```
 
 Once inside the shell you can chat with the bot using the RiveScript files in
@@ -121,6 +136,7 @@ function loading_done (batch_num) {
   bot.sortReplies();
 
   // And now we're free to get a reply from the brain!
+  // NOTE: the API has changed in v2.0.0 and returns a Promise now.
   var reply = bot.reply("local-user", "Hello, bot!").then(function(reply) {
     console.log("The bot says: " + reply);
   });
@@ -203,27 +219,13 @@ purpose, I have a Makefile.
 * `make test` - runs `nodeunit` on the ES2015+ test sources directly without
   building them as `npm run test` would.
 
-## GRUNT SERVER
-
-This project uses [Grunt](http://gruntjs.com) for compiling to minified JS and
-also includes a simple web server for local testing and demoing for RiveScript.
-
-Install `nodejs` and `npm` and then:
-
-```bash
-$ npm install -g grunt-cli # If you don't already have it
-$ npm install              # Install dev dependencies
-$ grunt server             # Will start a local web server and open eg/chat.html
-```
-
 ## PUBLISHING
 
 Steps for the npm maintainer of this module:
 
-1. Increment the version number in `package.json` and `src/rivescript.coffee`
+1. Increment the version number in `package.json` and `src/rivescript.js`
 2. Add a change log notice to `Changes.md`
-3. Run `grunt dist` to build the JavaScript sources and `grunt test` to verify
-   all tests pass.
+3. Run `npm run dist` to build the ES5 sources and run unit tests.
 3. Test a local installation from a different directory
    (`npm install ../rivescript-js`)
 4. `npm login` if it's the first time on a new system, and `npm publish` to

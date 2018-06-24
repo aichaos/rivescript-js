@@ -55,8 +55,6 @@
   "devDependencies": {
     "babel-cli": "^6.26.0",
     "babel-preset-env": "^1.6.0",
-    "coffeelint": "~1.16.0",
-    "coffeescript": "~2.0.0",
     "commander": "^2.11.0",
     "uglify-js": "^3.1.1",
     "webpack": "^3.6.0",
@@ -66,7 +64,6 @@
     "prepublish": "npm run dist",
     "build": "babel src -d lib",
     "build-tests": "babel test -d test.babel",
-    "lint": "echo coffeelint src",
     "test": "npm run build; npm run build-tests; nodeunit test.babel/test-*.js",
     "webpack": "webpack",
     "uglify": "uglifyjs -o dist/rivescript.min.js dist/rivescript.js",
