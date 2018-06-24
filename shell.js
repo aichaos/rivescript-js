@@ -3,12 +3,15 @@
 /******************************************************************************
  * Interactive RiveScript Shell for quickly testing your RiveScript bot.      *
  *                                                                            *
+ * Requires Node 7 or greater with async/await support. This module can be    *
+ * built and webpacked with Node <= 6 but this shell script won't run.        *
+ *                                                                            *
  * Usage: node shell.js /path/to/brain                                        *
  ******************************************************************************/
 
 var readline = require("readline"),
 	fs = require("fs"),
-	RiveScript = require("./lib/rivescript");
+	RiveScript = require("./src/rivescript");
 
 //------------------------------------------------------------------------------
 // Accept command line parameters.
@@ -22,7 +25,7 @@ var opts = {
 };
 
 process.argv.slice(2).forEach(function(val, index, array) {
-	
+
 	if (val === "--debug") {
 		opts.debug = true;
 	}
@@ -99,7 +102,7 @@ console.log("");
 
 rl.setPrompt("You> ");
 rl.prompt();
-rl.on('line', function(cmd) {
+rl.on('line', async function(cmd) {
 	// Handle commands.
 	if (cmd === "/help") {
 		help();
@@ -113,12 +116,14 @@ rl.on('line', function(cmd) {
 		process.exit(0);
 	} else {
 		// Get a reply from the bot.
-		var reply = (bot && bot.ready)
-			? bot.reply("localuser", cmd)
-			: "ERR: Bot Not Ready Yet";
-		console.log("Bot>", reply);
+		if (bot && bot.ready) {
+			var reply = await bot.reply("localuser", cmd);
+			console.log("Bot>", reply);
+		} else {
+			console.log("ERR: Bot Not Ready Yet");
+		}
 	}
-	
+
 	rl.prompt();
 }).on('close', function() {
 	console.log("");
@@ -143,5 +148,3 @@ function help() {
 	console.log("/log <code>  : Shortcut to /eval console.log(code).");
 	console.log("/quit        : Exit the program.");
 }
-
-

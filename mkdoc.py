@@ -68,7 +68,7 @@ def to_markdown(buf):
 
     # Headers that aren't functions are always shown as H1.
     function_types = ["string", "void", "data", "private", "object", "int",
-        "bool", "Promise"]
+        "bool", "Promise", "[]string"]
     is_function = False
     for t in function_types:
         if header[0].startswith(t):

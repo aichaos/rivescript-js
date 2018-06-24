@@ -6,7 +6,7 @@
 <link rel="stylesheet" type="text/css" href="chat.css">
 <script type="text/javascript" src="jquery-1.7.2.min.js"></script>
 <script type="text/javascript" src="datadumper.js"></script>
-<script type="text/javascript" src="../lib/rivescript.js"></script>
+<script type="text/javascript" src="../../dist/rivescript.js"></script>
 </head>
 <body>
 
@@ -65,22 +65,23 @@ var rs = new RiveScript({
 
 // Load our files from the brain/ folder.
 rs.loadFile([
-	"brain/begin.rive",
-	"brain/admin.rive",
-	"brain/clients.rive",
-	"brain/eliza.rive",
-	"brain/myself.rive",
-	"brain/rpg.rive",
-	"brain/javascript.rive"
+	"../brain/begin.rive",
+	"../brain/admin.rive",
+	"../brain/clients.rive",
+	"../brain/eliza.rive",
+	"../brain/myself.rive",
+	"../brain/rpg.rive",
+	"../brain/javascript.rive"
 	], on_load_success, on_load_error);
 
-// You can register objects that can then be called 
+// You can register objects that can then be called
 // using <call></call> syntax
 rs.setSubroutine('fancyJSObject', function(rs, args){
 	// doing complex stuff here
 });
 
 function on_load_success () {
+	$("#dialogue").append("<div><span class='bot'>Bot:</span> Welcome, this is RiveScript.js v" + rs.version() + ", ready to chat!");
 	$("#message").removeAttr("disabled");
 	$("#message").attr("placeholder", "Send message");
 	$("#message").focus();
@@ -90,7 +91,7 @@ function on_load_success () {
 }
 
 function on_load_error (err) {
-	console.log("Loading error: " + err);
+	window.alert("Loading error: " + err);
 }
 
 // Handle sending a message to the bot.
@@ -98,15 +99,15 @@ function sendMessage () {
 	var text = $("#message").val();
 	$("#message").val("");
 	$("#dialogue").append("<div><span class='user'>You:</span> " + text + "</div>");
-	try {
-	var reply = rs.reply("soandso", text);
-	reply = reply.replace(/\n/g, "<br>");
-	$("#dialogue").append("<div><span class='bot'>Bot:</span> " + reply + "</div>");
-	$("#dialogue").animate({ scrollTop: $("#dialogue").height() }, 1000);
-	} catch(e) {
+
+	rs.reply("soandso", text, this).then(function(reply) {
+		reply = reply.replace(/\n/g, "<br>");
+		$("#dialogue").append("<div><span class='bot'>Bot:</span> " + reply + "</div>");
+		$("#dialogue").animate({ scrollTop: $("#dialogue").height() }, 1000);
+	}).catch(function(e) {
 		window.alert(e.message + "\n" + e.line);
 		console.log(e);
-	}
+	});
 
 	return false;
 }

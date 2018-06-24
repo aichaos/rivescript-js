@@ -8,7 +8,7 @@ https://www.rivescript.com/
 */
 "use strict";
 
-var coffee = require("coffee-script");
+var coffee = require("coffeescript");
 
 /**
  * CoffeeHandler (RiveScript master)
