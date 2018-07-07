@@ -383,7 +383,9 @@ const RiveScript = (function() {
 				}(file));
 			}
 
-			return Promise.all(promises);
+			return new Promise((resolve, reject) => {
+				Promise.all(promises).then(resolve).catch(reject);
+			})
 		}
 
 		// Load a file using ajax. DO NOT CALL THIS DIRECTLY.
@@ -397,7 +399,7 @@ const RiveScript = (function() {
 					var ref;
 					if (xhr.readyState === 4) {
 						let ref = xhr.status;
-						if (ref === 0 || ref === 200) {
+						if (ref === 200) {
 							self.say(`Loading file ${file} complete.`);
 
 							// Parse it!
@@ -410,8 +412,8 @@ const RiveScript = (function() {
 								reject("parser error");
 							}
 						} else {
-							self.say(`Ajax error! ${xhr.statusText}; ${xhr.status}`);
-							reject(`Ajax error: ${xhr.statusText}; ${xhr.status}`)
+							self.warn(`Network error in XMLHttpRequest for file ${file}`);
+							reject(`Failed to load file ${file}: network error`);
 						}
 					}
 				};

@@ -28,6 +28,11 @@ div#debug {
 	max-height: 450px;
 	width: 100%;
 }
+code {
+	font-family: monospace;
+	font-size: medium;
+	color: #D00;
+}
 span.user {
 	font-weight: bold;
 	color: #0000FF;
@@ -43,13 +48,13 @@ table.input-table {
 	width: 100%;
 }
 table.input-table td.text-box {
-	padding: 4px; 
+	padding: 4px;
 	text-align: left;
-	vertical-align: middle; 
+	vertical-align: middle;
 }
 table.input-table td.send-button {
-	padding: 4px; 
+	padding: 4px;
 	text-align: center;
-	vertical-align: middle; 
+	vertical-align: middle;
 	width: 10px;
 }
