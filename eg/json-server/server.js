@@ -10,17 +10,17 @@
 //    -X POST -d '{"username":"soandso","message":"hello bot"}' \
 //    http://localhost:2001/reply
 
+require("babel-polyfill");
 var express = require("express"),
 	bodyParser = require("body-parser"),
 	RiveScript = require("../../lib/rivescript.js");
 
 // Create the bot.
 var bot = new RiveScript();
-bot.loadDirectory("../brain", success_handler, error_handler);
+bot.loadDirectory("../brain").then(success_handler).catch(error_handler);
 
-function success_handler (loadcount) {
-	console.log("Load #" + loadcount + " completed!");
-
+function success_handler() {
+	console.log("Brain loaded!");
 	bot.sortReplies();
 
 	// Set up the Express app.
@@ -67,16 +67,21 @@ function getReply(req, res) {
 	}
 
 	// Get a reply from the bot.
-	var reply = bot.reply(username, message, this);
+	bot.reply(username, message, this).then(function(reply) {
+		// Get all the user's vars back out of the bot to include in the response.
+		vars = bot.getUservars(username);
 
-	// Get all the user's vars back out of the bot to include in the response.
-	vars = bot.getUservars(username);
-
-	// Send the JSON response.
-	res.json({
-		"status": "ok",
-		"reply": reply,
-		"vars": vars
+		// Send the JSON response.
+		res.json({
+			"status": "ok",
+			"reply": reply,
+			"vars": vars
+		});
+	}).catch(function(err) {
+		res.json({
+			"status": "error",
+			"error": err
+		});
 	});
 }
 

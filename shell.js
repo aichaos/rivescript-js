@@ -60,18 +60,12 @@ var rl = readline.createInterface({
 	output: process.stdout
 });
 
-
-var bot = null;
-function loadBot() {
-	bot = new RiveScript({
-		debug:   opts.debug,
-		utf8:    opts.utf8,
-		concat:  "newline",
-	});
-	bot.ready = false;
-	bot.loadDirectory(opts.brain, loadingDone, loadingError);
-}
-loadBot();
+var ready = false;
+var bot = new RiveScript({
+	debug:  opts.debug,
+	utf8:   opts.utf8,
+	concat: "newline",
+});
 
 if (opts.watch) {
 	fs.watch(opts.brain, {recursive: false}, function() {
@@ -116,7 +110,7 @@ rl.on('line', async function(cmd) {
 		process.exit(0);
 	} else {
 		// Get a reply from the bot.
-		if (bot && bot.ready) {
+		if (bot && ready) {
 			var reply = await bot.reply("localuser", cmd);
 			console.log("Bot>", reply);
 		} else {
@@ -130,16 +124,12 @@ rl.on('line', async function(cmd) {
 	process.exit(0);
 });
 
-
-
-function loadingDone(batchNumber) {
+bot.loadDirectory(opts.brain).then(() => {
 	bot.sortReplies();
-	bot.ready = true;
-}
-
-function loadingError(error, batchNumber) {
-	console.error("Loading error: " + error);
-}
+	ready = true;
+}).catch((err) => {
+	console.error("Loading error: " + err);
+});
 
 function help() {
 	console.log("Supported commands:");

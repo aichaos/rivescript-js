@@ -37,7 +37,7 @@ class Brain {
 	}
 
 	/**
-	Promise reply (string user, string msg[, scope])
+	async reply (string user, string msg[, scope])
 
 	Fetch a reply for the user. This returns a Promise that may be awaited on.
 	*/
@@ -86,7 +86,7 @@ class Brain {
 	}
 
 	/**
-	Promise _getReply (string user, string msg, string context, int step, scope)
+	async _getReply (string user, string msg, string context, int step, scope)
 
 	The internal reply method. DO NOT CALL THIS DIRECTLY.
 
@@ -197,7 +197,7 @@ class Brain {
 							// Huzzah! See if OUR message is right too.
 							self.say("Bot side matched!");
 
-							let thatstars = match; // Collect the bot stars in case we need them
+							thatstars = match; // Collect the bot stars in case we need them
 							thatstars.shift();
 
 							// Compare the triggers to the user's message.
@@ -721,7 +721,7 @@ class Brain {
 		for (let i = 1, len = stars.length; i <= len; i++) {
 			reply = reply.replace(new RegExp(`<star${i}>`, "ig"), stars[i]);
 		}
-		for (let i = 1, len = stars.length; i <= len; i++) {
+		for (let i = 1, len = botstars.length; i <= len; i++) {
 			reply = reply.replace(new RegExp(`<botstar${i}>`, "ig"), botstars[i]);
 		}
 
@@ -949,8 +949,9 @@ class Brain {
 						// We do.
 						output = (await self.master._handlers[lang].call(self.master, obj, args, scope));
 					} catch (error) {
-						e = error;
-						self.warn(e.message);
+						if (error != undefined) {
+							self.warn(error);
+						}
 						output = "[ERR: Error raised by object macro]";
 					}
 				} else {

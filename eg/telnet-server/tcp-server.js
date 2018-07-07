@@ -4,16 +4,16 @@
 //
 // Run this and then telnet to localhost:2001 and chat with the bot!
 
+require("babel-polyfill");
 var net        = require("net");
 var RiveScript = require("../../lib/rivescript.js");
 
 // Create the bot.
 var bot = new RiveScript({ debug: false });
-bot.loadDirectory("../brain", success_handler, error_handler);
+bot.loadDirectory("../brain").then(success_handler).catch(error_handler);
 
-function success_handler (loadcount) {
-	console.log("Load #" + loadcount + " completed!");
-
+function success_handler() {
+	console.log("Bot loaded!");
 	bot.sortReplies();
 
 	// Start the TCP server.
@@ -42,13 +42,14 @@ function success_handler (loadcount) {
 				return;
 			}
 
-			var reply = bot.reply(socket.name, message);
-			socket.write("Bot> " + reply + "\n");
-			socket.write("You> ");
+			bot.reply(socket.name, message).then(function(reply) {
+				socket.write("Bot> " + reply + "\n");
+				socket.write("You> ");
 
-			// Log it for the server terminal to see!
-			console.log("[" + socket.name + "] " + message);
-			console.log("[Bot] " + reply + "\n");
+				// Log it for the server terminal to see!
+				console.log("[" + socket.name + "] " + message);
+				console.log("[Bot] " + reply + "\n");
+			});
 		});
 
 		// Handle disconnects.
@@ -60,6 +61,6 @@ function success_handler (loadcount) {
 	console.log("TCP server running on port 2001.\n");
 }
 
-function error_handler (loadcount, err) {
-	console.log("Error loading batch #" + loadcount + ": " + err + "\n");
+function error_handler (err) {
+	console.error(err);
 }

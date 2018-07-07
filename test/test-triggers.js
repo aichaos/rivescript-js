@@ -164,17 +164,15 @@ exports.test_weighted_triggers = async function(test) {
 };
 
 exports.test_empty_piped_arrays = async function(test) {
-	var bot, errors, expected_errors;
-	errors = [];
-	expected_errors = [
-		'Syntax error: Piped arrays can\'t begin or end with a | at stream() line 2 near ! array hello = hi|hey|sup|yo| (in topic random)',
-		'Syntax error: Piped arrays can\'t begin or end with a | at stream() line 3 near ! array something = |something|some thing (in topic random)',
-		'Syntax error: Piped arrays can\'t include blank entries at stream() line 4 near ! array nothing = nothing||not a thing (in topic random)'
+	let bot = new TestCase(test, ``);
+
+	let errors = [];
+	let expected_errors = [
+		'Syntax error: Piped arrays can\'t begin or end with a | at stream() line 2 near ! array hello = hi|hey|sup|yo|',
+		'Syntax error: Piped arrays can\'t begin or end with a | at stream() line 3 near ! array something = |something|some thing',
+		'Syntax error: Piped arrays can\'t include blank entries at stream() line 4 near ! array nothing = nothing||not a thing'
 	];
-	console.error = function(text) {
-		return errors.push(text);
-	};
-	bot = new TestCase(test, `
+	bot.rs.stream(`
 		! array hello = hi|hey|sup|yo|
 		! array something = |something|some thing
 		! array nothing = nothing||not a thing
@@ -184,7 +182,11 @@ exports.test_empty_piped_arrays = async function(test) {
 
 		+ *
 		- Anything else?
-	`);
+	`, function(err, filename, lineno) {
+		errors.push(err);
+	});
+	bot.rs.sortReplies();
+
 	// Check that errors were thrown
 	test.deepEqual(errors, expected_errors);
 	// We also fix these, so these should also work
@@ -196,17 +198,15 @@ exports.test_empty_piped_arrays = async function(test) {
 };
 
 exports.test_empty_piped_alternations = async function(test) {
-	var bot, errors, expected_errors;
-	errors = [];
-	expected_errors = [
-		'Syntax error: Piped alternations can\'t begin or end with a | at stream() line 2 near + [*] (hi|hey|sup|yo|) [*] (in topic random)',
-		'Syntax error: Piped alternations can\'t begin or end with a | at stream() line 5 near + [*] (|good|great|nice) [*] (in topic random)',
-		'Syntax error: Piped alternations can\'t include blank entries at stream() line 8 near + [*] (mild|warm||hot) [*] (in topic random)'
+	let bot = new TestCase(test, ``);
+
+	let errors = [];
+	let expected_errors = [
+		'Syntax error: Piped alternations can\'t begin or end with a | at stream() line 2 near + [*] (hi|hey|sup|yo|) [*]',
+		'Syntax error: Piped alternations can\'t begin or end with a | at stream() line 5 near + [*] (|good|great|nice) [*]',
+		'Syntax error: Piped alternations can\'t include blank entries at stream() line 8 near + [*] (mild|warm||hot) [*]'
 	];
-	console.error = function(text) {
-		return errors.push(text);
-	};
-	bot = new TestCase(test, `
+	bot.rs.stream(`
 		+ [*] (hi|hey|sup|yo|) [*]
 		- Oh hello there.
 
@@ -218,7 +218,11 @@ exports.test_empty_piped_alternations = async function(test) {
 
 		+ *
 		- Anything else?
-	`);
+	`, (err, filename, lineno) => {
+		errors.push(err);
+	});
+	bot.rs.sortReplies();
+
 	// Check that errors were thrown
 	test.deepEqual(errors, expected_errors);
 	// We also fix these, so these should also work
@@ -233,17 +237,15 @@ exports.test_empty_piped_alternations = async function(test) {
 };
 
 exports.test_empty_piped_optionals = async function(test) {
-	var bot, errors, expected_errors;
-	errors = [];
-	expected_errors = [
-		'Syntax error: Piped optionals can\'t begin or end with a | at stream() line 2 near + bot [*] [hi|hey|sup|yo|] [*] to me (in topic random)',
-		'Syntax error: Piped optionals can\'t begin or end with a | at stream() line 5 near + dog [*] [|good|great|nice] [*] to me (in topic random)',
-		'Syntax error: Piped optionals can\'t include blank entries at stream() line 8 near + cat [*] [mild|warm||hot] [*] to me (in topic random)'
+	let bot = new TestCase(test, ``);
+
+	let errors = [];
+	let expected_errors = [
+		'Syntax error: Piped optionals can\'t begin or end with a | at stream() line 2 near + bot [*] [hi|hey|sup|yo|] [*] to me',
+		'Syntax error: Piped optionals can\'t begin or end with a | at stream() line 5 near + dog [*] [|good|great|nice] [*] to me',
+		'Syntax error: Piped optionals can\'t include blank entries at stream() line 8 near + cat [*] [mild|warm||hot] [*] to me'
 	];
-	console.error = function(text) {
-		return errors.push(text);
-	};
-	bot = new TestCase(test, `
+	bot.rs.stream(`
 		+ bot [*] [hi|hey|sup|yo|] [*] to me
 		- Oh hello there.
 
@@ -255,7 +257,11 @@ exports.test_empty_piped_optionals = async function(test) {
 
 		+ *
 		- Anything else?
-	`);
+	`, (err, filename, lineno) => {
+		errors.push(err);
+	});
+	bot.rs.sortReplies();
+
 	// Check that errors were thrown
 	test.deepEqual(errors, expected_errors);
 	// We also fix these, so these should also work

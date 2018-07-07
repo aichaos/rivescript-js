@@ -24,7 +24,7 @@ following keys:
 * bool forceCase: Force-lowercase triggers (default false, see below)
 * func onDebug:   Set a custom handler to catch debug log messages (default null)
 * obj  errors:    Customize certain error messages (see below)
-* str  concat:    Globally override the concatenation mode when parsing
+* str  concat:    Globally replace the default concatenation mode when parsing
                   RiveScript source files (default `null`. be careful when
                   setting this option if using somebody else's RiveScript
                   personality; see below)
@@ -92,45 +92,45 @@ You can provide any or all of the following properties in the `errors`
 argument to the constructor to override certain internal error messages:
 
 * `replyNotMatched`: The message returned when the user's message does not
-  match any triggers in your RiveScript code.
+match any triggers in your RiveScript code.
 
-  The default is "ERR: No Reply Matched"
+The default is "ERR: No Reply Matched"
 
-  **Note:** the recommended way to handle this case is to provide a trigger of
-  simply `*`, which serves as the catch-all trigger and is the default one
-  that will match if nothing else matches the user's message. Example:
+**Note:** the recommended way to handle this case is to provide a trigger of
+simply `*`, which serves as the catch-all trigger and is the default one
+that will match if nothing else matches the user's message. Example:
 
-  ```
-  + *
-  - I don't know what to say to that!
-  ```
+```
++ *
+- I don't know what to say to that!
+```
 * `replyNotFound`: This message is returned when the user *did* in fact match
-  a trigger, but no response was found for the user. For example, if a trigger
-  only checks a set of conditions that are all false and provides no "normal"
-  reply, this error message is given to the user instead.
+a trigger, but no response was found for the user. For example, if a trigger
+only checks a set of conditions that are all false and provides no "normal"
+reply, this error message is given to the user instead.
 
-  The default is "ERR: No Reply Found"
+The default is "ERR: No Reply Found"
 
-  **Note:** the recommended way to handle this case is to provide at least one
-  normal reply (with the `-` command) to every trigger to cover the cases
-  where none of the conditions are true. Example:
+**Note:** the recommended way to handle this case is to provide at least one
+normal reply (with the `-` command) to every trigger to cover the cases
+where none of the conditions are true. Example:
 
-  ```
-  + hello
-  * <get name> != undefined => Hello there, <get name>.
-  - Hi there.
-  ```
+```
++ hello
+* <get name> != undefined => Hello there, <get name>.
+- Hi there.
+```
 * `objectNotFound`: This message is inserted into the bot's reply in-line when
-  it attempts to call an object macro which does not exist (for example, its
-  name was invalid or it was written in a programming language that the bot
-  couldn't parse, or that it had compile errors).
+it attempts to call an object macro which does not exist (for example, its
+name was invalid or it was written in a programming language that the bot
+couldn't parse, or that it had compile errors).
 
-  The default is "[ERR: Object Not Found]"
+The default is "[ERR: Object Not Found]"
 * `deepRecursion`: This message is inserted when the bot encounters a deep
-  recursion situation, for example when a reply redirects to a trigger which
-  redirects back to the first trigger, creating an infinite loop.
+recursion situation, for example when a reply redirects to a trigger which
+redirects back to the first trigger, creating an infinite loop.
 
-  The default is "ERR: Deep Recursion Detected"
+The default is "ERR: Deep Recursion Detected"
 
 These custom error messages can be provided during the construction of the
 RiveScript object, or set afterwards on the object's `errors` property.
@@ -139,43 +139,17 @@ Examples:
 
 ```javascript
 var bot = new RiveScript({
-   errors: {
-       replyNotFound: "I don't know how to reply to that."
-   }
+errors: {
+replyNotFound: "I don't know how to reply to that."
+}
 });
 
 bot.errors.objectNotFound = "Something went terribly wrong.";
 ```
 
-# Constructor and Debug Methods
-
 ## string version ()
 
 Returns the version number of the RiveScript.js library.
-
-## Promise Promise
-
-Alias for `RSVP.Promise` for use in async object macros.
-
-This enables you to create a JavaScript object macro that returns a promise
-for asynchronous tasks (e.g. polling a web API or database). Example:
-
-```javascript
-rs.setSubroutine("asyncHelper", function (rs, args) {
- return new rs.Promise(function (resolve, reject) {
-   resolve(42);
- });
-});
-```
-
-If you're using promises in your object macros, you need to get a reply from
-the bot using the `replyAsync()` method instead of `reply()`, for example:
-
-```javascript
-rs.replyAsync(username, message, this).then(function(reply) {
-   console.log("Bot> ", reply);
-});
-```
 
 ## private void runtime ()
 
@@ -195,28 +169,20 @@ be given to the user one way or another. If the `onDebug` handler is
 defined, this is sent there. If `console` is available, this will be sent
 there. In a worst case scenario, an alert box is shown.
 
-# Loading and Parsing Methods
-
-## int loadFile (string path || array path[, onSuccess[, onError]])
+# async loadFile(string path || array path)
 
 Load a RiveScript document from a file. The path can either be a string that
 contains the path to a single file, or an array of paths to load multiple
-files. `onSuccess` is a function to be called when the file(s) have been
-successfully loaded. `onError` is for catching any errors, such as syntax
-errors.
+files. The Promise resolves when all of the files have been parsed and
+loaded. The Promise rejects on error.
 
-This loading method is asynchronous. You should define an `onSuccess`
-handler to be called when the file(s) have been successfully loaded.
+This loading method is asynchronous so you must resolve the promise or
+await it before you go on to sort the replies.
 
-This method returns a "batch number" for this load attempt. The first call
-to this function will have the batch number of 0 and that will go up from
-there. This batch number is passed to your `onSuccess` handler as its only
-argument, in case you want to correlate it with your call to `loadFile()`.
+* resolves: `()`
+* rejects: `(string error)`
 
-`onSuccess` receives: int batchNumber
-`onError` receives: string errorMessage[, int batchNumber]
-
-## void loadDirectory (string path[, func onSuccess[, func onError]])
+# async loadDirectory (string path)
 
 Load RiveScript documents from a directory recursively.
 
@@ -224,19 +190,23 @@ This function is not supported in a web environment.
 
 ## bool stream (string code[, func onError])
 
-Stream in RiveScript code dynamically. `code` should be the raw RiveScript
-source code as a string (with line breaks after each line).
+Load RiveScript source code from a string. `code` should be the raw
+RiveScript source code, with line breaks separating each line.
 
-This function is synchronous, meaning there is no success handler needed.
-It will return false on parsing error, true otherwise.
+This function is synchronous, meaning it does not return a Promise. It
+parses the code immediately and returns. Do not fear: the parser runs
+very quickly.
 
-`onError` receives: string errorMessage
+Returns `true` if the code parsed with no error.
 
-## private bool parse (string name, string code[, func onError])
+onError function receives: `(err string[, filename str, line_no int])`
+
+## private bool parse (string name, string code[, func onError(string)])
 
 Parse RiveScript code and load it into memory. `name` is a file name in case
-syntax errors need to be pointed out. `code` is the source code, and
-`onError` is a function to call when a syntax error occurs.
+syntax errors need to be pointed out. `code` is the source code.
+
+Returns `true` if the code parsed with no error.
 
 ## void sortReplies()
 
@@ -281,8 +251,6 @@ only run from a Node environment.
 This calls the `stringify()` method and writes the output into the filename
 specified. You can provide your own deparse-compatible data structure,
 or else the current state of the bot's brain is used instead.
-
-# Public Configuration Methods
 
 ## void setHandler(string lang, object)
 
@@ -378,6 +346,13 @@ only the first matched trigger and will not include subsequent redirects.
 
 This value is reset on each `reply()` or `replyAsync()` call.
 
+## object lastTriggers (string user)
+
+Retrieve the triggers that have been matched for the last reply. This
+will contain all matched trigger with every subsequent redirects.
+
+This value is reset on each `reply()` or `replyAsync()` call.
+
 ## object getUserTopicTriggers (string username)
 
 Retrieve the triggers in the current topic for the specified user. It can
@@ -397,15 +372,17 @@ get/set user variables for them).
 This will return undefined if called from outside of a reply context
 (the value is unset at the end of the `reply()` method)
 
-# Reply Fetching Methods
-
-## string reply (string username, string message[, scope])
+## Promise reply (string username, string message[, scope])
 
 Fetch a reply from the RiveScript brain. The message doesn't require any
 special pre-processing to be done to it, i.e. it's allowed to contain
 punctuation and weird symbols. The username is arbitrary and is used to
 uniquely identify the user, in the case that you may have multiple
 distinct users chatting with your bot.
+
+**Changed in version 2.0.0:** this function used to return a string, but
+therefore didn't support async object macros or session managers. This
+function now returns a Promise (obsoleting the `replyAsync()` function).
 
 The optional `scope` parameter will be passed down into any JavaScript
 object macros that the RiveScript code executes. If you pass the special
@@ -416,7 +393,24 @@ or attributes that your code has access to, from the location that `reply()`
 was called. For an example of this, refer to the `eg/scope` directory in
 the source distribution of RiveScript-JS.
 
+Example:
+
+```javascript
+// Normal usage as a promise
+bot.reply(username, message, this).then(function(reply) {
+    console.log("Bot>", reply);
+});
+
+// Async-Await usage in an async function.
+async function getReply(username, message) {
+    var reply = await bot.reply(username, message);
+    console.log("Bot>", reply);
+}
+```
+
 ## Promise replyAsync (string username, string message [[, scope], callback])
+
+**Obsolete as of v2.0.0** -- use `reply()` instead in new code.
 
 Asyncronous version of reply. Use replyAsync if at least one of the subroutines
 used with the `<call>` tag returns a promise.
@@ -440,5 +434,35 @@ rs.replyAsync(username, msg, this, function(error, reply) {
   } else {
     console.error("Error: ", error);
   }
+});
+```
+
+## Promise Promise
+
+**DEPRECATED**
+
+Backwards compatible alias to the native JavaScript `Promise` object.
+
+`rs.Promise` used to refer to an `RSVP.Promise` which acted as a polyfill
+for older systems. In new code, return a native Promise directly from your
+object macros.
+
+This enables you to create a JavaScript object macro that returns a promise
+for asynchronous tasks (e.g. polling a web API or database). Example:
+
+```javascript
+rs.setSubroutine("asyncHelper", function (rs, args) {
+ return new rs.Promise(function (resolve, reject) {
+   resolve(42);
+ });
+});
+```
+
+If you're using promises in your object macros, you need to get a reply from
+the bot using the `replyAsync()` method instead of `reply()`, for example:
+
+```javascript
+rs.replyAsync(username, message, this).then(function(reply) {
+   console.log("Bot> ", reply);
 });
 ```

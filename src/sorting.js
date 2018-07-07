@@ -22,7 +22,7 @@ debug logging from within this function.
 This function has two use cases:
 
 1. create a sort buffer for "normal" (matchable) triggers, which are triggers
-which are NOT accompanied by a %Previous tag.
+   which are NOT accompanied by a %Previous tag.
 2. create a sort buffer for triggers that had %Previous tags.
 
 Use the `exclude_previous` parameter to control which one is being done.

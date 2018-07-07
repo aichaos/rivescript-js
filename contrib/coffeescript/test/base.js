@@ -13,17 +13,18 @@ var TestCase = function(test, code, ready, opts) {
 	// Initialize RiveScript.
 	self.rs = new RiveScript(opts);
 	self.rs.setHandler("coffeescript", new CoffeeHandler(self.rs));
-	self.rs.loadFile("test/fixtures/" + code, function() {
+	self.rs.loadFile("test/fixtures/" + code).then(function() {
 		self.rs.sortReplies();
 		ready();
-	}, function(error) {
+	}).catch(function(error) {
 		console.error("Failed to load file: " + error);
 	});
 
 	// Reply assertion.
 	self.reply = function(message, expected) {
-		var reply = self.rs.reply(self.username, message);
-		self.test.equal(reply, expected);
+		self.rs.reply(self.username, message).then(function(reply) {
+			self.test.equal(reply, expected);
+		});
 	};
 }
 
