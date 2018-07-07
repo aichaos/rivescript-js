@@ -5,6 +5,7 @@
 // To run this bot, edit config.js to fill in your Slack Auth token and other
 // settings for the bot.
 
+require("babel-polyfill");
 var config = require("./config"),
 	RiveScript = require("../../lib/rivescript"),
 	Slack = require("slack-client");
@@ -12,7 +13,7 @@ var config = require("./config"),
 var slack = new Slack(config.token, true, true);
 var rs = new RiveScript();
 
-rs.loadDirectory("../brain", function() {
+rs.loadDirectory("../brain").then(function() {
 	rs.sortReplies();
 	slack.login();
 
@@ -50,20 +51,23 @@ rs.loadDirectory("../brain", function() {
 			).trim();
 
 			// Get the bot's reply.
-			reply = rs.reply(user.name, message);
-
-			// Send it to the channel.
-			channel = slack.getChannelGroupOrDMByID(messageData.channel);
-			if (reply.length > 0) {
-				channel.send(reply);
-			}
+			rs.reply(user.name, message).then(function(reply) {
+				// Send it to the channel.
+				channel = slack.getChannelGroupOrDMByID(messageData.channel);
+				if (reply.length > 0) {
+					channel.send(reply);
+				}
+			});
 		} else if (messageData.channel[0] === "D") {
 			// Direct message.
-			reply = rs.reply(user.name, message);
-			channel = slack.getChannelGroupOrDMByName(user.name);
-			if (reply.length > 0) {
-				channel.send(reply);
-			}
+			rs.reply(user.name, message).then(function(reply) {
+				channel = slack.getChannelGroupOrDMByName(user.name);
+				if (reply.length > 0) {
+					channel.send(reply);
+				}
+			});
 		}
 	});
+}).catch(function(err) {
+	console.error(err);
 })

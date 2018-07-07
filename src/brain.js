@@ -949,8 +949,9 @@ class Brain {
 						// We do.
 						output = (await self.master._handlers[lang].call(self.master, obj, args, scope));
 					} catch (error) {
-						e = error;
-						self.warn(e.message);
+						if (error != undefined) {
+							self.warn(error);
+						}
 						output = "[ERR: Error raised by object macro]";
 					}
 				} else {

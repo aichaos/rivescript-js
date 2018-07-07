@@ -2,6 +2,7 @@
 //
 // See the README.md for information.
 
+require("babel-polyfill");
 var RiveScript = require("../../lib/rivescript"),
 	readline = require("readline");
 
@@ -116,11 +117,14 @@ rl.on("line", function(cmd) {
 		process.exit(0);
 	} else {
 		// Get a reply from the bot.
-		var reply = rs.reply("localuser", cmd);
-		console.log("Bot>", reply);
+		rs.reply("localuser", cmd).then(function(reply) {
+			console.log("Bot>", reply);
+			rl.prompt();
+		}).catch(function(err) {
+			console.log("Err>", err);
+			rl.prompt();
+		});
 	}
-
-	rl.prompt();
 }).on("close", function() {
 	process.exit(0);
 });
