@@ -20,18 +20,29 @@ RiveScript API.
 
 * `reply()` now returns a Promise instead of a string, like `replyAsync()`
   did before.
-* **SOON:** `loadFile()` and `loadDirectory()` will also become
-  Promise-based instead of callback-based.
+* `loadFile()` and `loadDirectory()` now are Promise-based instead of
+  callback-based.
+* `replyAsync()` is now deprecated and will be removed soon.
 
 This means your use of `reply()` will need to be updated to use the
 Promise. If you are already using `replyAsync()`, just replace the
 function name with `reply()` and it works the same way.
 
 ```diff
-- var reply = bot.reply(username, message);
-+ bot.reply(username, message).then(function(reply) {
-    console.log("Bot> ", reply);
-+ });
+  var bot = new RiveScript();
+- bot.loadDirectory("./brain", onSuccess, onError);
++ bot.loadDirectory("./brain").then(onReady).catch(onError);
+
+  function onReady() {
+      bot.sortReplies();
+      console.log("Bot is ready!");
+
+-     var reply = bot.reply(username, message);
+-     console.log("Bot>", reply);
++     bot.reply(username, message).then(function(reply) {
++         console.log("Bot> ", reply);
++     });
+  }
 ```
 
 ## DOCUMENTATION
@@ -112,10 +123,10 @@ var bot = new RiveScript();
 
 // Load a directory full of RiveScript documents (.rive files). This is for
 // Node.JS only: it doesn't work on the web!
-bot.loadDirectory("brain", loading_done, loading_error);
+bot.loadDirectory("brain").then(loading_done).catch(loading_error);
 
 // Load an individual file.
-bot.loadFile("brain/testsuite.rive", loading_done, loading_error);
+bot.loadFile("brain/testsuite.rive").then(loading_done).catch(loading_error);
 
 // Load a list of files all at once (the best alternative to loadDirectory
 // for the web!)
@@ -123,27 +134,27 @@ bot.loadFile([
   "brain/begin.rive",
   "brain/admin.rive",
   "brain/clients.rive"
-], loading_done, loading_error);
+]).then(loading_done).catch(loading_error);
 
 // All file loading operations are asynchronous, so you need handlers
 // to catch when they've finished. If you use loadDirectory (or loadFile
 // with multiple file names), the success function is called only when ALL
 // the files have finished loading.
-function loading_done (batch_num) {
-  console.log("Batch #" + batch_num + " has finished loading!");
+function loading_done() {
+  console.log("Bot has finished loading!");
 
   // Now the replies must be sorted!
   bot.sortReplies();
 
   // And now we're free to get a reply from the brain!
   // NOTE: the API has changed in v2.0.0 and returns a Promise now.
-  var reply = bot.reply("local-user", "Hello, bot!").then(function(reply) {
+  bot.reply("local-user", "Hello, bot!").then(function(reply) {
     console.log("The bot says: " + reply);
   });
 }
 
 // It's good to catch errors too!
-function loading_error (error) {
+function loading_error(error, filename, lineno) {
   console.log("Error when loading files: " + error);
 }
 ```
