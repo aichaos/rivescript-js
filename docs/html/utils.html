@@ -31,10 +31,18 @@ object 'b' are inserted into 'a'.</p>
 - sentence
 - uppercase
 - lowercase</p>
+<h2>[]string parseCallArgs</h2>
+<p>Parse a string and return shell-like arguments as an array. Normally this
+means each word in the string becomes an item in the result, but quoted
+sections of the input will come back as a single item.</p>
+<p>Example:</p>
+<div class="codehilite"><pre><span></span><span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span> <span class="nx">parseCallArgs</span><span class="p">(</span><span class="s1">&#39;please google &quot;writing chat bot&quot;&#39;</span><span class="p">));</span>
+<span class="c1">// [&quot;please&quot;, &quot;google&quot;, &quot;writing chat bot&quot;]</span>
+</pre></div>
+
+
 <h2>object clone (object)</h2>
 <p>Clone an object.</p>
-<h2>boolean isAPromise (object)</h2>
-<p>Determines if obj looks like a promise</p>
 <h2>int nIndexOf (string, string match, int index)</h2>
 <p>Finds a match in a string at a given index</p>
 <p>Usage:

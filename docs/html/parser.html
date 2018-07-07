@@ -8,7 +8,7 @@
 
 <h1>Parser (RiveScript master)</h1>
 <p>Create a parser object to handle parsing RiveScript code.</p>
-<h2>data parse (string filename, string code[, func onError])</h2>
+<h2>object parse (string filename, string code[, func onError])</h2>
 <p>Read and parse a RiveScript document. Returns a data structure that
 represents all of the useful contents of the document, in this format:</p>
 <div class="codehilite"><pre><span></span><span class="p">{</span>
@@ -46,6 +46,7 @@ represents all of the useful contents of the document, in this format:</p>
 </pre></div>
 
 
+<p>onError function receives: <code>(err string[, filename str, line_no int])</code></p>
 <h2>string stringify (data deparsed)</h2>
 <p>Translate deparsed data into the source code of a RiveScript document.
 See the <code>stringify()</code> method on the parent RiveScript class; this is its

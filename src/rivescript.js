@@ -48,9 +48,9 @@ following keys:
 * func onDebug:   Set a custom handler to catch debug log messages (default null)
 * obj  errors:    Customize certain error messages (see below)
 * str  concat:    Globally replace the default concatenation mode when parsing
-RiveScript source files (default `null`. be careful when
-setting this option if using somebody else's RiveScript
-personality; see below)
+                  RiveScript source files (default `null`. be careful when
+                  setting this option if using somebody else's RiveScript
+                  personality; see below)
 ```
 
 ## UTF-8 Mode
@@ -345,26 +345,20 @@ const RiveScript = (function() {
 		////////////////////////////////////////////////////////////////////////
 
 		/**
-		int loadFile (string path || array path[, onSuccess[, onError]])
+		async loadFile(string path || array path)
 
 		Load a RiveScript document from a file. The path can either be a string that
 		contains the path to a single file, or an array of paths to load multiple
-		files. `onSuccess` is a function to be called when the file(s) have been
-		successfully loaded. `onError` is for catching any errors, such as syntax
-		errors.
+		files. The Promise resolves when all of the files have been parsed and
+		loaded. The Promise rejects on error.
 
-		This loading method is asynchronous. You should define an `onSuccess`
-		handler to be called when the file(s) have been successfully loaded.
+		This loading method is asynchronous so you must resolve the promise or
+		await it before you go on to sort the replies.
 
-		This method returns a "batch number" for this load attempt. The first call
-		to this function will have the batch number of 0 and that will go up from
-		there. This batch number is passed to your `onSuccess` handler as its only
-		argument, in case you want to correlate it with your call to `loadFile()`.
-
-		`onSuccess` receives: int batchNumber
-		`onError` receives: string errorMessage[, int batchNumber]
+		* resolves: `()`
+		* rejects: `(string error)`
 		*/
-		loadFile(path, onSuccess, onError) {
+		async loadFile(path) {
 			var self = this;
 
 			// Did they give us a single path?
@@ -372,177 +366,166 @@ const RiveScript = (function() {
 				path = [path];
 			}
 
-			// To identify when THIS batch of files completes, we keep track of them
-			// under the "loadcount"
-			let loadCount = self._loadCount++;
-			self._pending[loadCount] = {};
-
-			// Go through and load the files.
+			let promises = new Array();
 			for (let i = 0, len = path.length; i < len; i++) {
 				let file = path[i];
 				self.say(`Request to load file: ${file}`);
-				self._pending[loadCount][file] = 1;
-
-				// How do we load the file?
-				if (self._runtime === "web") {
-					// With ajax!
-					self._ajaxLoadFile(loadCount, file, onSuccess, onError);
-				} else {
-					// With fs module!
-					self._nodeLoadFile(loadCount, file, onSuccess, onError);
-				}
+				promises.push(function(f) {
+					// This function returns a Promise. How are we going to load
+					// the file?
+					if (self._runtime === "web") {
+						// Via ajax!
+						return self._ajaxLoadFile(f);
+					} else {
+						// With node fs module!
+						return self._nodeLoadFile(f);
+					}
+				}(file));
 			}
-			return loadCount;
+
+			return Promise.all(promises);
 		}
 
 		// Load a file using ajax. DO NOT CALL THIS DIRECTLY.
-		_ajaxLoadFile(loadCount, file, onSuccess, onError) {
+		// Returns a Promise.
+		async _ajaxLoadFile(file) {
 			var self = this;
+			return new Promise(function(resolve, reject) {
+				let xhr = new XMLHttpRequest();
+				xhr.open("GET", file, true);
+				xhr.onreadystatechange = () => {
+					var ref;
+					if (xhr.readyState === 4) {
+						let ref = xhr.status;
+						if (ref === 0 || ref === 200) {
+							self.say(`Loading file ${file} complete.`);
 
-			let xhr = new XMLHttpRequest();
-			xhr.open("GET", file, true);
-			xhr.onreadystatechange = () => {
-				var ref;
-				if (xhr.readyState === 4) {
-					let ref = xhr.status;
-					if (ref === 0 || ref === 200) {
-						self.say(`Loading file ${file} complete.`);
-						// Parse it!
-						self.parse(file, xhr.responseText, onError);
-						// Log that we've received this file.
-						delete self._pending[loadCount][file];
-						// All gone?
-						if (Object.keys(self._pending[loadCount]).length === 0) {
-							if (typeof onSuccess === "function") {
-								return onSuccess.call(void 0, loadCount);
+							// Parse it!
+							let ok = self.parse(file, xhr.responseText, (err) => {
+								reject(err);
+							});
+							if (ok) {
+								resolve();
+							} else {
+								reject("parser error");
 							}
-						}
-					} else {
-						self.say(`Ajax error! ${xhr.statusText}; ${xhr.status}`);
-						if (typeof onError === "function") {
-							return onError.call(void 0, xhr.statusText, loadCount);
+						} else {
+							self.say(`Ajax error! ${xhr.statusText}; ${xhr.status}`);
+							reject(`Ajax error: ${xhr.statusText}; ${xhr.status}`)
 						}
 					}
-				}
-			};
-			return xhr.send(null);
+				};
+				xhr.send(null);
+			});
 		}
 
 		// Load a file using node. DO NOT CALL THIS DIRECTLY.
-		_nodeLoadFile(loadCount, file, onSuccess, onError) {
+		// Returns a Promise.
+		async _nodeLoadFile(file) {
 			var self = this;
+			return new Promise(function(resolve, reject) {
+				// Load the file.
+				return self._node.fs.readFile(file, (err, data) => {
+					if (err) {
+						reject(err);
+						return;
+					}
 
-			// Load the file.
-			return self._node.fs.readFile(file, (err, data) => {
-				if (err) {
-					if (typeof onError === "function") {
-						onError.call(void 0, err, loadCount);
+					// Parse it!
+					let ok = self.parse(file, "" + data, (err) => {
+						reject(err);
+					});
+					if (ok) {
+						resolve();
 					} else {
-						self.warn(err);
+						reject("parser error");
 					}
-					return;
-				}
-				// Parse it!
-				self.parse(file, "" + data, onError);
-				// Log that we've received this file.
-				delete self._pending[loadCount][file];
-				// All gone?
-				if (Object.keys(self._pending[loadCount]).length === 0) {
-					if (typeof onSuccess === "function") {
-						return onSuccess.call(void 0, loadCount);
-					}
-				}
+				});
 			});
 		}
 
 		/**
-		void loadDirectory (string path[, func onSuccess[, func onError]])
+		async loadDirectory (string path)
 
 		Load RiveScript documents from a directory recursively.
 
 		This function is not supported in a web environment.
 		*/
-		loadDirectory(path, onSuccess, onError) {
+		async loadDirectory(path) {
 			var self = this;
-
-			// Can't be done on the web!
-			if (self._runtime === "web") {
-				self.warn("loadDirectory can't be used on the web!");
-				return;
-			}
-
-			let loadCount = self._loadCount++;
-			self._pending[loadCount] = {};
-			let toLoad = [];
-
-			// Default error handler/dummy function.
-			if (onError == null) {
-				onError = function() {};
-			}
-
-			// Verify the directory exists.
-			return self._node.fs.stat(path, (err, stats) => {
-				if (err) {
-					return onError.call(void 0, err, loadCount);
+			return new Promise(function(resolve, reject) {
+				// Can't be done on the web!
+				if (self._runtime === "web") {
+					reject("loadDirectory can't be used on the web!");
+					return;
 				}
-				if (!stats.isDirectory()) {
-					return onError.call(void 0, `${path} is not a directory`, loadCount);
-				}
-				self.say(`Loading batch ${loadCount} from directory ${path}`);
 
-				// Load all the files.
-				let files = readDir(path);
-				for (let i = 0, len = files.length; i < len; i++) {
-					let file = files[i];
-					if (file.match(/\.(rive|rs)$/i)) {
-						// Keep track of the file's status.
-						self._pending[loadCount][path + "/" + file] = 1;
-						toLoad.push(path + "/" + file);
+				// Verify the directory exists.
+				self._node.fs.stat(path, (err, stats) => {
+					if (err) {
+						reject(err);
+						return;
 					}
-				}
-				let results = [];
+					if (!stats.isDirectory()) {
+						reject(`${path} is not a directory`);
+						return;
+					}
+					self.say(`Loading from directory ${path}`);
 
-				// Load all the files.
-				for (let j = 0, len1 = toLoad.length; j < len1; j++) {
-					let file = toLoad[j];
-					self.say(`Parsing file ${file} from directory`);
-					results.push(self._nodeLoadFile(loadCount, file, onSuccess, onError));
-				}
-				return results;
+					// Load all the files.
+					let files = readDir(path);
+					let toLoad = new Array();
+					for (let i = 0, len = files.length; i < len; i++) {
+						let file = files[i];
+						if (file.match(/\.(rive|rs)$/i)) {
+							// Keep track of the file's status.
+							toLoad.push(path + "/" + file);
+						}
+					}
+					self.loadFile(toLoad).then(resolve).catch(reject);
+				});
 			});
 		}
 
 		/**
 		bool stream (string code[, func onError])
 
-		Stream in RiveScript code dynamically. `code` should be the raw RiveScript
-		source code as a string (with line breaks after each line).
+		Load RiveScript source code from a string. `code` should be the raw
+		RiveScript source code, with line breaks separating each line.
 
-		This function is synchronous, meaning there is no success handler needed.
-		It will return false on parsing error, true otherwise.
+		This function is synchronous, meaning it does not return a Promise. It
+		parses the code immediately and returns. Do not fear: the parser runs
+		very quickly.
 
-		`onError` receives: string errorMessage
+		Returns `true` if the code parsed with no error.
+
+		onError function receives: `(err string[, filename str, line_no int])`
 		*/
 		stream(code, onError) {
 			var self = this;
-
-			self.say("Streaming code.");
 			return self.parse("stream()", code, onError);
 		}
 
 		/**
-		private bool parse (string name, string code[, func onError])
+		private bool parse (string name, string code[, func onError(string)])
 
 		Parse RiveScript code and load it into memory. `name` is a file name in case
-		syntax errors need to be pointed out. `code` is the source code, and
-		`onError` is a function to call when a syntax error occurs.
+		syntax errors need to be pointed out. `code` is the source code.
+
+		Returns `true` if the code parsed with no error.
 		*/
 		parse(filename, code, onError) {
 			var self = this;
 			self.say("Parsing code!");
 
 			// Get the "abstract syntax tree"
-			let ast = self.parser.parse(filename, code, onError);
+			let ok = true;
+			let ast = self.parser.parse(filename, code, (err, fn, ln) => {
+				if (typeof(onError) === "function") {
+					onError.call(null, err, fn, ln);
+				}
+				ok = false;
+			});
 
 			// Get all of the "begin" type variables: global, var, sub, person, array..
 			for (let type in ast.begin) {
@@ -629,7 +612,7 @@ const RiveScript = (function() {
 				}
 			}
 
-			return results;
+			return ok;
 		}
 
 		/**

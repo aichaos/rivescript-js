@@ -9,13 +9,13 @@ import re
 import markdown
 
 def main():
-    # Scan for coffee modules.
+    # Scan for JavaScript modules.
     modules = []
     for path, dirs, files in os.walk("src"):
         for f in files:
             module = os.path.join(path, f) \
                 .replace("src/", "") \
-                .replace(".coffee", "") \
+                .replace(".js", "") \
                 .replace("/", ".")
             modules.append(dict(
                 name=module,
@@ -28,19 +28,22 @@ def main():
         in_doc = False
         buf = []
         fh = open(mod["path"], "r")
+        indent = 0
         for line in fh:
-            line = line.strip()
-            if line.startswith("##") and not in_doc:
+            stripped = line.strip()
+            if stripped.startswith("/**") and not in_doc:
                 in_doc = True
+                indent = line.index("/**")
                 continue
-            elif not line.startswith("#") and in_doc:
+            elif stripped.startswith("*/") and in_doc:
                 in_doc = False
                 md.append(to_markdown(buf))
                 buf = []
                 continue
 
             if in_doc:
-                buf.append(re.sub(r'(^#+\s?)|(#+$)', '', line))
+                line = line[indent:].rstrip()
+                buf.append(line)
         fh.close()
 
         # Write the Markdown file.
@@ -63,7 +66,7 @@ def to_markdown(buf):
 
     # Consolodate the header.
     header = []
-    while buf[0].strip():
+    while len(buf) > 0 and buf[0].strip():
         header.append(buf.pop(0).strip())
 
     # Headers that aren't functions are always shown as H1.

@@ -34,7 +34,7 @@ const Parser = class Parser {
 	}
 
 	/**
-	data parse (string filename, string code[, func onError])
+	object parse (string filename, string code[, func onError])
 
 	Read and parse a RiveScript document. Returns a data structure that
 	represents all of the useful contents of the document, in this format:
@@ -73,9 +73,17 @@ const Parser = class Parser {
 	  ]
 	}
 	```
+
+	onError function receives: `(err string[, filename str, line_no int])`
 	*/
 	parse(filename, code, onError) {
 		var self = this;
+
+		if (onError === undefined) {
+			onError = function(err, filename, lineno) {
+				self.warn(err, filename, lineno);
+			};
+		}
 
 		// Eventual return structure ("abstract syntax tree" except not really)
 		let ast = {
@@ -219,7 +227,7 @@ const Parser = class Parser {
 			// Run a syntax check on this line.
 			let syntaxError = self.checkSyntax(cmd, line);
 			if (syntaxError !== "") {
-				if (self.strict && typeof onError === "function") {
+				if (self.strict) {
 					onError.call(null, `Syntax error: ${syntaxError} at ${filename} line ${lineno} near ${cmd} ${line}`);
 				} else {
 					self.warn(`Syntax error: ${syntaxError} at ${filename} line ${lineno} near ${cmd} ${line} (in topic ${topic})`);
@@ -322,8 +330,8 @@ const Parser = class Parser {
 					// Handle version numbers.
 					if (type === "version") {
 						if (parseFloat(value) > parseFloat(RS_VERSION)) {
-							self.warn(`Unsupported RiveScript version. We only support ${RS_VERSION}`, filename, lineno);
-							return false;
+							onError.call(null, `Unsupported RiveScript version. We only support ${RS_VERSION} at ${filename} line ${lineno}`, filename, lineno);
+							return ast;
 						}
 						continue;
 					}
@@ -357,7 +365,6 @@ const Parser = class Parser {
 							break;
 						case "array":
 							// Arrays
-							self.say(`\tSet array ${name} = ${value}`);
 							if (value === "<undef>") {
 								ast.begin.array[name] = "<undef>";
 								continue;
@@ -388,6 +395,7 @@ const Parser = class Parser {
 								return val !== '';
 							});
 
+							self.say(`\tSet array ${name} = ${JSON.stringify(fields)}`);
 							ast.begin.array[name] = fields;
 							break;
 						case "sub":
@@ -552,6 +560,7 @@ const Parser = class Parser {
 					self.warn(`Unknown command '${cmd}' (in topic ${topic})`, filename, lineno);
 			}
 		}
+
 		return ast;
 	}
 

@@ -12,6 +12,7 @@ exports.test_previous = async function(test) {
 		! sub who's  = who is
 		! sub it's   = it is
 		! sub didn't = did not
+		! array colors = red blue green black white
 
 		+ knock knock
 		- Who's there?
@@ -36,6 +37,13 @@ exports.test_previous = async function(test) {
 		% how many arms do i have
 		- That isn't a number.
 
+		+ i bought a new *
+		- What color is your new <star>?
+
+		+ (@colors)
+		% what color is your new *
+		- <sentence> is a pretty color for a <botstar1>.
+
 		+ *
 		- I don't know.
 	`);
@@ -49,6 +57,8 @@ exports.test_previous = async function(test) {
 	await bot.reply("2", "Yes!");
 	await bot.reply("Ask me a question", "How many arms do I have?");
 	await bot.reply("lol", "That isn't a number.");
+	await bot.reply("I bought a new car", "What color is your new car?");
+	await bot.reply("red", "Red is a pretty color for a car.");
 	return test.done();
 };
 

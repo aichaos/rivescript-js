@@ -99,12 +99,12 @@ looks like.
 
   ```javascript
   var bot = new RiveScript();
-  bot.loadFile("example.rive", function() {
+  bot.loadFile("example.rive").then(function() {
     bot.sortReplies();
 
     var deparsed = bot.deparse();
     console.log(JSON.stringify(deparsed, null, 2));
-  }
+  }).catch(console.error);
   ```
 
 * RiveScript Code (`example.rive`)

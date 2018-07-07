@@ -12,12 +12,12 @@ exports.test_load_directory_recursively = function(test) {
         + *
         - No, this failed.
 	`);
-    return bot.rs.loadDirectory('./test/fixtures', async function() {
+    return bot.rs.loadDirectory('./test/fixtures').then(async function() {
         bot.rs.sortReplies();
         await bot.reply("Did the root directory rivescript load?", "Yes, the root directory rivescript loaded.");
         await bot.reply("Did the recursive directory rivescript load?", "Yes, the recursive directory rivescript loaded.");
         return test.done();
-    }, function() {
+    }, () => {
         return test.equal(true, false); // Throw error
     });
 };
