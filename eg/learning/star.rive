@@ -1,0 +1,8 @@
+! version = 2.0
+
+// The * trigger.
+// For this learning bot example, the bot will teach you how to teach it.
++ *
+- I don't know how to reply to that. Why not teach me?\n\n
+^ Just say: when I say <star> you say (what you want me to say)\n\n
+^ For example: when I say hello bot you say hello human.
