@@ -1,0 +1,159 @@
+! version = 2.0
+
+/*******************************************************************************
+Self Learning RiveScript Example (JavaScript)
+
+This script allows users to teach the bot how to respond to new messages.
+
+The trigger is:
+
+    when i say * you say *
+
+Examples:
+
+    You> when I say hello bot you say hello human
+    Generated Code>
+        + hello bot
+        - Hello human
+
+    You> when I say who is Kirsle you say he is the creator of RiveScript.
+    Generated Code>
+        + who is kirsle
+        - He is the creator of rivescript.
+
+    This example only works with the assistance of the JavaScript program:
+    You> when I say Who is * you say I've never heard of <formal> before!
+    Generated Code>
+        + who is *
+        - I've never heard of <formal> before!
+
+All replies learned from users are saved in a file named `learned.rive` and
+kept isolated from the bot's "core replies."
+
+This works in any vanilla JavaScript interpreter for RiveScript that allows you
+to run macros. But if you have control over the JavaScript bot engine that is
+running your code, you can get better results from this -- for example, to
+preserve punctuation and formatting.
+
+In a Node environment this is able to save the learned replies to disk, but on
+the web it will put them in localStorage.
+
+With no assistance from the bot program, there are the following limitations:
+
+* Punctuation will not be preserved in the output files.
+  * You can't use wildcards in the trigger side (except maybe with UTF-8 mode?)
+  * You can't use <star> tags in the response side.
+* The response side is sent in with the `{sentence}` tag so at least its first
+  letter is capitalized in the response.
+
+However, if the bot program stores the user's original message in a user
+variable named `origMessage`, then you can gain better accuracy:
+
+* Punctuation IS preserved, because the object macro re-parses your message
+  against the original pattern, so any mangling RiveScript did while matching
+  the reply doesn't affect the output.
+* The trigger is lowercased when saved to disk.
+* The response side has its first letter capitalized in case you forgot.
+
+Known Limitations
+
+* Teaching it a new reply to an existing trigger will result in a _duplicate_
+  entry being saved in `learned.rive` and the original trigger will always
+  overshadow the duplicate, making it unmatchable.
+* You therefore can't teach it multiple random replies to the same input without
+  using the ugly `{random}` tag.
+* The `origMessage` approach is potentially dangerous to let random users do it,
+  as they could introduce syntax errors that prevent `learned.rive` from
+  being parsed again. In production you might consider restricting this
+  feature to bot admins only.
+
+Author: Noah Petherbridge
+*******************************************************************************/
+
++ {weight=100}when i say * you say *
+- <call>learn "<star1>" "{sentence}<star2>{/sentence}"</call>
+
+> object learn javascript
+    var DEBUG = false; // set it to true if you want some internal log noise
+
+    var say = function(msg) {
+        if (DEBUG) {
+            console.debug(msg);
+        }
+    };
+
+    return new Promise(function(resolve, reject) {
+        let userMessage = args[0],
+            botMessage = args[1],
+            user = rs.currentUser();
+        say(`User ${user} is teaching us: when I say "${userMessage}" you say "${botMessage}"`);
+
+        // If we have assistance from the bot program, it can store the user's
+        // full original message in a user var called `origMessage`, this way
+        // we can preserve punctuation and formatting.
+        rs.getUservar(user, "origMessage").then(function(origMessage) {
+            if (origMessage !== "undefined") {
+                // They have an original message! Re-parse it to get a better
+                // pair than what the macro passed in.
+                let m = origMessage.match(/^when i say (.+?) you say (.+?)$/i);
+                if (m) {
+                    userMessage = m[1].toLowerCase();
+                    botMessage  = m[2].charAt(0).toUpperCase() + m[2].slice(1);
+                    say(`Found better userMessage='${userMessage}' and botMessage='${botMessage}'`);
+                }
+            }
+
+            // The new RiveScript code to save.
+            var code = `
+// Taught to me by ${user}
++ ${userMessage}
+- ${botMessage}
+`;
+            var reply = `I have learned: when you say "${userMessage}" I should say "${botMessage}"`;
+            say(`Generated RiveScript code:\n${code}`);
+            rs.stream(code); // Load it into the current running bot.
+            rs.sortReplies();
+
+            // Figure out where RiveScript is.
+            var engine;
+            if (typeof(window) === "object" && window["RiveScript"] !== undefined) {
+                engine = window.RiveScript;
+            } else if (typeof(RiveScript) === "undefined") {
+                var RiveScript = require("../../lib/rivescript");
+                engine = RiveScript;
+            } else {
+                engine = RiveScript;
+            }
+
+            var bot = new engine();
+            if (typeof(window) === "object" && typeof(window.localStorage) !== undefined) {
+                // We're in a web browser so use localStorage since we can't write
+                // to disk.
+                if (localStorage["learned.rive"] !== undefined) {
+                    // Get the existing replies.
+                    bot.stream(localStorage["learned.rive"]);
+                }
+                bot.stream(code); // stream ours on top
+                localStorage["learned.rive"] = bot.stringify();
+                resolve(reply);
+            } else {
+                // Node environment. Get the existing replies and inject ours
+                // on top of them.
+                bot.loadFile("learned.rive").then(function() {
+                    say(`Loaded learned.rive`)
+                    bot.stream(code);
+                    bot.write("learned.rive");
+
+                    resolve(reply);
+                }).catch(function(err) {
+                    // The file probably didn't exist, create the new one.
+                    say(`Creating new learned.rive`);
+                    bot.stream(code);
+                    bot.write("learned.rive");
+
+                    resolve(reply);
+                });
+            }
+        });
+    });
+< object
