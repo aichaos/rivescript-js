@@ -60,11 +60,14 @@ var rl = readline.createInterface({
 	output: process.stdout
 });
 
+// const { NullSessionManager } = require("./src/sessions");
+
 var ready = false;
 var bot = new RiveScript({
 	debug:  opts.debug,
 	utf8:   opts.utf8,
 	concat: "newline",
+	// sessionManager: new NullSessionManager()
 });
 
 if (opts.watch) {

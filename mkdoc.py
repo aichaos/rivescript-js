@@ -1,11 +1,9 @@
-#!/usr/bin/env python
-from __future__ import print_function
+#!/usr/bin/env python3
 
 """Generate documentation from the RiveScript source files."""
 
 import os
 import os.path
-import re
 import markdown
 
 def main():
@@ -71,7 +69,7 @@ def to_markdown(buf):
 
     # Headers that aren't functions are always shown as H1.
     function_types = ["string", "void", "data", "private", "object", "int",
-        "bool", "Promise", "[]string"]
+        "bool", "Promise", "[]string", "async"]
     is_function = False
     for t in function_types:
         if header[0].startswith(t):

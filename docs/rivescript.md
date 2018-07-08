@@ -28,6 +28,11 @@ following keys:
                   RiveScript source files (default `null`. be careful when
                   setting this option if using somebody else's RiveScript
                   personality; see below)
+* sessionManager: provide a custom session manager to store user variables.
+                  The default is to store variables in memory, but you may
+                  use any async data store by providing an implementation of
+                  RiveScript's SessionManager. See the
+                  [sessions](./sessions.md) documentation.
 ```
 
 ## UTF-8 Mode
@@ -169,7 +174,7 @@ be given to the user one way or another. If the `onDebug` handler is
 defined, this is sent there. If `console` is available, this will be sent
 there. In a worst case scenario, an alert box is shown.
 
-# async loadFile(string path || array path)
+## async loadFile(string path || array path)
 
 Load a RiveScript document from a file. The path can either be a string that
 contains the path to a single file, or an array of paths to load multiple
@@ -182,7 +187,7 @@ await it before you go on to sort the replies.
 * resolves: `()`
 * rejects: `(string error)`
 
-# async loadDirectory (string path)
+## async loadDirectory (string path)
 
 Load RiveScript documents from a directory recursively.
 
@@ -294,66 +299,66 @@ Set the value to `undefined` to delete a substitution.
 Set a person substitution. This is equivalent to `! person` in RiveScript.
 Set the value to `undefined` to delete a person substitution.
 
-## void setUservar (string user, string name, string value)
+## async setUservar (string user, string name, string value)
 
 Set a user variable for a user.
 
-## void setUservars (string user, object data)
+## async setUservars (string user, object data)
 
 Set multiple user variables by providing an object of key/value pairs.
 Equivalent to calling `setUservar()` for each pair in the object.
 
-## void getVariable (string name)
+## string getVariable (string name)
 
 Gets a variable. This is equivalent to `<bot name>` in RiveScript.
 
-## string getUservar (string user, string name)
+## async getUservar (string user, string name) -> value
 
 Get a variable from a user. Returns the string "undefined" if it isn't
 defined.
 
-## data getUservars ([string user])
+## async getUservars ([string user]) -> object
 
 Get all variables about a user. If no user is provided, returns all data
 about all users.
 
-## void clearUservars ([string user])
+## async clearUservars ([string user])
 
 Clear all a user's variables. If no user is provided, clears all variables
 for all users.
 
-## void freezeUservars (string user)
+## async freezeUservars (string user)
 
 Freeze the variable state of a user. This will clone and preserve the user's
 entire variable state, so that it can be restored later with
 `thawUservars()`
 
-## void thawUservars (string user[, string action])
+## async thawUservars (string user[, string action])
 
 Thaw a user's frozen variables. The action can be one of the following:
 * discard: Don't restore the variables, just delete the frozen copy.
 * keep: Keep the frozen copy after restoring
 * thaw: Restore the variables and delete the frozen copy (default)
 
-## string lastMatch (string user)
+## async lastMatch (string user) -> string
 
 Retrieve the trigger that the user matched most recently.
 
-## string initialMatch (string user)
+## async initialMatch (string user) -> string
 
 Retrieve the trigger that the user matched initially. This will return
 only the first matched trigger and will not include subsequent redirects.
 
-This value is reset on each `reply()` or `replyAsync()` call.
+This value is reset on each `reply()` call.
 
-## object lastTriggers (string user)
+## async lastTriggers (string user) -> object
 
 Retrieve the triggers that have been matched for the last reply. This
 will contain all matched trigger with every subsequent redirects.
 
 This value is reset on each `reply()` or `replyAsync()` call.
 
-## object getUserTopicTriggers (string username)
+## async getUserTopicTriggers (string username) -> object
 
 Retrieve the triggers in the current topic for the specified user. It can
 be used to create a UI that gives the user options based on trigges, e.g.
