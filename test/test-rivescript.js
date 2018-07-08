@@ -187,14 +187,14 @@ exports.test_initialmatch = async function(test) {
         - I don't know.
 	`);
     await bot.reply("Hello?", "Oh hi. How are you?");
-    bot.uservar("__lastmatch__", "phrase");
-    bot.uservar("__initialmatch__", "(hello|ni hao)");
+    await bot.uservar("__lastmatch__", "phrase");
+    await bot.uservar("__initialmatch__", "(hello|ni hao)");
     await bot.reply("Good!", "That's great.");
-    bot.uservar("__lastmatch__", "good");
-    bot.uservar("__initialmatch__", "good");
+    await bot.uservar("__lastmatch__", "good");
+    await bot.uservar("__initialmatch__", "good");
     await bot.reply("Thanks!", "No problem. How are you?");
-    bot.uservar("__lastmatch__", "phrase");
-    bot.uservar("__initialmatch__", "@thanks{weight=2}");
+    await bot.uservar("__lastmatch__", "phrase");
+    await bot.uservar("__initialmatch__", "@thanks{weight=2}");
     return test.done();
 };
 
@@ -209,7 +209,7 @@ exports.test_valid_history = async function(test) {
 	`);
     await bot.reply("Hello", "Hi!");
     // Intentionally set a bad history.
-    bot.rs.setUservar(bot.username, "__history__", {
+    await bot.rs.setUservar(bot.username, "__history__", {
         "input": ["Hello"]
     });
     await bot.reply("Bye!", "Goodbye!");

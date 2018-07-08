@@ -30,6 +30,11 @@ following keys:</p>
                   RiveScript source files (default `null`. be careful when
                   setting this option if using somebody else&#39;s RiveScript
                   personality; see below)
+* sessionManager: provide a custom session manager to store user variables.
+                  The default is to store variables in memory, but you may
+                  use any async data store by providing an implementation of
+                  RiveScript&#39;s SessionManager. See the
+                  [sessions](./sessions.md) documentation.
 </pre></div>
 
 
@@ -147,7 +152,7 @@ handler if you defined one.</p>
 be given to the user one way or another. If the <code>onDebug</code> handler is
 defined, this is sent there. If <code>console</code> is available, this will be sent
 there. In a worst case scenario, an alert box is shown.</p>
-<h1>async loadFile(string path || array path)</h1>
+<h2>async loadFile(string path || array path)</h2>
 <p>Load a RiveScript document from a file. The path can either be a string that
 contains the path to a single file, or an array of paths to load multiple
 files. The Promise resolves when all of the files have been parsed and
@@ -158,7 +163,7 @@ await it before you go on to sort the replies.</p>
 <li>resolves: <code>()</code></li>
 <li>rejects: <code>(string error)</code></li>
 </ul>
-<h1>async loadDirectory (string path)</h1>
+<h2>async loadDirectory (string path)</h2>
 <p>Load RiveScript documents from a directory recursively.</p>
 <p>This function is not supported in a web environment.</p>
 <h2>bool stream (string code[, func onError])</h2>
@@ -233,42 +238,42 @@ Set the value to <code>undefined</code> to delete a substitution.</p>
 <h2>void setPerson (string name, string value)</h2>
 <p>Set a person substitution. This is equivalent to <code>! person</code> in RiveScript.
 Set the value to <code>undefined</code> to delete a person substitution.</p>
-<h2>void setUservar (string user, string name, string value)</h2>
+<h2>async setUservar (string user, string name, string value)</h2>
 <p>Set a user variable for a user.</p>
-<h2>void setUservars (string user, object data)</h2>
+<h2>async setUservars (string user, object data)</h2>
 <p>Set multiple user variables by providing an object of key/value pairs.
 Equivalent to calling <code>setUservar()</code> for each pair in the object.</p>
-<h2>void getVariable (string name)</h2>
+<h2>string getVariable (string name)</h2>
 <p>Gets a variable. This is equivalent to <code>&lt;bot name&gt;</code> in RiveScript.</p>
-<h2>string getUservar (string user, string name)</h2>
+<h2>async getUservar (string user, string name) -&gt; value</h2>
 <p>Get a variable from a user. Returns the string "undefined" if it isn't
 defined.</p>
-<h2>data getUservars ([string user])</h2>
+<h2>async getUservars ([string user]) -&gt; object</h2>
 <p>Get all variables about a user. If no user is provided, returns all data
 about all users.</p>
-<h2>void clearUservars ([string user])</h2>
+<h2>async clearUservars ([string user])</h2>
 <p>Clear all a user's variables. If no user is provided, clears all variables
 for all users.</p>
-<h2>void freezeUservars (string user)</h2>
+<h2>async freezeUservars (string user)</h2>
 <p>Freeze the variable state of a user. This will clone and preserve the user's
 entire variable state, so that it can be restored later with
 <code>thawUservars()</code></p>
-<h2>void thawUservars (string user[, string action])</h2>
+<h2>async thawUservars (string user[, string action])</h2>
 <p>Thaw a user's frozen variables. The action can be one of the following:
 <em> discard: Don't restore the variables, just delete the frozen copy.
 </em> keep: Keep the frozen copy after restoring
 * thaw: Restore the variables and delete the frozen copy (default)</p>
-<h2>string lastMatch (string user)</h2>
+<h2>async lastMatch (string user) -&gt; string</h2>
 <p>Retrieve the trigger that the user matched most recently.</p>
-<h2>string initialMatch (string user)</h2>
+<h2>async initialMatch (string user) -&gt; string</h2>
 <p>Retrieve the trigger that the user matched initially. This will return
 only the first matched trigger and will not include subsequent redirects.</p>
-<p>This value is reset on each <code>reply()</code> or <code>replyAsync()</code> call.</p>
-<h2>object lastTriggers (string user)</h2>
+<p>This value is reset on each <code>reply()</code> call.</p>
+<h2>async lastTriggers (string user) -&gt; object</h2>
 <p>Retrieve the triggers that have been matched for the last reply. This
 will contain all matched trigger with every subsequent redirects.</p>
 <p>This value is reset on each <code>reply()</code> or <code>replyAsync()</code> call.</p>
-<h2>object getUserTopicTriggers (string username)</h2>
+<h2>async getUserTopicTriggers (string username) -&gt; object</h2>
 <p>Retrieve the triggers in the current topic for the specified user. It can
 be used to create a UI that gives the user options based on trigges, e.g.
 using buttons, select boxes and other UI resources. This also includes the

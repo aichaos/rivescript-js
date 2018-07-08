@@ -54,9 +54,9 @@ class Brain {
 		let reply = "";
 
 		// Set initial match to be undefined
-		if (self.master.getUservars(user)) {
-			self.master._users[user].__initialmatch__ = null;
-		}
+		await self.master._session.set(user, {
+			__initialmatch__: null
+		});
 
 		// If the BEGIN block exists, consult it first.
 		if (self.master._topics.__begin__) {
@@ -74,10 +74,22 @@ class Brain {
 		}
 
 		// Save their reply history
-		self.master._users[user].__history__.input.pop();
-		self.master._users[user].__history__.input.unshift(msg);
-		self.master._users[user].__history__.reply.pop();
-		self.master._users[user].__history__.reply.unshift(reply);
+		let history = (await self.master._session.get(user, "__history__"));
+		if (history == "undefined") { // purposeful typecast
+			history = newHistory();
+		}
+		try {
+			// If modifying it fails, the data was bad, and reset it.
+			history.input.pop();
+			history.input.unshift(msg);
+			history.reply.pop();
+			history.reply.unshift(reply);
+		} catch(e) {
+			history = newHistory();
+		}
+		await self.master._session.set(user, {
+			__history__: history
+		});
 
 		// Unset the current user ID.
 		self._currentUser = null;
@@ -104,13 +116,12 @@ class Brain {
 			return "ERR: Replies Not Sorted";
 		}
 
-		// Initialize the user's profile?
-		if (!self.master.getUservars(user)) {
-			self.master.setUservar(user, "topic", "random");
+		// Collect data on this user.
+		let topic = (await self.master.getUservar(user, "topic"));
+		if (topic === null || topic === "undefined") {
+			topic = "random";
 		}
 
-		// Collect data on this user.
-		let topic = self.master.getUservar(user, "topic");
 		let stars = [];
 		let thatstars = []; // For %Previous
 		let reply = "";
@@ -119,7 +130,7 @@ class Brain {
 		if (!self.master._topics[topic]) {
 			self.warn(`User ${user} was in an empty topic named '${topic}'`);
 			topic = "random";
-			self.master.setUservar(user, "topic", topic);
+			await self.master.setUservar(user, "topic", topic);
 		}
 
 		// Avoid deep recursion.
@@ -133,16 +144,12 @@ class Brain {
 		}
 
 		// Initialize this user's history.
-		if (!self.master._users[user].__history__) {
-			self.master._users[user].__history__ = {};
-		}
-
-		// Update input &/or reply if given array is missing or empty
-		if (!self.master._users[user].__history__.input || self.master._users[user].__history__.input.length === 0) {
-			self.master._users[user].__history__.input = ["undefined", "undefined", "undefined", "undefined", "undefined", "undefined", "undefined", "undefined", "undefined", "undefined"];
-		}
-		if (!self.master._users[user].__history__.reply || self.master._users[user].__history__.reply.length === 0) {
-			self.master._users[user].__history__.reply = ["undefined", "undefined", "undefined", "undefined", "undefined", "undefined", "undefined", "undefined", "undefined", "undefined"];
+		let history = (await self.master._session.get(user, "__history__"));
+		if (history == "undefined") { // purposeful typecast
+			history = newHistory();
+			await self.master._session.set(user, {
+				__history__: history
+			});
 		}
 
 		// More topic sanity checking.
@@ -177,7 +184,7 @@ class Brain {
 					self.say("There's a %Previous in this topic!");
 
 					// Do we have history yet?
-					let lastReply = self.master._users[user].__history__.reply[0] || "undefined";
+					let lastReply = history.reply ? history.reply[0] : "undefined";
 
 					// Format the bot's last reply the same way as the human's.
 					lastReply = self.formatMessage(lastReply, true);
@@ -187,7 +194,7 @@ class Brain {
 					for (let k = 0, len1 = self.master._sorted.thats[top].length; k < len1; k++) {
 						let trig = self.master._sorted.thats[top][k];
 						let pattern = trig[1].previous;
-						let botside = self.triggerRegexp(user, pattern);
+						let botside = (await self.triggerRegexp(user, pattern));
 
 						self.say(`Try to match lastReply (${lastReply}) to ${botside}`);
 
@@ -202,7 +209,7 @@ class Brain {
 
 							// Compare the triggers to the user's message.
 							let userSide = trig[1];
-							let regexp = self.triggerRegexp(user, userSide.trigger);
+							let regexp = (await self.triggerRegexp(user, userSide.trigger));
 							self.say(`Try to match "${msg}" against ${userSide.trigger} (${regexp})`);
 
 							// If the trigger is atomic, we don't need to bother with the regexp engine.
@@ -246,7 +253,7 @@ class Brain {
 			for (let l = 0, len = self.master._sorted.topics[topic].length; l < len; l++) {
 				let trig = self.master._sorted.topics[topic][l];
 				let pattern = trig[0];
-				let regexp = self.triggerRegexp(user, pattern);
+				let regexp = (await self.triggerRegexp(user, pattern));
 
 				self.say(`Try to match "${msg}" against ${pattern} (${regexp})`);
 
@@ -289,18 +296,23 @@ class Brain {
 
 		// Store what trigger they matched on. If their matched trigger is undefined,
 		// this will be too, which is great.
-		self.master._users[user].__lastmatch__ = matchedTrigger;
+		await self.master._session.set(user, {__lastmatch__: matchedTrigger});
+		let lastTriggers = [];
 		if (step === 0) {
-			// Store initial matched trigger. Like __lastmatch__, this can be undefined.
-			self.master._users[user].__initialmatch__ = matchedTrigger;
-			// Also initialize __last_triggers__ which will keep all matched triggers
-			self.master._users[user].__last_triggers__ = [];
+			await self.master._session.set(user, {
+				// Store initial matched trigger. Like __lastmatch__, this can be undefined.
+				__initialmatch__: matchedTrigger,
+
+				// Also initialize __last_triggers__ which will keep all matched triggers
+				__last_triggers__: lastTriggers
+			});
 		}
 
 		// Did we match?
 		if (matched) {
 			// Keep the current match
-			self.master._users[user].__last_triggers__.push(matched);
+			lastTriggers.push(matched);
+			await self.master._session.set(user, {__last_triggers__: lastTriggers});
 
 			// A single loop so we can break out early
 			for (let n = 0; n < 1; n++) {
@@ -434,7 +446,7 @@ class Brain {
 				}
 
 				let name = match[1];
-				self.master.setUservar(user, "topic", name);
+				await self.master.setUservar(user, "topic", name);
 				reply = reply.replace(new RegExp("{topic=" + utils.quotemeta(name) + "}", "ig"), "");
 				match = reply.match(/\{topic=(.+?)\}/i);
 			}
@@ -452,7 +464,7 @@ class Brain {
 				let name = match[1];
 				let value = match[2];
 
-				self.master.setUservar(user, name, value);
+				await self.master.setUservar(user, name, value);
 				reply = reply.replace(new RegExp("<set " + utils.quotemeta(name) + "=" + utils.quotemeta(value) + ">", "ig"), "");
 				match = reply.match(/<set (.+?)=(.+?)>/i);
 			}
@@ -503,11 +515,11 @@ class Brain {
 	}
 
 	/**
-	string triggerRegexp (string user, string trigger)
+	async triggerRegexp (string user, string trigger)
 
 	Prepares a trigger for the regular expression engine.
 	*/
-	triggerRegexp(user, regexp) {
+	async triggerRegexp(user, regexp) {
 		var self = this;
 
 		// If the trigger is simply '*' then the * needs to become (.*?)
@@ -625,7 +637,7 @@ class Brain {
 			let match = regexp.match(/<get (.+?)>/i);
 			if (match) {
 				let name = match[1];
-				let rep = self.master.getUservar(user, name);
+				let rep = (await self.master.getUservar(user, name));
 				regexp = regexp.replace(new RegExp("<get " + utils.quotemeta(name) + ">", "ig"), rep.toLowerCase());
 			}
 		}
@@ -633,6 +645,10 @@ class Brain {
 		giveup = 0;
 		regexp = regexp.replace(/<input>/i, "<input1>");
 		regexp = regexp.replace(/<reply>/i, "<reply1>");
+		let history = (await self.master._session.get(user, "__history__"));
+		if (history == "undefined") { // purposeful typecast
+			history = newHistory();
+		}
 		while (regexp.indexOf("<input") > -1 || regexp.indexOf("<reply") > -1) {
 			if (giveup++ > 50) {
 				break;
@@ -642,7 +658,7 @@ class Brain {
 				let type = ref[k];
 				for (let i = 1; i <= 9; i++) {
 					if (regexp.indexOf(`<${type}${i}>`) > -1) {
-						regexp = regexp.replace(new RegExp(`<${type}${i}>`, "g"), self.master._users[user].__history__[type][i-1]);
+						regexp = regexp.replace(new RegExp(`<${type}${i}>`, "g"), history[type][i-1]);
 					}
 				}
 			}
@@ -726,14 +742,18 @@ class Brain {
 		}
 
 		// <input> and <reply>
-		reply = reply.replace(/<input>/ig, self.master._users[user].__history__.input[0] || "undefined");
-		reply = reply.replace(/<reply>/ig, self.master._users[user].__history__.reply[0] || "undefined");
+		let history = (await self.master._session.get(user, "__history__"));
+		if (history == "undefined") { // purposeful typecast for `undefined` too
+			history = newHistory();
+		}
+		reply = reply.replace(/<input>/ig, history.input ? history.input[0] : "undefined");
+		reply = reply.replace(/<reply>/ig, history.reply ? history.reply[0] : "undefined");
 		for (let i = 1; i <= 9; i++) {
 			if (reply.indexOf(`<input${i}>`) > -1) {
-				reply = reply.replace(new RegExp(`<input${i}>`, "ig"), self.master._users[user].__history__.input[i-1]);
+				reply = reply.replace(new RegExp(`<input${i}>`, "ig"), history.input[i-1]);
 			}
 			if (reply.indexOf(`<reply${i}>`) > -1) {
-				reply = reply.replace(new RegExp(`<reply${i}>`, "ig"), self.master._users[user].__history__.reply[i-1]);
+				reply = reply.replace(new RegExp(`<reply${i}>`, "ig"), history.reply[i-1]);
 			}
 		}
 
@@ -832,7 +852,7 @@ class Brain {
 				// <set> user vars
 				parts = data.split("=", 2);
 				self.say(`Set uservar ${parts[0]} = ${parts[1]}`);
-				self.master.setUservar(user, parts[0], parts[1]);
+				await self.master.setUservar(user, parts[0], parts[1]);
 			} else if (tag === "add" || tag === "sub" || tag === "mult" || tag === "div") {
 				// Math operator tags
 				parts = data.split("=");
@@ -840,18 +860,19 @@ class Brain {
 				let value = parts[1];
 
 				// Initialize the variable?
-				if (self.master.getUservar(user, name) === "undefined") {
-					self.master.setUservar(user, name, 0);
+				let existingValue = (await self.master.getUservar(user, name));
+				if (existingValue === "undefined") {
+					existingValue = 0;
 				}
 
 				// Sanity check
 				value = parseInt(value);
 				if (isNaN(value)) {
 					insert = `[ERR: Math can't '${tag}' non-numeric value '${value}']`;
-				} else if (isNaN(parseInt(self.master.getUservar(user, name)))) {
+				} else if (isNaN(parseInt(existingValue))) {
 					insert = `[ERR: Math can't '${tag}' non-numeric user variable '${name}']`;
 				} else {
-					let result = parseInt(self.master.getUservar(user, name));
+					let result = parseInt(existingValue);
 					if (tag === "add") {
 						result += value;
 					} else if (tag === "sub") {
@@ -868,11 +889,11 @@ class Brain {
 
 					// No errors?
 					if (insert === "") {
-						self.master.setUservar(user, name, result);
+						await self.master.setUservar(user, name, result);
 					}
 				}
 			} else if (tag === "get") {
-				insert = self.master.getUservar(user, data);
+				insert = (await self.master.getUservar(user, data));
 			} else {
 				// Unrecognized tag, preserve it
 				insert = `\x00${match}\x01`;
@@ -895,7 +916,7 @@ class Brain {
 			}
 
 			let name = match[1];
-			self.master.setUservar(user, "topic", name);
+			await self.master.setUservar(user, "topic", name);
 			reply = reply.replace(new RegExp("{topic=" + utils.quotemeta(name) + "}", "ig"), "");
 			match = reply.match(/\{topic=(.+?)\}/i); // Look for more
 		}
@@ -1053,5 +1074,12 @@ class Brain {
 		return msg;
 	}
 };
+
+function newHistory() {
+	return {
+		input: ["undefined", "undefined", "undefined", "undefined", "undefined", "undefined", "undefined", "undefined", "undefined", "undefined"],
+		reply: ["undefined", "undefined", "undefined", "undefined", "undefined", "undefined", "undefined", "undefined", "undefined", "undefined"]
+	};
+}
 
 module.exports = Brain;

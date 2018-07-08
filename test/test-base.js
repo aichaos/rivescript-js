@@ -64,10 +64,11 @@ TestCase = class TestCase {
 	@param name: The variable name.
 	@param expected: The expected value of that name.
 	*/
-	uservar(name, expected) {
+	async uservar(name, expected) {
 		var value;
-		value = this.rs.getUservar(this.username, name);
-		return this.test.equal(value, expected);
+		this.rs.getUservar(this.username, name).then((value) => {
+			return this.test.equal(value, expected);
+		});
 	}
 
 };

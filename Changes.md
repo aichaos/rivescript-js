@@ -1,15 +1,58 @@
 # Changes
 
-## 2.0.0 Alpha Release
+## 2.0.0 Alpha: Async/Await
 
 This is a major new version of RiveScript. It adds async/await support and
-makes the API asynchronous everywhere.
+makes the API asynchronous everywhere. It also decaffeinates the code,
+migrating it from CoffeeScript back to native ES2015+ with modern syntax.
 
 ### Backwards Incompatible Changes
 
 * The `reply()` method now returns a Promise instead of a string. In that
   regard, it works just like the old `replyAsync()` method did.
+* The `loadFile()` and `loadDirectory()` functions return Promises now
+  instead of using callbacks.
 * The `replyAsync()` method is now deprecated in favor of `reply()`.
+
+The user variable session manager is now pluggable and replaceable, with
+the default continuing to be in-memory storage of user variables.
+
+For session managers to support async database drivers, all of the user
+variable functions now return their result as a Promise:
+
+* `setUservar(user, name, value)`
+* `setUservars(user, data)`
+* `getUservar(user, name)`
+* `getUservars([user])`
+* `clearUservars([user])`
+* `freezeUservars(user)`
+* `thawUservars(user, action="thaw")`
+* `lastMatch(user)`
+* `initialMatch(user)`
+* `lastTriggers(user)`
+* `getUserTopicTriggers(user)`
+
+### User Variable Session Managers
+
+RiveScript-JS finally joins its Python, Go, and Java cousins in supporting
+pluggable user variable session managers.
+
+This feature will allow you to replace the default in-memory user variable
+store with one backed by a database, like MongoDB or Redis.
+
+```javascript
+// MemorySessionManager is the default session store, but you
+// could implement Redis or anything by making a SessionManager
+// compatible class.
+const { MemorySessionManager } = require("./src/sessions");
+
+// Use your session manager.
+var bot = new RiveScript({
+  sessionManager: new MemorySessionManager()
+});
+```
+
+See the [sessions](./sessions.md) documentation for more details.
 
 ### Async Objects in Conditions
 
@@ -61,6 +104,17 @@ before to get the string reply:
 +    })
 ```
 
+Likewise, the `loadDirectory()` and `loadFile()` functions were made
+to be Promise-based instead of callback-based. Switching over is simple:
+
+```diff
+-   bot.loadDirectory("./brain", onSuccess, onError);
++   bot.loadDirectory("./brain").then(onSuccess).catch(onError);
+
+-   bot.loadFile("./brain/admin.rive", onSuccess, onError);
++   bot.loadFile("./brain/admin.rive").then(onSuccess).catch(onError);
+```
+
 ### 2.0.0-alpha.2 - June 16 2018
 
 - Decaffeinate the source code from CoffeeScript back into native JavaScript.
@@ -74,6 +128,14 @@ before to get the string reply:
 
 - Fix a runtime error when `<input>` is used in a trigger.
 - Reformatted the unit tests to use ES2015 multi-line string literals.
+
+### 2.0.0-alpha.5 - Jul 7 2018
+
+- Fix `<botstar>` not working at all.
+- Make `loadFile()` and `loadDirectory()` promise-based.
+- Add the User Variable Session Manager Interface and break backwards
+  compatibility on **all** methods that use user variables (e.g.
+  `getUservar()`, `lastMatch()`, etc.)
 
 ## 1.0.0 Releases
 

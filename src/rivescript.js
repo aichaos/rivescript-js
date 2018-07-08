@@ -30,6 +30,7 @@ const Brain = require("./brain");
 const utils = require("./utils");
 const sorting = require("./sorting");
 const inherit_utils = require("./inheritance");
+const { MemorySessionManager } = require("./sessions");
 const JSObjectHandler = require("./lang/javascript");
 const readDir = require("fs-readdir-recursive");
 
@@ -51,6 +52,11 @@ following keys:
                   RiveScript source files (default `null`. be careful when
                   setting this option if using somebody else's RiveScript
                   personality; see below)
+* sessionManager: provide a custom session manager to store user variables.
+                  The default is to store variables in memory, but you may
+                  use any async data store by providing an implementation of
+                  RiveScript's SessionManager. See the
+                  [sessions](./sessions.md) documentation.
 ```
 
 ## UTF-8 Mode
@@ -231,8 +237,7 @@ const RiveScript = (function() {
 			self._person = {}; // 'person' substitutions
 			self._personmax = 1; // 'personmax' max words in person object
 			self._array = {}; // 'array' variables
-			self._users = {}; // 'user' variables
-			self._freeze = {}; // frozen 'user' variables
+			self._session = null; // session manager for user variables
 			self._includes = {}; // included topics
 			self._inherits = {}; // inherited topics
 			self._handlers = {}; // object handlers
@@ -255,7 +260,16 @@ const RiveScript = (function() {
 				if (opts.utf8) {
 					self._utf8 = true;
 				}
+				if (opts.sessionManager) {
+					self._session = opts.sessionManager;
+				}
 			}
+
+			// Initialize the default session manager.
+			if (self._session === null) {
+				self._session = new MemorySessionManager();
+			}
+
 			// Set the default JavaScript language handler.
 			self._handlers.javascript = new JSObjectHandler(self);
 			self.say(`RiveScript Interpreter v${VERSION} Initialized.`);
@@ -879,70 +893,36 @@ const RiveScript = (function() {
 		}
 
 		/**
-		void setUservar (string user, string name, string value)
+		async setUservar (string user, string name, string value)
 
 		Set a user variable for a user.
 		*/
-		setUservar(user, name, value) {
+		async setUservar(user, name, value) {
 			var self = this;
 
-			// Initialize the user?
-			if (!self._users[user]) {
-				self._users[user] = {
-					topic: "random"
-				};
+			// Are we setting the topic and are we forcing case?
+			if (name === "topic" && self._forceCase) {
+				value = value.toLowerCase();
 			}
 
-			if (value === void 0) {
-				return delete self._users[user][name];
-			} else {
-				// Topic? And are we forcing case?
-				if (name === "topic" && self._forceCase) {
-					value = value.toLowerCase();
-				}
-				return self._users[user][name] = value;
-			}
+			var fields = {};
+			fields[name] = value;
+			return self._session.set(user, fields);
 		}
 
 		/**
-		void setUservars (string user, object data)
+		async setUservars (string user, object data)
 
 		Set multiple user variables by providing an object of key/value pairs.
 		Equivalent to calling `setUservar()` for each pair in the object.
 		*/
-		setUservars(user, data) {
+		async setUservars(user, data) {
 			var self = this;
-
-			// Initialize the user?
-			if (!self._users[user]) {
-				self._users[user] = {
-					topic: "random"
-				};
-			}
-
-			let results = [];
-			for (let key in data) {
-				if (!data.hasOwnProperty(key)) {
-					continue;
-				}
-
-				// Topic? And are we forcing case?
-				if (key === "topic" && self._forceCase) {
-					data[key] = data[key].toLowerCase();
-				}
-
-				if (data[key] === void 0) {
-					results.push(delete self._users[user][key]);
-				} else {
-					results.push(self._users[user][key] = data[key]);
-				}
-			}
-
-			return results;
+			return self._session.set(user, data);
 		}
 
 		/**
-		void getVariable (string name)
+		string getVariable (string name)
 
 		Gets a variable. This is equivalent to `<bot name>` in RiveScript.
 		*/
@@ -958,168 +938,109 @@ const RiveScript = (function() {
 		}
 
 		/**
-		string getUservar (string user, string name)
+		async getUservar (string user, string name) -> value
 
 		Get a variable from a user. Returns the string "undefined" if it isn't
 		defined.
 		*/
-		getUservar(user, name) {
+		async getUservar(user, name) {
 			var self = this;
-
-			// No user?
-			if (!self._users[user]) {
-				return "undefined";
-			}
-			// The var exists?
-			if (typeof self._users[user][name] !== "undefined") {
-				return self._users[user][name];
-			} else {
-				return "undefined";
-			}
+			return self._session.get(user, name);
 		}
 
 		/**
-		data getUservars ([string user])
+		async getUservars ([string user]) -> object
 
 		Get all variables about a user. If no user is provided, returns all data
 		about all users.
 		*/
-		getUservars(user) {
+		async getUservars(user) {
 			var self = this;
-
 			if (user === undefined) {
-				// All the users! Return a cloned object to break refs.
-				return utils.clone(self._users);
+				return self._session.getAny(user);
 			} else {
-				if (self._users[user] != null) {
-					return utils.clone(self._users[user]);
-				}
-				return null;
+				return self._session.getAll();
 			}
 		}
 
 		/**
-		void clearUservars ([string user])
+		async clearUservars ([string user])
 
 		Clear all a user's variables. If no user is provided, clears all variables
 		for all users.
 		*/
-		clearUservars(user) {
+		async clearUservars(user) {
 			var self = this;
-
 			if (user === undefined) {
-				return self._users = {};
+				return self._session.resetAll();
 			} else {
-				return delete self._users[user];
+				return self._session.reset(user);
 			}
 		}
 
 		/**
-		void freezeUservars (string user)
+		async freezeUservars (string user)
 
 		Freeze the variable state of a user. This will clone and preserve the user's
 		entire variable state, so that it can be restored later with
 		`thawUservars()`
 		*/
-		freezeUservars(user) {
+		async freezeUservars(user) {
 			var self = this;
-
-			if (self._users[user] != null) {
-				return self._freeze[user] = utils.clone(self._users[user]);
-			} else {
-				return self.warn(`Can't freeze vars for user ${user}: not found!`);
-			}
+			return self._session.freeze(user);
 		}
 
 		/**
-		void thawUservars (string user[, string action])
+		async thawUservars (string user[, string action])
 
 		Thaw a user's frozen variables. The action can be one of the following:
 		* discard: Don't restore the variables, just delete the frozen copy.
 		* keep: Keep the frozen copy after restoring
 		* thaw: Restore the variables and delete the frozen copy (default)
 		*/
-		thawUservars(user, action="thaw") {
+		async thawUservars(user, action="thaw") {
 			var self = this;
-
-			if (typeof action !== "string") {
-				action = "thaw";
-			}
-
-			// Frozen?
-			if (self._freeze[user] == null) {
-				self.warn(`Can't thaw user vars: ${user} wasn't frozen!`);
-				return;
-			}
-
-			// What are we doing?
-			if (action === "thaw") {
-				self.clearUservars(user);
-				self._users[user] = utils.clone(self._freeze[user]);
-				return delete self._freeze[user];
-			} else if (action === "discard") {
-				return delete self._freeze[user];
-			} else if (action === "keep") {
-				self.clearUservars(user);
-				return self._users[user] = utils.clone(self._freeze[user]);
-			} else {
-				return self.warn("Unsupported thaw action!");
-			}
+			return self._session.thaw(user, action);
 		}
 
 		/**
-		string lastMatch (string user)
+		async lastMatch (string user) -> string
 
 		Retrieve the trigger that the user matched most recently.
 		*/
-		lastMatch(user) {
+		async lastMatch(user) {
 			var self = this;
-
-			if (self._users[user] != null) {
-				return self._users[user].__lastmatch__;
-			}
-
-			return null;
+			return self._session.get(user, "__lastmatch__");
 		}
 
 		/**
-		string initialMatch (string user)
+		async initialMatch (string user) -> string
 
 		Retrieve the trigger that the user matched initially. This will return
 		only the first matched trigger and will not include subsequent redirects.
 
-		This value is reset on each `reply()` or `replyAsync()` call.
+		This value is reset on each `reply()` call.
 		*/
-		initialMatch(user) {
+		async initialMatch(user) {
 			var self = this;
-
-			if (self._users[user] != null) {
-				return self._users[user].__initialmatch__;
-			}
-
-			return null;
+			return self._session.get(user, "__initialmatch__");
 		}
 
 		/**
-		object lastTriggers (string user)
+		async lastTriggers (string user) -> object
 
 		Retrieve the triggers that have been matched for the last reply. This
 		will contain all matched trigger with every subsequent redirects.
 
 		This value is reset on each `reply()` or `replyAsync()` call.
 		*/
-		lastTriggers(user) {
+		async lastTriggers(user) {
 			var self = this;
-
-			if (self._users[user] != null) {
-				return self._users[user].__last_triggers__;
-			}
-
-			return null;
+			return self._session.get(user, "__last_triggers__");
 		}
 
 		/**
-		object getUserTopicTriggers (string username)
+		async getUserTopicTriggers (string username) -> object
 
 		Retrieve the triggers in the current topic for the specified user. It can
 		be used to create a UI that gives the user options based on trigges, e.g.
@@ -1129,15 +1050,13 @@ const RiveScript = (function() {
 
 		This will return `undefined` if the user cant be find
 		*/
-		getUserTopicTriggers(user) {
+		async getUserTopicTriggers(user) {
 			var self = this;
-
-			self.userVars = self.getUservars(user);
-			if (self.userVars != null) {
-				return inherit_utils.getTopicTriggers(self, self.userVars.topic);
-			}
-
-			return null;
+			return new Promise((resolve, reject) => {
+				self._session.get(user, "topic").then((topic) => {
+					resolve(inherit_utils.getTopicTriggers(self, topic));
+				});
+			});
 		}
 
 		/**
