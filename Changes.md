@@ -137,6 +137,13 @@ to be Promise-based instead of callback-based. Switching over is simple:
   compatibility on **all** methods that use user variables (e.g.
   `getUservar()`, `lastMatch()`, etc.)
 
+### 2.0.0-alpha.6 - Jul 9 2018
+
+- Make `loadFile()` and `loadDirectory()` backwards compatible so "simple" bots
+  won't need to change anything to upgrade, but will get deprecation warnings
+  instead. ("Simple" bots used `loadFile()` or `loadDirectory()` in conjunction
+  with `replyAsync()`, and didn't use any other functions that changed).
+
 ## 1.0.0 Releases
 
 ### 1.19.0 - March 4 2018
