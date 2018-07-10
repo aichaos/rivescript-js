@@ -159,12 +159,22 @@ files. The Promise resolves when all of the files have been parsed and
 loaded. The Promise rejects on error.</p>
 <p>This loading method is asynchronous so you must resolve the promise or
 await it before you go on to sort the replies.</p>
+<p>For backwards compatibility, this function can take callbacks instead
+of returning a Promise:</p>
+<blockquote>
+<p><code>rs.loadDirectory(path, onSuccess(), onError(err, filename, lineno))</code></p>
+</blockquote>
 <ul>
 <li>resolves: <code>()</code></li>
 <li>rejects: <code>(string error)</code></li>
 </ul>
 <h2>async loadDirectory (string path)</h2>
 <p>Load RiveScript documents from a directory recursively.</p>
+<p>For backwards compatibility, this function can take callbacks instead
+of returning a Promise:</p>
+<blockquote>
+<p><code>rs.loadDirectory(path, onSuccess(), onError(err, filename, lineno))</code></p>
+</blockquote>
 <p>This function is not supported in a web environment.</p>
 <h2>bool stream (string code[, func onError])</h2>
 <p>Load RiveScript source code from a string. <code>code</code> should be the raw

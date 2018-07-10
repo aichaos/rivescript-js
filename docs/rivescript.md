@@ -184,12 +184,22 @@ loaded. The Promise rejects on error.
 This loading method is asynchronous so you must resolve the promise or
 await it before you go on to sort the replies.
 
+For backwards compatibility, this function can take callbacks instead
+of returning a Promise:
+
+> `rs.loadDirectory(path, onSuccess(), onError(err, filename, lineno))`
+
 * resolves: `()`
 * rejects: `(string error)`
 
 ## async loadDirectory (string path)
 
 Load RiveScript documents from a directory recursively.
+
+For backwards compatibility, this function can take callbacks instead
+of returning a Promise:
+
+> `rs.loadDirectory(path, onSuccess(), onError(err, filename, lineno))`
 
 This function is not supported in a web environment.
 

@@ -369,10 +369,15 @@ const RiveScript = (function() {
 		This loading method is asynchronous so you must resolve the promise or
 		await it before you go on to sort the replies.
 
+		For backwards compatibility, this function can take callbacks instead
+		of returning a Promise:
+
+		> `rs.loadDirectory(path, onSuccess(), onError(err, filename, lineno))`
+
 		* resolves: `()`
 		* rejects: `(string error)`
 		*/
-		async loadFile(path) {
+		async loadFile(path, onSuccess, onError) {
 			var self = this;
 
 			// Did they give us a single path?
@@ -397,9 +402,22 @@ const RiveScript = (function() {
 				}(file));
 			}
 
-			return new Promise((resolve, reject) => {
+			// The final Promise to return.
+			let promise = new Promise((resolve, reject) => {
 				Promise.all(promises).then(resolve).catch(reject);
-			})
+			});
+
+			// Legacy callback style?
+			if (typeof(onSuccess) === "function") {
+				self.warn("DEPRECATED: RiveScript.loadFile() now returns a Promise instead of using callbacks")
+				return promise.then(onSuccess).catch(function(err, filename, lineno) {
+					if (typeof(onError) === "function") {
+						onError.call(null, err, filename, lineno);
+					}
+				});
+			} else {
+				return promise;
+			}
 		}
 
 		// Load a file using ajax. DO NOT CALL THIS DIRECTLY.
@@ -465,11 +483,16 @@ const RiveScript = (function() {
 
 		Load RiveScript documents from a directory recursively.
 
+		For backwards compatibility, this function can take callbacks instead
+		of returning a Promise:
+
+		> `rs.loadDirectory(path, onSuccess(), onError(err, filename, lineno))`
+
 		This function is not supported in a web environment.
 		*/
-		async loadDirectory(path) {
+		async loadDirectory(path, onSuccess, onError) {
 			var self = this;
-			return new Promise(function(resolve, reject) {
+			var promise = new Promise(function(resolve, reject) {
 				// Can't be done on the web!
 				if (self._runtime === "web") {
 					reject("loadDirectory can't be used on the web!");
@@ -501,6 +524,17 @@ const RiveScript = (function() {
 					self.loadFile(toLoad).then(resolve).catch(reject);
 				});
 			});
+
+			// Legacy callback-style?
+			if (typeof(onSuccess) === "function") {
+				self.warn("DEPRECATED: RiveScript.loadDirectory() now returns a Promise instead of using callbacks")
+				return promise.then(onSuccess).catch(function(err, filename, lineno) {
+					if (typeof(onError) === "function") {
+						onError.call(null, err, filename, lineno);
+					}
+				});
+			}
+			return promise;
 		}
 
 		/**
