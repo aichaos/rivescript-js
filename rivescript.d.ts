@@ -29,17 +29,17 @@ declare module "rivescript" {
 
 		Promise(callback: (resolve: (any) => void, reject: (any) => void) => void): void;
 
-		loadDirectory(brain: string, loadingDone: (batchNumber: number) => void, loadingError: (error: Error, batchNumber: number) => void);
+		loadDirectory(brain: string, loadingDone?: (batchNumber: number) => void, loadingError?: (error: Error, batchNumber: number) => void): Promise<any>;
 
-		loadFile(path: string, loadingDone: (batchNumber: number) => void, loadingError: (error: Error, batchNumber: number) => void);
+		loadFile(path: string, loadingDone?: (batchNumber: number) => void, loadingError?: (error: Error, batchNumber: number) => void): Promise<any>;
 
-		loadFile(paths: string[], loadingDone: (batchNumber: number) => void, loadingError: (error: Error, batchNumber: number) => void);
+		loadFile(paths: string[], loadingDone?: (batchNumber: number) => void, loadingError?: (error: Error, batchNumber: number) => void): Promise<any>;
 
 		stream(code: string, onError: (error: string) => void): boolean;
 
 		sortReplies();
 
-		reply(user: string, message: string): string;
+		reply(user: string, message: string, scope?: any): Promise<string>;
 
 		replyAsync(user: string, message: string, scope?: any): Promise<string>;
 
