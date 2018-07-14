@@ -384,3 +384,33 @@ exports.test_stringify_with_objects = function(test) {
     test.equal(src, expect);
     return test.done();
 };
+
+exports.test_await_macro = async function(test) {
+    // In RiveScript 2.0.0, macros parsed from RiveScript code are loaded as
+    // async functions, allowing them to use the await keyword.
+    var bot = new TestCase(test, `
+        > object awaitable javascript
+            var user = rs.currentUser();
+            var name = await rs.getUservar(user, "name");
+            var count = await rs.getUservar(user, "count");
+            if (count === "undefined") {
+                count = 0;
+            }
+
+            await rs.setUservar(user, "count", count + 1);
+            return name+", you have called this macro "+count+" time"+(count != 1 ? 's' : '')+".";
+        < object
+
+        + my name is *
+        - <set name=<formal>>Nice to meet you, <get name>.
+
+        + test async
+        - Ok: <call>awaitable</call>
+    `);
+    await bot.reply("test async", "Ok: undefined, you have called this macro 0 times.");
+    await bot.reply("my name is alice", "Nice to meet you, Alice.");
+    await bot.reply("test async", "Ok: Alice, you have called this macro 1 time.");
+    await bot.reply("test async", "Ok: Alice, you have called this macro 2 times.");
+    await bot.reply("test async", "Ok: Alice, you have called this macro 3 times.");
+    test.done();
+};
