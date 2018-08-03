@@ -117,7 +117,6 @@ def render_markdown(title, path, text):
     ))
 
     fh.close()
-
-
+    
 if __name__ == "__main__":
     main()

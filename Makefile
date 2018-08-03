@@ -1,36 +1,57 @@
-SHELL := /bin/bash
+PATH  := node_modules/.bin:$(PATH)
+SHELL := /bin/sh
+
+ifndef VERBOSE
+.SILENT:
+endif
 
 BUILD=$(shell git describe --always)
 CURDIR=$(shell pwd)
 
-# `make setup` to set up a new environment, pull dependencies, etc.
-.PHONY: setup
-setup: clean
-	npm install
-	npm install -g babel-cli webpack uglify-js nodeunit
+bundle:
+	babel webpack.config.es6.js --presets env -o webpack.config.js
+	webpack --mode production --module-bind js=babel-loader
+	# babel-node build/build.js --presets env
+	test
 
-# `make run` to run it in debug mode.
-.PHONY: run
+clean:
+	rm -rf dist
+	modclean
+
+reinstall:
+	rm -rf node_modules
+	rm -f yarn.lock
+	rm -f yarn-error.log
+	yarn install \
+	--silent \
+	--ignore-optional \
+	--link-duplicates \
+	--skip-integrity-check
+	modclean
+
+latest:
+	yarn upgrade -L -E \
+	--silent \
+	--ignore-optional \
+	--link-duplicates \
+	--skip-integrity-check
+	modclean
+
+modclean:
+	modclean --patterns="default:*" 
+
+lint:
+	eslint --ext .js .
+
+fix:
+	eslint --fix --ext .js .
+
+setup: clean
+	yarn install
+	yarn install -g babel-cli webpack uglify-js istanbul modclean
+
 run:
 	node shell.js eg/brain
 
-# `make test` to run unit tests.
-.PHONY: test
 test:
-	nodeunit test
-
-# `make build` to build code with Babel for older JS clients.
-.PHONY: build
-build:
-	npm run build
-	npm run test
-
-# `make dist` to create a distribution for npm.
-.PHONY: dist
-dist: build
-	npm run dist
-
-# `make clean` cleans everything up.
-.PHONY: clean
-clean:
-	npm run clean
+	istanbul test

@@ -1,85 +1,83 @@
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
+ */
 // RiveScript.js
-
+//
 // This code is released under the MIT License.
 // See the "LICENSE" file for more information.
-
+//
 // http://www.rivescript.com/
 "use strict";
-var JSObjectHandler;
 
-/**
-JSObjectHandler (RiveScript master)
+//#
+// JSObjectHandler (RiveScript master)
+//
+// JavaScript Language Support for RiveScript Macros. This support is enabled by
+// default in RiveScript.js; if you don't want it, override the `javascript`
+// language handler to null, like so:
+//
+// ```javascript
+//    bot.setHandler("javascript", null);
+// ```
+//#
+class JSObjectHandler {
+  constructor(master) {
+    this._master  = master;
+    this._objects = {};
+  }
 
-JavaScript Language Support for RiveScript Macros. This support is enabled by
-default in RiveScript.js; if you don't want it, override the `javascript`
-language handler to null, like so:
+  //#
+  // void load (string name, string[]|function code)
+  //
+  // Called by the RiveScript object to load JavaScript code.
+  //#
+  load(name, code) {
+    if (typeof code === "function") {
+      // If code is just a js function, store the reference as is
+      return this._objects[name] = code;
+    } else {
+      // We need to make a dynamic JavaScript function.
+      const source = `this._objects["${name}"] = function(rs, args) {\n` 
+        + code.join("\n") 
+        + "}\n";
 
-```javascript
-bot.setHandler("javascript", null);
-```
-*/
-JSObjectHandler = class JSObjectHandler {
-	constructor(master) {
-		this._master = master;
-		this._objects = {};
+      try {
+        return eval(source);
+      } catch (e) {
+        return this._master.warn(`Error evaluating JavaScript object: ${e.message}`);
+      }
+    }
+  }
 
-		// Test for async function support.
-		this._async = "";
-		try {
-			eval("(async function() {})");
-			this._async = "async ";
-		} catch(e) {}
-	}
+  //#
+  // string call (RiveScript rs, string name, string[] fields)
+  //
+  // Called by the RiveScript object to execute JavaScript code.
+  //#
+  call(rs, name, fields, scope) {
+    // We have it?
+    if (!this._objects[name]) {
+      return this._master.errors.objectNotFound;
+    }
 
-	/**
-	void load (string name, string[]|function code)
+    // Call the dynamic method.
+    const func = this._objects[name];
+    let reply = "";
+    try {
+      reply = func.call(scope, rs, fields);
+    } catch (e) {
+      reply = `[ERR: Error when executing JavaScript object: ${e.message}]`;
+    }
 
-	Called by the RiveScript object to load JavaScript code.
-	*/
-	load(name, code) {
-		var e, source;
-		if (typeof code === "function") {
-			// If code is just a js function, store the reference as is
-			return this._objects[name] = code;
-		} else {
-			// We need to make a dynamic JavaScript function.
-			source = `this._objects["${name}"] = ${this._async}function(rs, args) {\n${code.join("\n")}\n};\n`;
-			try {
-				return eval(source);
-			} catch (error) {
-				e = error;
-				return this._master.warn("Error evaluating JavaScript object: " + e.message);
-			}
-		}
-	}
+    // Allow undefined responses.
+    if (reply === undefined) {
+      reply = "";
+    }
 
-	/**
-	string call (RiveScript rs, string name, string[] fields)
-
-	Called by the RiveScript object to execute JavaScript code.
-	*/
-	call(rs, name, fields, scope) {
-		var e, func, reply;
-		// We have it?
-		if (!this._objects[name]) {
-			return this._master.errors.objectNotFound;
-		}
-		// Call the dynamic method.
-		func = this._objects[name];
-		reply = "";
-		try {
-			reply = func.call(scope, rs, fields);
-		} catch (error) {
-			e = error;
-			reply = `[ERR: Error when executing JavaScript object: ${e.message}]`;
-		}
-		// Allow undefined responses.
-		if (reply === void 0) {
-			reply = "";
-		}
-		return reply;
-	}
-
-};
+    return reply;
+  }
+}
 
 module.exports = JSObjectHandler;
