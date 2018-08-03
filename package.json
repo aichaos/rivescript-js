@@ -13,7 +13,14 @@
   ],
   "homepage": "https://www.rivescript.com/",
   "author": "Noah Petherbridge <root@kirsle.net> (https://www.kirsle.net/)",
-  "main": "src/rivescript.js",
+  "main": "dist/rivescript.js",
+  "browserlist": [
+    "last 2 versions"
+  ],
+  "engines": {
+    "node": ">=6.11.4 <=10",
+    "npm": ">=3"
+  },
   "files": [
     "README.md",
     "LICENSE",
@@ -42,12 +49,10 @@
     "Philip Nuzhnyi (https://github.com/callmephilip)",
     "pirelaurent (https://github.com/pirelaurent)"
   ],
-  "licenses": [
-    {
-      "type": "MIT",
-      "url": "https://github.com/aichaos/rivescript-js/blob/master/LICENSE"
-    }
-  ],
+  "licenses": [{
+    "type": "MIT",
+    "url": "https://github.com/aichaos/rivescript-js/blob/master/LICENSE"
+  }],
   "bugs": {
     "url": "https://github.com/aichaos/rivescript-js/issues",
     "email": "root@kirsle.net"
@@ -57,23 +62,32 @@
     "babel-preset-env": "^1.6.0",
     "commander": "^2.11.0",
     "uglify-js": "^3.1.1",
-    "webpack": "^3.6.0",
+    "webpack": "4.16.3",
     "webpack-cli": "^3.0.6"
   },
   "scripts": {
-    "prepublish": "npm run dist",
-    "build": "babel src -d lib",
-    "build-tests": "babel test -d test.babel",
-    "test": "npm run build; npm run build-tests; nodeunit test.babel/test-*.js",
-    "webpack": "webpack",
-    "uglify": "uglifyjs -o dist/rivescript.min.js dist/rivescript.js",
-    "dist": "npm run build; npm run webpack; npm run uglify",
-    "clean": "rm -rf dist lib test.babel"
+    "build": "make bundle",
+    "test": "make test",
+    "clean": "make clean",
+    "latest": "make latest",
+    "reinstall": "make reinstall",
+    "run": "make run",
+    "publish": "make publish",
+    "lint": "make lint",
+    "lint:fix": "make fix"
   },
   "dependencies": {
+    "babel-eslint": "^8.2.6",
     "babel-loader": "^7.1.4",
     "babel-polyfill": "^6.26.0",
-    "fs-readdir-recursive": "^1.0.0"
-  },
-  "typings": "rivescript.d.ts"
+    "chalk": "^2.4.1",
+    "eslint": "^5.2.0",
+    "eslint-friendly-formatter": "^4.0.1",
+    "eslint-loader": "^2.1.0",
+    "fs-readdir-recursive": "^1.0.0",
+    "modclean": "^3.0.0-beta.1",
+    "progress-bar-webpack-plugin": "^1.11.0",
+    "rsvp": "^4.8.3",
+    "uglifyjs-webpack-plugin": "^1.2.7"
+  }
 }

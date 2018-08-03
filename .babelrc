@@ -3,8 +3,10 @@
 		["env", {
 			"targets": {
 				"browsers": ["last 2 versions"],
-				"node": "6"
+				"node": "10",
+        "uglify-es": true
 			}
 		}]
-	]
+	],
+  "compact": false
 }

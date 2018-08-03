@@ -1,0 +1,92 @@
+# System Bloat
+.DS_Store
+Thumbs.db
+^Thumbs\.db
+^ehthumbs\.db
+Desktop.ini
+^Desktop\.ini
+.AppleDouble
+.LSOverride
+Icon
+.Trashes
+__MACOSX
+~$
+
+# Optional npm cache directory
+.npm
+
+# test directories
+__tests__
+._test
+test~
+test
+tests
+powered-test
+test/unit
+test/unit/coverage
+test/e2e/reports
+
+# asset directories
+docs
+doc
+website
+images
+assets
+
+# examples
+example
+examples
+
+# code coverage directories
+coverage
+.nyc_output
+
+# build scripts
+Makefile
+Gulpfile.js
+Gruntfile.js
+
+# configs
+appveyor.yml
+circle.yml
+codeship-services.yml
+codeship-steps.yml
+wercker.yml
+.tern-project
+.gitattributes
+.editorconfig
+.*ignore
+.eslintrc
+.babelrc
+.eslintignore
+.jshintrc
+.flowconfig
+.documentup.json
+.yarn-metadata.json
+.travis.yml
+.gitignore
+.editorconfig
+.dockerignore
+.git
+.yarn.lock
+
+
+# Docker
+Dockerfile
+
+# misc
+*.md
+*.yaml
+*.xaml
+*.txt
+LICENSE
+License
+license
+LICENSE-MIT
+README
+AUTHORS
+
+# Vue
+Demo.vue
+*.map
+*.sh

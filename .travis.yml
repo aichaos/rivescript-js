@@ -1,10 +1,14 @@
 language: node_js
 node_js:
   - "node"
+  - "10"
+  - "9"
   - "8"
   - "7"
   - "6"
   - "5"
 before_install:
-  - npm install -g babel-cli webpack uglify-js nodeunit
-script: npm run test
+  - yarn global add babel-cli webpack uglify-js istanbul modclean
+script: yarn test
+on:
+  branch: master
