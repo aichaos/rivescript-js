@@ -12,8 +12,20 @@ Icon
 __MACOSX
 ~$
 
+# Project Bloat
+lib/
+lib.es6/
+.idea
+test.babel
+.npm-packages
+node_modules
+dist
+coverage
+.nyc_output
+
 # Optional npm cache directory
 .npm
+*.map
 
 # test directories
 __tests__
@@ -69,7 +81,6 @@ wercker.yml
 .dockerignore
 .git
 .yarn.lock
-
 
 # Docker
 Dockerfile

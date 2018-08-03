@@ -49,12 +49,12 @@ export default {
         warnings: false,
         output: {
           comments: false,
-          beautify: false, // debug true
+          beautify: false,
         }
       },
       test: /\.js$/
     }),
-  ].filter(Boolean),
+  ],
   node: {
     fs: "empty"
   },
