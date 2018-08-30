@@ -20,6 +20,7 @@ RiveScript API.
 
 * `reply()` now returns a Promise instead of a string, like `replyAsync()`
   did before.
+* Uservars getters and setters are now Promise-based, e.g. `getUservars()` now returns a Promise instead of an object, and `setUservars()` is async.
 * `loadFile()` and `loadDirectory()` now are Promise-based instead of
   callback-based.
 * `replyAsync()` is now deprecated and will be removed soon.
