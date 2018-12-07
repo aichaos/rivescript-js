@@ -213,7 +213,7 @@ exports.clone = function(obj) {
 	if (obj === null || typeof obj !== "object") {
 		return obj;
 	}
-	copy = obj.constructor();
+	copy = obj;
 	for (key in obj) {
 		if (!obj.hasOwnProperty(key)) {
 			continue;
