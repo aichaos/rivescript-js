@@ -622,7 +622,7 @@ class Brain {
 				let name = match[1];
 				let rep = '';
 				if (self.master._var[name]) {
-					rep = utils.stripNasties(self.master._var[name]);
+					rep = utils.stripNasties(self.master._var[name], self.utf8);
 				}
 				regexp = regexp.replace(new RegExp("<bot " + utils.quotemeta(name) + ">"), rep.toLowerCase());
 			}
