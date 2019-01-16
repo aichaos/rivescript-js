@@ -1,6 +1,6 @@
 # Changes
 
-## 2.0.0 Alpha: Async/Await
+## 2.0.0 Beta: Async/Await
 
 This is a major new version of RiveScript. It adds async/await support and
 makes the API asynchronous everywhere. It also decaffeinates the code,
@@ -115,19 +115,21 @@ to be Promise-based instead of callback-based. Switching over is simple:
 +   bot.loadFile("./brain/admin.rive").then(onSuccess).catch(onError);
 ```
 
-### 2.0.0-alpha.2 - June 16 2018
+### 2.0.0-beta.1 - Jan 16 2019
 
-- Decaffeinate the source code from CoffeeScript back into native JavaScript.
-- Add async/await support into the reply process, which enables support for
-  a lot of new async features, including use of `<call>` tags in
-  `*Condition` checks and for replacing the user variable session manager
-  with one backed by a database.
-- **Deprecated:** `replyAsync()`. See details below.
+- Republish to npm after updating TypeScript definitions.
+- Move release status to "beta"
 
-### 2.0.0-alpha.3 - June 23 2018
+Before 2.0.0 final release there should be at least one User Variable Session
+Driver implemented (likely Redis) to verify the session interface is working
+as intended.
 
-- Fix a runtime error when `<input>` is used in a trigger.
-- Reformatted the unit tests to use ES2015 multi-line string literals.
+### 2.0.0-alpha.6 - Jul 9 2018
+
+- Make `loadFile()` and `loadDirectory()` backwards compatible so "simple" bots
+  won't need to change anything to upgrade, but will get deprecation warnings
+  instead. ("Simple" bots used `loadFile()` or `loadDirectory()` in conjunction
+  with `replyAsync()`, and didn't use any other functions that changed).
 
 ### 2.0.0-alpha.5 - Jul 7 2018
 
@@ -137,12 +139,22 @@ to be Promise-based instead of callback-based. Switching over is simple:
   compatibility on **all** methods that use user variables (e.g.
   `getUservar()`, `lastMatch()`, etc.)
 
-### 2.0.0-alpha.6 - Jul 9 2018
+### 2.0.0-alpha.3 - June 23 2018
 
-- Make `loadFile()` and `loadDirectory()` backwards compatible so "simple" bots
-  won't need to change anything to upgrade, but will get deprecation warnings
-  instead. ("Simple" bots used `loadFile()` or `loadDirectory()` in conjunction
-  with `replyAsync()`, and didn't use any other functions that changed).
+- Fix a runtime error when `<input>` is used in a trigger.
+- Reformatted the unit tests to use ES2015 multi-line string literals.
+
+### 2.0.0-alpha.2 - June 16 2018
+
+- Decaffeinate the source code from CoffeeScript back into native JavaScript.
+- Add async/await support into the reply process, which enables support for
+  a lot of new async features, including use of `<call>` tags in
+  `*Condition` checks and for replacing the user variable session manager
+  with one backed by a database.
+- **Deprecated:** `replyAsync()`. See details below.
+
+
+
 
 ## 1.0.0 Releases
 
