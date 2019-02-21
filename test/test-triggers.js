@@ -23,6 +23,9 @@ exports.test_atomic_triggers = async function(test) {
 exports.test_wildcard_triggers = async function(test) {
 	var bot;
 	bot = new TestCase(test, `
+		+ hello bot
+		- Hello there, human!
+
 		+ my name is *
 		- Nice to meet you, <star>.
 
@@ -37,11 +40,17 @@ exports.test_wildcard_triggers = async function(test) {
 
 		+ i am * years old
 		- Say that with fewer words.
+
+		+ <reply>
+		- Is there an owl in here?
 	`);
+	await bot.reply("Hello bot", "Hello there, human!");
+	await bot.reply("Hello there human", "Is there an owl in here?");
 	await bot.reply("my name is Bob", "Nice to meet you, bob.");
 	await bot.reply("bob told me to say hi", "Why did bob tell you to say hi?");
 	await bot.reply("i am 5 years old", "A lot of people are 5.");
 	await bot.reply("i am five years old", "Say that with numbers.");
+	await bot.reply("say that with numbers", "Is there an owl in here?");
 	await bot.reply("i am twenty five years old", "Say that with fewer words.");
 	return test.done();
 };

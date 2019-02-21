@@ -658,7 +658,8 @@ class Brain {
 				let type = ref[k];
 				for (let i = 1; i <= 9; i++) {
 					if (regexp.indexOf(`<${type}${i}>`) > -1) {
-						regexp = regexp.replace(new RegExp(`<${type}${i}>`, "g"), history[type][i-1]);
+						let value = self.formatMessage(history[type][i-1], type==="reply");
+						regexp = regexp.replace(new RegExp(`<${type}${i}>`, "g"), value);
 					}
 				}
 			}
