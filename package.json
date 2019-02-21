@@ -49,11 +49,12 @@
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",
-    "babel-preset-env": "^1.6.0",
-    "commander": "^2.11.0",
-    "uglify-js": "^3.1.1",
-    "webpack": "^4.16.5",
-    "webpack-cli": "^3.0.6"
+    "babel-preset-env": "^1.7.0",
+    "commander": "^2.19.0",
+    "nodeunit": "^0.11.3",
+    "uglify-js": "^3.4.9",
+    "webpack": "^4.29.5",
+    "webpack-cli": "^3.2.3"
   },
   "scripts": {
     "prepublish": "npm run dist",
@@ -66,7 +67,7 @@
     "clean": "rm -rf dist lib test.babel"
   },
   "dependencies": {
-    "babel-loader": "^7.1.4",
+    "babel-loader": "^7.1.5",
     "babel-polyfill": "^6.26.0",
     "fs-readdir-recursive": "^1.0.0"
   },
