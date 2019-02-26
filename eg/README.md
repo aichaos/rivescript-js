@@ -29,6 +29,8 @@ RiveScript-js.
 
 ## Code Snippets
 
+* [redis](redis/) - Demonstrates storing user variables actively in a Redis
+  cache server (to recall user variables across bot sessions).
 * [persistence](persistence/) - Demonstrates persistence for user variables;
   the bot can be shut down and restarted and it can remember where it left off
   with its users.

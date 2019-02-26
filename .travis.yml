@@ -4,7 +4,6 @@ node_js:
   - "8"
   - "7"
   - "6"
-  - "5"
 before_install:
   - npm install -g babel-cli webpack uglify-js nodeunit
 script: npm run test

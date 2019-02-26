@@ -991,9 +991,9 @@ const RiveScript = (function() {
 		async getUservars(user) {
 			var self = this;
 			if (user === undefined) {
-				return self._session.getAny(user);
-			} else {
 				return self._session.getAll();
+			} else {
+				return self._session.getAny(user);
 			}
 		}
 

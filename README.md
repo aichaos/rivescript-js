@@ -11,39 +11,105 @@ pairs for building up a bot's intelligence.
 This library can be used both in a web browser or as a Node module.
 See the `eg/` folder for examples.
 
-## NOTICE: CHANGES IN v2.0.0 ALPHA
+## USAGE
 
-This branch is currently the alpha version of RiveScript v2.0.0. The
-biggest change was adding the use of async/await throughout the codebase,
-which necessarily had to break backwards compatibility with some of the
-RiveScript API.
+```javascript
+var bot = new RiveScript();
 
-* `reply()` now returns a Promise instead of a string, like `replyAsync()`
-  did before.
-* `loadFile()` and `loadDirectory()` now are Promise-based instead of
-  callback-based.
-* `replyAsync()` is now deprecated and will be removed soon.
+// Load a directory full of RiveScript documents (.rive files). This is for
+// Node.JS only: it doesn't work on the web!
+bot.loadDirectory("brain").then(loading_done).catch(loading_error);
 
-This means your use of `reply()` will need to be updated to use the
-Promise. If you are already using `replyAsync()`, just replace the
-function name with `reply()` and it works the same way.
+// Load an individual file.
+bot.loadFile("brain/testsuite.rive").then(loading_done).catch(loading_error);
 
-```diff
-  var bot = new RiveScript();
-- bot.loadDirectory("./brain", onSuccess, onError);
-+ bot.loadDirectory("./brain").then(onReady).catch(onError);
+// Load a list of files all at once (the best alternative to loadDirectory
+// for the web!)
+bot.loadFile([
+  "brain/begin.rive",
+  "brain/admin.rive",
+  "brain/clients.rive"
+]).then(loading_done).catch(loading_error);
 
-  function onReady() {
-      bot.sortReplies();
-      console.log("Bot is ready!");
+// All file loading operations are asynchronous, so you need handlers
+// to catch when they've finished. If you use loadDirectory (or loadFile
+// with multiple file names), the success function is called only when ALL
+// the files have finished loading.
+function loading_done() {
+  console.log("Bot has finished loading!");
 
--     var reply = bot.reply(username, message);
--     console.log("Bot>", reply);
-+     bot.reply(username, message).then(function(reply) {
-+         console.log("Bot> ", reply);
-+     });
-  }
+  // Now the replies must be sorted!
+  bot.sortReplies();
+
+  // And now we're free to get a reply from the brain!
+
+  // RiveScript remembers user data by their username and can tell
+  // multiple users apart.
+  let username = "local-user";
+
+  // NOTE: the API has changed in v2.0.0 and returns a Promise now.
+  bot.reply(username, "Hello, bot!").then(function(reply) {
+    console.log("The bot says: " + reply);
+  });
+}
+
+// It's good to catch errors too!
+function loading_error(error, filename, lineno) {
+  console.log("Error when loading files: " + error);
+}
 ```
+
+The distribution of RiveScript.js includes an interactive shell for testing your
+RiveScript bot, `shell.js`. Run it with Node and point it to a folder where you
+have your RiveScript documents. Example:
+
+```bash
+node shell.js eg/brain
+```
+
+Once inside the shell you can chat with the bot using the RiveScript files in
+that directory. For simple debugging you can type `/eval` to run single lines
+of JavaScript code. See `/help` for more.
+
+Both shell scripts accept command line parameters:
+
+* `--debug`: enables verbose debug logging.
+* `--watch`: watch the reply folder for changes and automatically reload the
+  bot when files are modified.
+* `--utf8`: enables UTF-8 mode.
+
+When using RiveScript.js as a library, the synopsis is as follows:
+
+## NOTICE: CHANGES IN v2.0.0
+
+RiveScript v2.0.0 comes with a **massive** refactor of the codebase to
+implement modern Async/Await features all throughout. This refactor
+enables the following **new features**:
+
+* You can now `<call>` asynchronous object macros inside of `*Condition`
+  checks.
+* You can **actively** store users' variables into a database or
+  Redis cache. The module `rivescript-redis` provides a Redis cache
+  driver for this feature and there's an example bot at
+  [eg/redis](https://github.com/aichaos/rivescript-js/tree/master/eg/redis).
+  Other drivers (MongoDB, etc.) are up to you to write (send a pull
+  request! Use the Redis driver as an example)
+
+Because everything had to upgrade to async functions for this to work,
+it necessarily had to break backwards compatibility slightly:
+
+* **reply()** now returns a Promise instead of a string, like replyAsync()
+  has always done.
+* All user variable functions (getUservars, setUservars, etc.) now return
+  a Promise rather than their values directly; this change is what makes
+  it possible to swap out async database drivers instead of the default
+  in-memory store!
+* **loadFile()** and **loadDirectory()** now return Promises. However, the
+  old callback-based syntax still works but is now deprecated.
+* **replyAsync()** is now deprecated in favor of just **reply()** since
+  they both do the same thing.
+
+See the [Change Log](https://github.com/aichaos/rivescript-js/blob/master/Changes.md) for more details.
 
 ## DOCUMENTATION
 
@@ -94,70 +160,6 @@ It's a JSFiddle style web app for playing with RiveScript in your web browser
 and sharing code with others.
 
 <https://play.rivescript.com/>
-
-## USAGE
-
-The distribution of RiveScript.js includes an interactive shell for testing your
-RiveScript bot, `shell.js`. Run it with Node and point it to a folder where you
-have your RiveScript documents. Example:
-
-```bash
-node shell.js eg/brain
-```
-
-Once inside the shell you can chat with the bot using the RiveScript files in
-that directory. For simple debugging you can type `/eval` to run single lines
-of JavaScript code. See `/help` for more.
-
-Both shell scripts accept command line parameters:
-
-* `--debug`: enables verbose debug logging.
-* `--watch`: watch the reply folder for changes and automatically reload the
-  bot when files are modified.
-* `--utf8`: enables UTF-8 mode.
-
-When using RiveScript.js as a library, the synopsis is as follows:
-
-```javascript
-var bot = new RiveScript();
-
-// Load a directory full of RiveScript documents (.rive files). This is for
-// Node.JS only: it doesn't work on the web!
-bot.loadDirectory("brain").then(loading_done).catch(loading_error);
-
-// Load an individual file.
-bot.loadFile("brain/testsuite.rive").then(loading_done).catch(loading_error);
-
-// Load a list of files all at once (the best alternative to loadDirectory
-// for the web!)
-bot.loadFile([
-  "brain/begin.rive",
-  "brain/admin.rive",
-  "brain/clients.rive"
-]).then(loading_done).catch(loading_error);
-
-// All file loading operations are asynchronous, so you need handlers
-// to catch when they've finished. If you use loadDirectory (or loadFile
-// with multiple file names), the success function is called only when ALL
-// the files have finished loading.
-function loading_done() {
-  console.log("Bot has finished loading!");
-
-  // Now the replies must be sorted!
-  bot.sortReplies();
-
-  // And now we're free to get a reply from the brain!
-  // NOTE: the API has changed in v2.0.0 and returns a Promise now.
-  bot.reply("local-user", "Hello, bot!").then(function(reply) {
-    console.log("The bot says: " + reply);
-  });
-}
-
-// It's good to catch errors too!
-function loading_error(error, filename, lineno) {
-  console.log("Error when loading files: " + error);
-}
-```
 
 ## UTF-8 SUPPORT
 
