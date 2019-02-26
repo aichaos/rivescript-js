@@ -18,5 +18,6 @@ module.exports = {
 	node: {
 		fs: "empty"
 	},
-	target: "web"
+	target: "web",
+	mode: "development",
 }

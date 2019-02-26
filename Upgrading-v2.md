@@ -15,6 +15,85 @@ The major highlights of the RiveScript v2.0.0 release are:
   syntax. CoffeeScript was holding us back from the `await` keyword
   and JavaScript is actually nice to program in nowadays.
 
+# New Features
+
+## User Variables Session Managers
+
+Previously, RiveScript only stored user variables in its own process
+memory (keyed by username), and if you wanted the bot to remember user
+information across reboots, you needed to use functions like getUservars
+and setUservars to get data in and out of the bot's memory.
+
+With the new Async/Await features, now, it is possible to replace the
+User Variable Session Manager with a more active one, such as a Redis
+cache or a MongoDB database. So every time a user variable gets `<set>`,
+it's put directly into a database rather than just kept in memory.
+
+The default is still an in-memory store, but you can implement a custom
+async driver following the SessionManager interface. There is a Redis
+driver in the rivescript-js git repository called `rivescript-redis`
+
+```javascript
+// Import rivescript and rivescript-redis
+const RiveScript = require("rivescript"),
+    RedisSessionManager = require("rivescript-redis");
+
+// Construct your RiveScript bot as normal...
+let bot = new RiveScript({
+    utf8: true,
+
+    // Give it a new Redis session manager.
+    sessionManager: new RedisSessionManager({
+        // The constructor takes an `opts` object, and mostly passes it
+        // directly along to the underlying `redis` module. So all these
+        // parameters come from `redis`
+        host: "localhost",  // default
+        port: 6369,
+
+        // NOTE: this option is used by `redis` and is also noticed by
+        // rivescript-redis: it's optional but recommended to set a
+        // prefix. The Redis keys otherwise are simply the username
+        // given to RiveScript.
+        prefix: "rivescript/"
+    })
+});
+
+// And carry on as normal. All user variables will be actively persisted
+// in Redis (no need to call `getUservars()` and `setUservars()` to manage
+// them yourself -- though these functions DO work and will get you current
+// data from your Redis cache!)
+```
+
+# Async Objects in Conditions
+
+Async/Await enables asynchronous object macros that return Promises to
+be used *anywhere* throughout RiveScript. This means they can finally be
+used inside of `*Condition`s! Example:
+
+```rivescript
+// <call>wait-limited $timeout $maxTimeout</call>
+// If the $timeout > $maxTimeout, it resolves "too long" immediately.
+// Otherwise it waits $timeout seconds and resolves "done"
+> object wait-limited javascript
+	var timeout = parseInt(args[0]);
+	var max     = parseInt(args[1]);
+
+	return new Promise(function(resolve, reject) {
+		if (timeout > max) {
+			resolve("too long");
+		} else {
+			setTimeout(function() {
+				resolve("done");
+			}, timeout*1000);
+		}
+	});
+< object
+
++ can you wait # seconds
+* <call>wait-limited <star> 6</call> == done => I can!
+- No the longest I'll wait is 6 seconds.
+```
+
 # JavaScript API Changes
 
 ## Changed: reply() now returns a Promise
@@ -135,10 +214,6 @@ bot.setUservar(user, "name", "Alice").then(() => {
   });
 });
 ```
-
-# Background
-
-TBD.
 
 [1]: https://github.com/aichaos/rivescript-js
 [2]: https://www.twilio.com/blog/2015/10/asyncawait-the-hero-javascript-deserved.html

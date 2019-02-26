@@ -11,6 +11,20 @@ pairs for building up a bot's intelligence.
 This library can be used both in a web browser or as a Node module.
 See the `eg/` folder for examples.
 
+## NOTICE: CHANGES IN v2.0.0
+
+RiveScript v2.0.0 comes with a **massive** refactor of the codebase to
+implement modern Async/Await features all throughout. The refactor now
+allows features like "storing user variables directly in Redis" or
+"using asynchronous macros in conditionals"
+
+But it necessarily had to break some backwards compatibility -- slightly!
+-- by turning previously synchronous functions like `reply()` into
+async ones that return Promises like `replyAsync()` did.
+
+See the [Upgrading-v2](https://github.com/aichaos/rivescript-js/blob/master/Upgrading-v2.md) document for information on the changes
+and how to fix your code for the new version.
+
 ## USAGE
 
 ```javascript
@@ -79,37 +93,6 @@ Both shell scripts accept command line parameters:
 * `--utf8`: enables UTF-8 mode.
 
 When using RiveScript.js as a library, the synopsis is as follows:
-
-## NOTICE: CHANGES IN v2.0.0
-
-RiveScript v2.0.0 comes with a **massive** refactor of the codebase to
-implement modern Async/Await features all throughout. This refactor
-enables the following **new features**:
-
-* You can now `<call>` asynchronous object macros inside of `*Condition`
-  checks.
-* You can **actively** store users' variables into a database or
-  Redis cache. The module `rivescript-redis` provides a Redis cache
-  driver for this feature and there's an example bot at
-  [eg/redis](https://github.com/aichaos/rivescript-js/tree/master/eg/redis).
-  Other drivers (MongoDB, etc.) are up to you to write (send a pull
-  request! Use the Redis driver as an example)
-
-Because everything had to upgrade to async functions for this to work,
-it necessarily had to break backwards compatibility slightly:
-
-* **reply()** now returns a Promise instead of a string, like replyAsync()
-  has always done.
-* All user variable functions (getUservars, setUservars, etc.) now return
-  a Promise rather than their values directly; this change is what makes
-  it possible to swap out async database drivers instead of the default
-  in-memory store!
-* **loadFile()** and **loadDirectory()** now return Promises. However, the
-  old callback-based syntax still works but is now deprecated.
-* **replyAsync()** is now deprecated in favor of just **reply()** since
-  they both do the same thing.
-
-See the [Change Log](https://github.com/aichaos/rivescript-js/blob/master/Changes.md) for more details.
 
 ## DOCUMENTATION
 

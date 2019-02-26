@@ -1,119 +1,22 @@
 # Changes
 
-## 2.0.0 Beta: Async/Await
+## 2.0.0: The Async/Await Update
 
 This is a major new version of RiveScript. It adds async/await support and
 makes the API asynchronous everywhere. It also decaffeinates the code,
 migrating it from CoffeeScript back to native ES2015+ with modern syntax.
 
-### Backwards Incompatible Changes
+See the [Upgrading-v2](https://github.com/aichaos/rivescript-js/blob/master/Upgrading-v2.md) document for information about what's
+new and how to upgrade your code.
 
-* The `reply()` method now returns a Promise instead of a string. In that
-  regard, it works just like the old `replyAsync()` method did.
-* The `loadFile()` and `loadDirectory()` functions return Promises now
-  instead of using callbacks.
-* The `replyAsync()` method is now deprecated in favor of `reply()`.
+v2.0.0 last minute changes:
 
-The user variable session manager is now pluggable and replaceable, with
-the default continuing to be in-memory storage of user variables.
-
-For session managers to support async database drivers, all of the user
-variable functions now return their result as a Promise:
-
-* `setUservar(user, name, value)`
-* `setUservars(user, data)`
-* `getUservar(user, name)`
-* `getUservars([user])`
-* `clearUservars([user])`
-* `freezeUservars(user)`
-* `thawUservars(user, action="thaw")`
-* `lastMatch(user)`
-* `initialMatch(user)`
-* `lastTriggers(user)`
-* `getUserTopicTriggers(user)`
-
-### User Variable Session Managers
-
-RiveScript-JS finally joins its Python, Go, and Java cousins in supporting
-pluggable user variable session managers.
-
-This feature will allow you to replace the default in-memory user variable
-store with one backed by a database, like MongoDB or Redis.
-
-```javascript
-// MemorySessionManager is the default session store, but you
-// could implement Redis or anything by making a SessionManager
-// compatible class.
-const { MemorySessionManager } = require("./src/sessions");
-
-// Use your session manager.
-var bot = new RiveScript({
-  sessionManager: new MemorySessionManager()
-});
-```
-
-See the [sessions](./sessions.md) documentation for more details.
-
-### Async Objects in Conditions
-
-Async/Await enables asynchronous object macros that return Promises to
-be used *anywhere* throughout RiveScript. This means they can finally be
-used inside of `*Condition`s! Example:
-
-```rivescript
-// <call>wait-limited $timeout $maxTimeout</call>
-// If the $timeout > $maxTimeout, it resolves "too long" immediately.
-// Otherwise it waits $timeout seconds and resolves "done"
-> object wait-limited javascript
-	var timeout = parseInt(args[0]);
-	var max     = parseInt(args[1]);
-
-	return new Promise(function(resolve, reject) {
-		if (timeout > max) {
-			resolve("too long");
-		} else {
-			setTimeout(function() {
-				resolve("done");
-			}, timeout*1000);
-		}
-	});
-< object
-
-+ can you wait # seconds
-* <call>wait-limited <star> 6</call> == done => I can!
-- No the longest I'll wait is 6 seconds.
-```
-
-### Upgrading
-
-To support the async features, the RiveScript API had to break backward
-compatibility.
-
-The `reply()` function now returns a Promise instead of the string
-result. It works like `replyAsync()` did before; and so now `replyAsync()`
-is a deprecated function.
-
-Here is an example of how to migrate your code if you were using `reply()`
-before to get the string reply:
-
-```diff
--    var reply = bot.reply(username, message, this);
--    console.log("Bot>", reply);
-+    rs.reply(username, message, this).then(function(reply) {
-        console.log("Bot>", reply);
-+    })
-```
-
-Likewise, the `loadDirectory()` and `loadFile()` functions were made
-to be Promise-based instead of callback-based. Switching over is simple:
-
-```diff
--   bot.loadDirectory("./brain", onSuccess, onError);
-+   bot.loadDirectory("./brain").then(onSuccess).catch(onError);
-
--   bot.loadFile("./brain/admin.rive", onSuccess, onError);
-+   bot.loadFile("./brain/admin.rive").then(onSuccess).catch(onError);
-```
+- Fix a bug where `<reply>` in `+Trigger` wasn't being formatted properly
+  (lowercased, etc.) so matching was difficult.
+- Add a Redis driver for an example User Variable Session Manager that
+  stores variables directly to the cache, and an `eg/redis` example bot
+  that demonstrates it.
+- Write documentation for final v2.0.0 launch.
 
 ### 2.0.0-beta.1 - Jan 16 2019
 
