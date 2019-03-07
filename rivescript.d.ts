@@ -1,4 +1,3 @@
-
 declare module "rivescript" {
 
 	interface RivescriptOptions {
@@ -15,11 +14,11 @@ declare module "rivescript" {
 	}
 
 	interface Trigger {
-		trigger:    string,
-		reply:      string[],
-		condition:  string[],
-		redirect:   string,
-		previous:   string
+		trigger:    string;
+		reply:      string[];
+		condition:  string[];
+		redirect:   string;
+		previous:   string;
 	}
 
 	class RiveScript {
@@ -37,15 +36,13 @@ declare module "rivescript" {
 
 		stream(code: string, onError: (error: string) => void): boolean;
 
-		sortReplies();
+		sortReplies(): void;
 
 		reply(user: string, message: string, scope?: any): Promise<string>;
 
 		replyAsync(user: string, message: string, scope?: any): Promise<string>;
 
-		replyAsync(user: string, message: string, scope: any, callback: (error: Error, reply: string) => void);
-
-
+		replyAsync(user: string, message: string, scope: any, callback: (error: Error, reply: string) => void): Promise<string>;
 
 		setHandler(lang: string, handler: MacroObjectHandler): void;
 
@@ -59,26 +56,26 @@ declare module "rivescript" {
 
 		setPerson(name: string, value: string): void;
 
-		setUservar(user: string, name: string, value: any): void;
+		setUservar(user: string, name: string, value: any): Promise<void>;
 
-		setUservars(user: string, data: Object): void;
+		setUservars(user: string, data: { [index: string]: any }): Promise<void>;
 
 		getVariable(user: string, name: string): string;
 
-		getUservar(user: string, name: string): string;
+		getUservar(user: string, name: string): Promise<string>;
 
-		getUservars(user: string): Object;
+		getUservars(user: string): Promise<{ [index: string]: any }>;
 
-		clearUservars(user: string): void;
+		clearUservars(user: string): Promise<void>;
 
-		lastMatch(user: string): string;
+		lastMatch(user: string): Promise<string>;
 
-		initialMatch(user: string): string;
+		initialMatch(user: string): Promise<string>;
 
-		lastTriggers(user: string): Trigger[];
+		lastTriggers(user: string): Promise<Trigger[]>;
 
 		currentUser(): string;
 	}
 
-	export = RiveScript;
+	export default RiveScript;
 }
