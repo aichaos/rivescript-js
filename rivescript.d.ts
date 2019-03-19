@@ -26,7 +26,7 @@ declare module "rivescript" {
 
 		version(): string;
 
-		Promise(callback: (resolve: (any) => void, reject: (any) => void) => void): void;
+		Promise(callback: (resolve: (...args: any[]) => void, reject: (reason?: any) => void) => void): void;
 
 		loadDirectory(brain: string, loadingDone?: (batchNumber: number) => void, loadingError?: (error: Error, batchNumber: number) => void): Promise<any>;
 
