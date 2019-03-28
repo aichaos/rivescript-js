@@ -15,7 +15,7 @@ The internal reply method. DO NOT CALL THIS DIRECTLY.
 * step = the recursion depth
 * scope = the call scope for object macros
 
-## async formatMessage (string msg) -> string
+## string formatMessage (string msg)
 
 Format a user's message for safe processing.
 

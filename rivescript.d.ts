@@ -54,7 +54,7 @@ declare module "rivescript" {
 
 		reply(user: string, msg: string, scope?: any): Promise<string>;
 
-		formatMessage(msg: string, botreply?: null): Promise<string>;
+		formatMessage(msg: string, botreply?: null): string;
 
 		triggerRegexp(msg: string, botreply: string): Promise<string>;
 
