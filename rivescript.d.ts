@@ -99,7 +99,7 @@ declare module "rivescript" {
 		public unicodePunctuation: RegExp;
 		public errors: RiveScriptErrors;
 		public parser: Parser;
-		public Brain: Brain;
+		public brain: Brain;
 
 		constructor(options?: RiveScriptOptions);
 
