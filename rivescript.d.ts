@@ -1,11 +1,85 @@
 declare module "rivescript" {
+	class SessionManager {
+		set(username: string, data: { [index: string]: any }): Promise<void>;
 
-	interface RivescriptOptions {
-		utf8?: boolean;
+		get(username: string, key: string): Promise<string|null>;
+
+		getAny(username: string): Promise<{ [index: string]: any }>;
+
+		getAll(): Promise<{ [index: string]: { [index: string]: any } }>;
+
+		reset(username: string): Promise<void>;
+
+		resetAll(): Promise<void>;
+
+		freeze(username: string): Promise<void>;
+
+		thaw(username: string, action?: 'thaw' | 'discard' | 'keep'): Promise<void>;
+
+		defaultSession(): { [index: string]: any };
+	}
+
+	interface PseudoAbstractSyntaxTree {
+		begin: {
+			global: { [index: string]: any };
+			var:    { [index: string]: any };
+			sub:    { [index: string]: any };
+			person: { [index: string]: any };
+			array:  { [index: string]: any };
+		},
+		topics:  { [index: string]: any };
+		objects: any[];
+	}
+
+	class Parser {
+		public master: RiveScript;
+		public strict: boolean;
+		public utf8: boolean;
+
+		constructor(master: RiveScript);
+
+		parse(filename: string, code: string, onError: (err: string, filename?: string, lineno?: number) => any): PseudoAbstractSyntaxTree;
+
+		stringify(deparsed?: PseudoAbstractSyntaxTree): string;
+
+		checkSyntax(command: '!' | '>' | '+' | '%' | '@' | '*', line: string): string;
+	}
+
+	class Brain {
+		public master: RiveScript;
+		public strict: boolean;
+		public utf8: boolean;
+
+		constructor(master: RiveScript);
+
+		reply(user: string, msg: string, scope?: any): Promise<string>;
+
+		formatMessage(msg: string, botreply?: null): Promise<string>;
+
+		triggerRegexp(msg: string, botreply: string): Promise<string>;
+
+		processTags(user: string, _msg: string, reply: string, stars: string[], botstars: string[], step: number, scope: any): Promise<string>;
+
+		substitute(message: string, type: 'sub' | 'person'): string;
+	}
+
+	interface RiveScriptErrors {
+		replyNotMatched: string;
+		replyNotFound: string;
+		objectNotFound: string;
+		deepRecursion: string;
+	}
+
+	interface RiveScriptOptions {
 		debug?: boolean;
+		strict?: boolean;
+		depth?: number;
+		utf8?: boolean;
+		forceCase?: boolean;
 		onDebug?: (message: string) => void;
 		concat?: "none" | "newline" | "space";
-		errors?: { [key: string]: string};
+		errors?: Partial<RiveScriptErrors>;
+		sessionManager?: SessionManager;
 	}
 
 	interface MacroObjectHandler {
@@ -22,7 +96,12 @@ declare module "rivescript" {
 	}
 
 	class RiveScript {
-		constructor(options?: RivescriptOptions);
+		public unicodePunctuation: RegExp;
+		public errors: RiveScriptErrors;
+		public parser: Parser;
+		public Brain: Brain;
+
+		constructor(options?: RiveScriptOptions);
 
 		version(): string;
 
@@ -62,11 +141,15 @@ declare module "rivescript" {
 
 		getVariable(user: string, name: string): string;
 
-		getUservar(user: string, name: string): Promise<string>;
+		getUservar(user: string, name: string): Promise<any>;
 
 		getUservars(user: string): Promise<{ [index: string]: any }>;
 
 		clearUservars(user: string): Promise<void>;
+
+		freezeUservars(user: string): Promise<void>;
+
+		thawUservars(user: string, action?: 'thaw' | 'discard' | 'keep'): Promise<void>;
 
 		lastMatch(user: string): Promise<string>;
 

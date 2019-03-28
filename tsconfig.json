@@ -1,0 +1,90 @@
+// This file is mainly here to have intellisense in the rivescript.d.ts file.
+// Since there aren't [yet] any TypeScript files to compile, it doesn't matter
+// too much. But these are some good configuration choices if kirsle or other
+// contributors decide to use TypeScript in the project.
+
+{
+  "compilerOptions": {
+    // Allow default imports where no default export is actually specified. See
+    // the comment above "esModuleInterop" for more details
+    "allowSyntheticDefaultImports": true,
+
+    // Base directory to check when resolving module names in import statements
+    // which are not relative paths
+    "baseUrl": ".",
+
+    // Allows default imports where no default export is specified, and a little
+    // more. See https://www.typescriptlang.org/docs/handbook/release-notes/typescript-2-7.html
+    "esModuleInterop": true,
+
+    // Windows and MacOS filesystems are not case-sensitive, so a capitalization
+    // mistake in an import/require statement while developing won't do much
+    // harm. But filesystems for Linux commonly *are* case-sensitive, so it can
+    // lead to some issues if development switches over to one that is. This
+    // option won't fully protect you from a capitalization typo in an import
+    // statement, but it will at least warn you if you have referred to the same
+    // file with different casing somewhere else in the project.
+    "forceConsistentCasingInFileNames": true,
+
+    // Recognize ESNext and DOM vocabulary
+    "lib": ["esnext", "dom"],
+
+    // What module strategy to output (UMD allows the consumer of the resulting
+    // code to use any of the common module strategies; AMD, CommonJS, etc.)
+    "module": "umd",
+
+    // How to look up module imports within your TS files
+    "moduleResolution": "node",
+
+    // Generates a map from your source code to your compiled code for debugging
+    // purposes
+    "sourceMap": true,
+
+    // This option is a roll-up of a few good-practice compiler options; you can
+    // see https://www.typescriptlang.org/docs/handbook/compiler-options.html
+    // for more information. It is equivalent to setting the following options
+    // to true.
+    //
+    //   noImplicitAny:
+    //     Scold you if you write a declaration or expression which you have not
+    //     annotated (and is therefore implied to be `any`)
+    //
+    //   noImplicitThis:
+    //     If you write a function which is intended to be run in some context
+    //     where you can access `this`, and it's not obvious what `this` is,
+    //     force you to annotate the type of `this`
+    //
+    //   alwaysStrict:
+    //     Parse in strict mode and emit "use strict" for each source file
+    //
+    //   strictBindCallApply:
+    //     Properly type-check uses of `.bind()`, `.call()`, and `.apply()` on
+    //     functions
+    //
+    //   strictNullChecks:
+    //     Yell if the type might be null or undefined when you're assuming it's
+    //     there, and force you to explicitly tell the compiler otherwise if you
+    //     know better
+    //
+    //   strictFunctionTypes:
+    //     This has to do with contravariance vs. bivariance in function types
+    //     (read: magic). For more info, see the following from the TS handbook:
+    //     https://www.typescriptlang.org/docs/handbook/release-notes/typescript-2-6.html
+    //
+    //   strictPropertyInitialization:
+    //     Makes sure you initialize properties of classes at some point in the
+    //     constructor, or forces you to explicitly tell the compiler to trust
+    //     that it's going to be initialized later
+    //
+    "strict": true,
+
+    // If we *were* to be authoring TypeScript in this project, TS would compile
+    // plainly to the equivalent JavaScript (as opposed to targeting an older
+    // standard), and then Babel would take it from there (targeting, e.g., ES5
+    // or whatever is specified in .babelrc).
+    "target": "esnext"
+  },
+  "exclude": [
+    "node_modules"
+  ],
+}

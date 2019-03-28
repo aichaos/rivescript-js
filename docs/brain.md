@@ -2,11 +2,11 @@
 
 Create a Brain object which handles the actual process of fetching a reply.
 
-## async reply (string user, string msg[, scope])
+## async reply (string user, string msg[, scope]) -> string
 
 Fetch a reply for the user. This returns a Promise that may be awaited on.
 
-## async _getReply (string user, string msg, string context, int step, scope)
+## private async _getReply (string user, string msg, string context, int step, scope) -> string
 
 The internal reply method. DO NOT CALL THIS DIRECTLY.
 
@@ -15,15 +15,15 @@ The internal reply method. DO NOT CALL THIS DIRECTLY.
 * step = the recursion depth
 * scope = the call scope for object macros
 
-## string formatMessage (string msg)
+## async formatMessage (string msg) -> string
 
 Format a user's message for safe processing.
 
-## async triggerRegexp (string user, string trigger)
+## async triggerRegexp (string user, string trigger) -> string
 
 Prepares a trigger for the regular expression engine.
 
-## string processTags (string user, string msg, string reply, string[] stars, string[] botstars, int step, scope)
+## async processTags (string user, string msg, string reply, string[] stars, string[] botstars, int step, scope) -> string
 
 Process tags in a reply element.
 
