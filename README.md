@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/aichaos/rivescript-js.svg?branch=master)](https://travis-ci.org/aichaos/rivescript-js)
 
-## INTRODUCTION To Rivescript-JS-Library
+## INTRODUCTION To RIVESCRIPT-JS-LIBRARY
 
 This is a RiveScript interpreter library for JavaScript. RiveScript is a
 scripting language for chatterbots, making it easy to write trigger/response
@@ -11,7 +11,7 @@ pairs for building up a bot's intelligence.
 This library can be used both in a web browser or as a Node module.
 See the `eg/` folder for examples.
 
-## INTRODUCTION To Efface Chatbot Builder for Rivescript
+## INTRODUCTION TO EFFACE CHATBOT BUILDER FOR RIVESCRIPT
 Now Create Your own Unique AI Chatbot For Your Website in Just Few Clicks and Use Rivescript For Writing Your Bot
 with Full Customisation Offline on your Desktop. You Can Customise Bot Title, Sub Heading, Greeting Message, Contact Link, Popup Message Text, Header Color, Footer Color, Main Background Color, Bot Block Color, User Block Color, Icons Color, Popup Message Color, Open & Close Button Background Color, Text Colors and More. After Customising You Can Export The Chatbot For Web Application With 1 Click.
 
