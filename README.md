@@ -11,13 +11,13 @@ pairs for building up a bot's intelligence.
 This library can be used both in a web browser or as a Node module.
 See the `eg/` folder for examples.
 
-![Efface Chatbot Builder](https://raw.githubusercontent.com/effacestudios/rivescript-js/master/button_buy-efface-chatbot-builder.png)
 <img src="https://github.com/effacestudios/rivescript-js/blob/master/Screenshot%20(1).png?raw=true" alt="drawing" width="400"/>
 <img src="https://github.com/effacestudios/rivescript-js/blob/master/Screenshot%20(2).png?raw=true" alt="drawing" width="400"/>
 <img src="https://github.com/effacestudios/rivescript-js/blob/master/Screenshot%20(3).png?raw=true" alt="drawing" width="400"/>
 <img src="https://github.com/effacestudios/rivescript-js/blob/master/Screenshot%20(4).png?raw=true" alt="drawing" width="400"/>
 <img src="https://github.com/effacestudios/rivescript-js/blob/master/Screenshot%20(5).png?raw=true" alt="drawing" width="400"/>
 </br>
+![Efface Chatbot Builder](https://raw.githubusercontent.com/effacestudios/rivescript-js/master/button_buy-efface-chatbot-builder.png)
 [Buy or Learn More About Efface Chatbot Builder](http://bit.ly/2WOYUc7)
 
 ## NOTICE: CHANGES IN v2.0.0
