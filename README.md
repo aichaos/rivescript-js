@@ -11,6 +11,12 @@ pairs for building up a bot's intelligence.
 This library can be used both in a web browser or as a Node module.
 See the `eg/` folder for examples.
 
+![Efface Chatbot Builder](https://raw.githubusercontent.com/effacestudios/rivescript-js/master/button_buy-efface-chatbot-builder.png)
+![Screenshot-1](https://raw.githubusercontent.com/effacestudios/rivescript-js/master/Screenshot%200.png)
+![Screenshot-2](https://raw.githubusercontent.com/effacestudios/rivescript-js/master/Screenshot%201.png)
+</br>
+[Buy or Learn More About Efface Chatbot Builder](http://bit.ly/2WOYUc7)
+
 ## NOTICE: CHANGES IN v2.0.0
 
 RiveScript v2.0.0 comes with a **massive** refactor of the codebase to
@@ -232,8 +238,7 @@ Steps for the npm maintainer of this module:
   * `zip -r rivescript-js-VERSION.zip rivescript-js`
   * `tar -czvf rivescript-js-VERSION.tar.gz rivescript-js`
   
-  ![Efface Chatbot Builder](https://raw.githubusercontent.com/effacestudios/rivescript-js/master/button_buy-efface-chatbot-builder.png)
-[Buy Efface Chatbot Builder](https://www.effacestudios.com/chatbot-builder/)
+ 
 
 
 ## LICENSE
