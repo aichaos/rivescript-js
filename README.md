@@ -231,6 +231,10 @@ Steps for the npm maintainer of this module:
   * `rm -rf .git node_modules` to remove cruft from the new folder.
   * `zip -r rivescript-js-VERSION.zip rivescript-js`
   * `tar -czvf rivescript-js-VERSION.tar.gz rivescript-js`
+  
+  ![Efface Chatbot Builder](https://raw.githubusercontent.com/effacestudios/rivescript-js/master/button_buy-efface-chatbot-builder.png)
+[Buy Efface Chatbot Builder](https://www.effacestudios.com/chatbot-builder/)
+
 
 ## LICENSE
 
