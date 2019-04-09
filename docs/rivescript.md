@@ -309,11 +309,11 @@ Set the value to `undefined` to delete a substitution.
 Set a person substitution. This is equivalent to `! person` in RiveScript.
 Set the value to `undefined` to delete a person substitution.
 
-## async setUservar (string user, string name, string value)
+## async setUservar (string user, string name, string value) -> void
 
 Set a user variable for a user.
 
-## async setUservars (string user, object data)
+## async setUservars (string user, object data) -> void
 
 Set multiple user variables by providing an object of key/value pairs.
 Equivalent to calling `setUservar()` for each pair in the object.
@@ -332,18 +332,18 @@ defined.
 Get all variables about a user. If no user is provided, returns all data
 about all users.
 
-## async clearUservars ([string user])
+## async clearUservars ([string user]) -> void
 
 Clear all a user's variables. If no user is provided, clears all variables
 for all users.
 
-## async freezeUservars (string user)
+## async freezeUservars (string user) -> void
 
 Freeze the variable state of a user. This will clone and preserve the user's
 entire variable state, so that it can be restored later with
 `thawUservars()`
 
-## async thawUservars (string user[, string action])
+## async thawUservars (string user[, string action]) -> void
 
 Thaw a user's frozen variables. The action can be one of the following:
 * discard: Don't restore the variables, just delete the frozen copy.

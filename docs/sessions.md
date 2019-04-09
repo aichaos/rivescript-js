@@ -30,7 +30,7 @@ var bot = new RiveScript({
 To implement your own session manager, you should extend the
 `SessionManager` class and implement a compatible object.
 
-## void set(string username, object data)
+## async set(string username, object data) -> void
 
 Set user variables for the user `username`. The `args` should be an object
 of key/value pairs. The values are usually strings, but they can be other
@@ -74,21 +74,21 @@ variables. For example:
 }
 ```
 
-## async reset(string username)
+## async reset(string username) -> void
 
 Reset all variables stored about a particular user.
 
-## async resetAll()
+## async resetAll() -> void
 
 Reset all data about all users.
 
-## async freeze(string username)
+## async freeze(string username) -> void
 
 Make a snapshot of the user's variables so that they can be restored
 later via `thaw()`. This is the implementation for
 `RiveScript.freezeUservars()`
 
-## async thaw(string username, string action)
+## async thaw(string username, string action) -> void
 
 Restore the frozen snapshot of variables for a user.
 
