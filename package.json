@@ -47,16 +47,6 @@
     "url": "https://github.com/aichaos/rivescript-js/issues",
     "email": "root@kirsle.net"
   },
-  "devDependencies": {
-    "babel-cli": "^6.26.0",
-    "babel-preset-env": "^1.7.0",
-    "commander": "^2.19.0",
-    "nodeunit": "^0.11.3",
-    "typescript": "^3.3.4000",
-    "uglify-js": "^3.4.9",
-    "webpack": "^4.29.5",
-    "webpack-cli": "^3.2.3"
-  },
   "scripts": {
     "prepare": "npm run dist",
     "build": "babel src -d lib",
@@ -70,7 +60,15 @@
   "dependencies": {
     "babel-loader": "^7.1.5",
     "babel-polyfill": "^6.26.0",
-    "fs-readdir-recursive": "^1.0.0"
+    "fs-readdir-recursive": "^1.0.0",
+    "babel-cli": "^6.26.0",
+    "babel-preset-env": "^1.7.0",
+    "commander": "^2.19.0",
+    "nodeunit": "^0.11.3",
+    "typescript": "^3.3.4000",
+    "uglify-js": "^3.4.9",
+    "webpack": "^4.29.5",
+    "webpack-cli": "^3.2.3"
   },
   "typings": "rivescript.d.ts"
 }
