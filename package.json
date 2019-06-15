@@ -58,7 +58,7 @@
     "webpack-cli": "^3.2.3"
   },
   "scripts": {
-    "prepublish": "npm run dist",
+    "prepare": "npm run dist",
     "build": "babel src -d lib",
     "build-tests": "babel test -d test.babel",
     "test": "npm run build; npm run build-tests; nodeunit test.babel/test-*.js",
