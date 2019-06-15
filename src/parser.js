@@ -29,8 +29,9 @@ const Parser = class Parser {
 	say(message) {
 		return this.master.say(message);
 	}
-	warn(message, filename, lineno) {
-		return this.master.warn(message, filename, lineno);
+
+	warn(message, filename, lineno, line) {
+    return this.master.warn(message, filename, lineno, line);
 	}
 
 	/**
@@ -162,7 +163,7 @@ const Parser = class Parser {
 			if (line.indexOf("//") === 0) { // Single line comment
 				continue;
 			} else if (line.indexOf("#") === 0) { // Old style single line comment
-				self.warn("Using the # symbol for comments is deprecated", filename, lineno);
+				self.warn("Using the # symbol for comments is deprecated", filename, lineno, line);
 				continue;
 			} else if (line.indexOf("/*") === 0) {
 				// Start of a multi-line comment.
@@ -185,7 +186,7 @@ const Parser = class Parser {
 
 			// Separate the command from the data
 			if (line.length < 2) {
-				self.warn(`Weird single-character line '${line}' found (in topic ${topic})`, filename, lineno);
+				onError.call(null, `Weird single-character line '${line}' found (in topic ${topic} in ${filename} line ${lineno}: \"${line}\"`);
 				continue;
 			}
 
@@ -330,7 +331,7 @@ const Parser = class Parser {
 					// Handle version numbers.
 					if (type === "version") {
 						if (parseFloat(value) > parseFloat(RS_VERSION)) {
-							onError.call(null, `Unsupported RiveScript version. We only support ${RS_VERSION} at ${filename} line ${lineno}`, filename, lineno);
+							onError.call(null, `Unsupported RiveScript version. We only support ${RS_VERSION} at ${filename} line ${lineno}`);
 							return ast;
 						}
 						continue;
@@ -338,11 +339,11 @@ const Parser = class Parser {
 
 					// All other types of defines require a value and variable name.
 					if (name.length === 0) {
-						self.warn("Undefined variable name", filename, lineno);
+						onError.call(null, `Undefined variable name ${filename} ${lineno} ${line}`);
 						continue;
 					}
 					if (value.length === 0) {
-						self.warn("Undefined variable value", filename, lineno);
+						onError.call(null, `Undefined variable value ${filename} ${lineno} ${line}`);
 						continue;
 					}
 
@@ -409,7 +410,7 @@ const Parser = class Parser {
 							ast.begin.person[name] = value;
 							break;
 						default:
-							self.warn(`Unknown definition type ${type}`, filename, lineno);
+							onError.call(null, `Unknown definition type ${type} in ${filename} line ${lineno} near ${cmd} ${line}`);
 					}
 					break;
 				case ">":
@@ -471,7 +472,7 @@ const Parser = class Parser {
 
 							// Missing language, try to assume it's JS.
 							if (lang === "") {
-								self.warn("Trying to parse unknown programming language", filename, lineno);
+								onError.call(null, `Trying to parse unknown programming language ${filename} ${lineno} ${line}`);
 								lang = "javascript";
 							}
 
@@ -482,7 +483,7 @@ const Parser = class Parser {
 							inobj = true;
 							break;
 						default:
-							self.warn(`Unknown label type ${type}`, filename, lineno);
+							onError.call(null, `Unknown label type ${type} in ${filename} line ${lineno} near ${cmd} ${line}`);
 					}
 					break;
 				case "<":
@@ -514,13 +515,13 @@ const Parser = class Parser {
 				case "-":
 					// - Response
 					if (curTrig === null) {
-						self.warn("Response found before trigger", filename, lineno);
+						onError.call(null, `Response found before trigger in ${filename} line ${lineno} near ${cmd} ${line}`);
 						continue;
 					}
 
 					// Warn if we also saw a hard redirect.
 					if (curTrig.redirect !== null) {
-						self.warn("You can't mix @Redirects with -Replies", filename, lineno);
+						onError.call(null, `You can't mix @Redirects with -Replies in ${filename} line ${lineno} near ${cmd} ${line}`);
 					}
 
 					self.say(`\tResponse: ${line}`);
@@ -529,13 +530,13 @@ const Parser = class Parser {
 				case "*":
 					// * Condition
 					if (curTrig === null) {
-						self.warn("Condition found before trigger", filename, lineno);
+						onError.call(null, `Condition found before trigger in ${filename} line ${lineno} near ${cmd} ${line}`);
 						continue;
 					}
 
 					// Warn if we also saw a hard redirect.
 					if (curTrig.redirect !== null) {
-						self.warn("You can't mix @Redirects with *Conditions", filename, lineno);
+						onError.call(`You can't mix @Redirects with *Conditions in ${filename} line ${lineno} near ${cmd} ${line}`);
 					}
 
 					self.say(`\tCondition: ${line}`);
@@ -551,13 +552,13 @@ const Parser = class Parser {
 					// @ Redirect
 					// Make sure they didn't mix them with incompatible commands.
 					if (curTrig.reply.length > 0 || curTrig.condition.length > 0) {
-						self.warn("You can't mix @Redirects with -Replies or *Conditions", filename, lineno);
+						onError.call(`You can't mix @Redirects with -Replies or *Conditions in ${filename} line ${lineno} near ${cmd} ${line}`);
 					}
 					self.say(`\tRedirect response to: ${line}`);
 					curTrig.redirect = utils.strip(line);
 					break;
 				default:
-					self.warn(`Unknown command '${cmd}' (in topic ${topic})`, filename, lineno);
+					onError(`Unknown command '${cmd}' (in topic ${topic}) in ${filename} line ${lineno} near ${cmd} ${line}`);
 			}
 		}
 
