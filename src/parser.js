@@ -618,7 +618,7 @@ const Parser = class Parser {
 		for (let j = 0, len = ref.length; j < len; j++) {
 			let begin = ref[j];
 			if ((deparsed.begin[begin] != null) && Object.keys(deparsed.begin[begin]).length) {
-				for (key in deparsed.begin[begin]) {
+				for (const key in deparsed.begin[begin]) {
 					let value = deparsed.begin[begin][key];
 					if (!deparsed.begin[begin].hasOwnProperty(key)) {
 						continue;
