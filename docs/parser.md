@@ -2,7 +2,7 @@
 
 Create a parser object to handle parsing RiveScript code.
 
-## data parse (string filename, string code[, func onError])
+## object parse (string filename, string code[, func onError])
 
 Read and parse a RiveScript document. Returns a data structure that
 represents all of the useful contents of the document, in this format:
@@ -41,6 +41,8 @@ represents all of the useful contents of the document, in this format:
   ]
 }
 ```
+
+onError function receives: `(err string[, filename str, line_no int])`
 
 ## string stringify (data deparsed)
 

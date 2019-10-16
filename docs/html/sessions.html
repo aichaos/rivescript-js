@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>sessions</title>
+<link rel="stylesheet" type="text/css" href="md.css">
+</head>
+<body>
+
+<h1>SessionManager</h1>
+<p>This is the interface for session managers that store user variables for
+RiveScript. User variables include those set with the <code>&lt;set&gt;</code> tag or the
+<code>setUservar()</code> function, as well as recent reply history and private internal
+state variables.</p>
+<p>The default session manager keeps the variables in memory. This means the bot
+doesn't remember users after you restart the program; but the functions
+<code>getUservars()</code> and <code>setUservars()</code> are available to export and import the
+variables yourself.</p>
+<p>If you prefer a more active session manager that stores and retrieves user
+variables from a MySQL, MongoDB or Redis database, you can replace the default
+session manager with one that implements that backend (or write one yourself
+that implements this SessionManager API).</p>
+<p>To use a session manager, you'd typically do something like:</p>
+<div class="codehilite"><pre><span></span><span class="kr">const</span> <span class="nx">RedisSessions</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s2">&quot;rivescript-contrib-redis&quot;</span><span class="p">);</span>
+
+<span class="c1">// Provide the sessionManager option to use this instead of</span>
+<span class="c1">// the default MemorySessionManager.</span>
+<span class="kd">var</span> <span class="nx">bot</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">RiveScript</span><span class="p">({</span>
+    <span class="nx">sessionManager</span><span class="o">:</span> <span class="k">new</span> <span class="nx">RedisSessions</span><span class="p">(</span><span class="s2">&quot;localhost:6379&quot;</span><span class="p">)</span>
+<span class="p">});</span>
+</pre></div>
+
+
+<p>To implement your own session manager, you should extend the
+<code>SessionManager</code> class and implement a compatible object.</p>
+<h2>void set(string username, object data)</h2>
+<p>Set user variables for the user <code>username</code>. The <code>args</code> should be an object
+of key/value pairs. The values are usually strings, but they can be other
+types as well (e.g. arrays or other objects) for some internal data
+structures such as input/reply history.</p>
+<p>A value of <code>null</code> for a variable means it should be deleted from the
+user's session store.</p>
+<h2>async get(string username, string key) -&gt; string</h2>
+<p>Retrieve a stored variable for a user.</p>
+<p>If the user doesn't exist, this should resolve <code>null</code>. If the user <em>does</em>
+exist, but the key does not, this function should resolve the
+string value <code>"undefined"</code>.</p>
+<h2>async getAny(string username) -&gt; object</h2>
+<p>Retrieve all stored user variables for the user <code>username</code>.</p>
+<p>This should resolve an object of the key/value pairs you have stored for
+the user. If the user doesn't exist, resolve <code>null</code>.</p>
+<h2>async getAll() -&gt; object</h2>
+<p>Retrieve all variables about all users.</p>
+<p>This should return an object that maps usernames to an object of their
+variables. For example:</p>
+<div class="codehilite"><pre><span></span><span class="p">{</span> <span class="nt">&quot;user1&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&quot;topic&quot;</span><span class="p">:</span> <span class="s2">&quot;random&quot;</span><span class="p">,</span>
+       <span class="nt">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Alice&quot;</span>
+  <span class="p">},</span>
+  <span class="nt">&quot;user2&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&quot;topic&quot;</span><span class="p">:</span> <span class="s2">&quot;random&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Bob&quot;</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<h2>async reset(string username)</h2>
+<p>Reset all variables stored about a particular user.</p>
+<h2>async resetAll()</h2>
+<p>Reset all data about all users.</p>
+<h2>async freeze(string username)</h2>
+<p>Make a snapshot of the user's variables so that they can be restored
+later via <code>thaw()</code>. This is the implementation for
+<code>RiveScript.freezeUservars()</code></p>
+<h2>async thaw(string username, string action)</h2>
+<p>Restore the frozen snapshot of variables for a user.</p>
+<p>This should replace <em>all</em> of a user's variables with the frozen copy
+that was snapshotted with <code>freeze()</code>. If there are no frozen variables,
+this function should be a no-op (maybe print a warning?)</p>
+<p>Valid options for <code>action</code> reflect the usage of <code>rs.thawUservars()</code>:</p>
+<ul>
+<li><code>thaw</code>: Restore the variables and delete the frozen copy (default)</li>
+<li><code>discard</code>: Do not restore the variables, but delete the frozen copy</li>
+<li><code>keep</code>: Restore the variables and keep the frozen copy</li>
+</ul>
+<h2>object defaultSession()</h2>
+<p>You do not need to override this method. This returns the default session
+variables for a new user, e.g. with the variable <code>topic="random"</code> as per
+the RiveScript spec.</p>
+<h1>MemorySessionManager</h1>
+<p>This is the default in-memory session store for RiveScript.</p>
+<p>It keeps all user variables in an object in memory and does not persist them
+to disk. This means it won't remember user variables between reboots of your
+bot's program, but it remembers just fine during its lifetime.</p>
+<p>The RiveScript methods <code>getUservars()</code> and <code>setUservars()</code> are available to
+export and import user variables as JSON-serializable objects so that your
+program could save them to disk on its own.</p>
+<p>See the documentation for <code>SessionManager</code> for information on extending
+RiveScript with an alternative session store.</p>
+<h1>NullSessionManager</h1>
+<p>This is a session manager implementation that does not remember any user
+variables. It is mostly useful for unit tests.</p>
+
+</body>
+</html>

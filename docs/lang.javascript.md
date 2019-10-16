@@ -5,7 +5,7 @@ default in RiveScript.js; if you don't want it, override the `javascript`
 language handler to null, like so:
 
 ```javascript
-   bot.setHandler("javascript", null);
+bot.setHandler("javascript", null);
 ```
 
 ## void load (string name, string[]|function code)

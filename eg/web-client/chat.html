@@ -6,11 +6,58 @@
 <link rel="stylesheet" type="text/css" href="chat.css">
 <script type="text/javascript" src="jquery-1.7.2.min.js"></script>
 <script type="text/javascript" src="datadumper.js"></script>
-<script type="text/javascript" src="../lib/rivescript.js"></script>
+<script type="text/javascript" src="../../dist/rivescript.js"></script>
 </head>
 <body>
 
 <h1>Chat</h1>
+
+<div id="webpack-error" style="display: none; max-width: 500px">
+	<h2 style="color: #F00">Loading Error: rivescript.js not found</h2>
+
+	<p>
+		There was a problem loading the <code>rivescript.js</code> script on this
+		page. This most likely means the script was not found where this page was
+		expecting it to be. If you're running this demo from the rivescript-js
+		git project, maybe you forgot to run <code>npm run dist</code>?
+	</p>
+
+	<p>
+		The original version of this page looks for it at the relative path
+		<code>../../dist/rivescript.js</code>. This is expecting the path to
+		<em>the current page</em> to be something like <code>/eg/web-client/chat.html</code>
+		from a web server started at the root of the rivescript-js project.
+		Double check that these path settings are correct.
+	</p>
+
+	<p>
+		If you have uploaded the web-client demo to a web server such as Apache,
+		ensure that the path is correct for where it looks for <code>rivescript.js</code>.
+	</p>
+</div>
+<div id="local-file-error" style="display: none; max-width: 500px">
+	<h2 style="color: #F00">Local Filesystem Detected</h2>
+
+	<p>
+		It appears you have opened this page by double-clicking it in your file
+		browser: the URL of this page has a <code>file:///</code> URL scheme.
+	</p>
+
+	<p>
+		Modern web browsers place security restrictions on locally opened web
+		pages which prevent them from running ajax requests for other local
+		files on your disk. Unfortunately, this means that the
+		<code>RiveScript.loadFile()</code> function used on this page will
+		probably not work when you open this page locally.
+	</p>
+
+	<p>
+		See the <code>README.md</code> file for some tips on how to run this
+		page in a web server environment. This will be required for the bot to
+		load the <code>*.rive</code> files in a way that respects the Same
+		Origin Policy enforced by the web browser.
+	</p>
+</div>
 
 <fieldset>
 	<legend>Chat Log</legend>
@@ -54,33 +101,46 @@ if (window.location.search.indexOf("debug=1") > -1) {
 	$("#toggle").val("Enable Debug Mode");
 }
 
-// Create our RiveScript interpreter.
-var rs = new RiveScript({
-	debug:   debugMode,
-	onDebug: onDebug
-});
+// Warn the user if they opened the page locally that it will probably
+// experience ajax errors.
+if (window.location.protocol === "file:") {
+	document.querySelector("#local-file-error").style.display = "block";
+}
 
-// This won't work on the web!
-//rs.loadDirectory("brain");
+// Problem loading rivescript.js?
+var rs;
+if (window.RiveScript === undefined) {
+	document.querySelector("#webpack-error").style.display = "block";
+} else {
+	// Create our RiveScript interpreter.
+	rs = new RiveScript({
+		debug:   debugMode,
+		onDebug: onDebug
+	});
 
-// Load our files from the brain/ folder.
-rs.loadFile([
-	"brain/begin.rive",
-	"brain/admin.rive",
-	"brain/clients.rive",
-	"brain/eliza.rive",
-	"brain/myself.rive",
-	"brain/rpg.rive",
-	"brain/javascript.rive"
-	], on_load_success, on_load_error);
+	// This won't work on the web!
+	//rs.loadDirectory("brain");
 
-// You can register objects that can then be called 
-// using <call></call> syntax
-rs.setSubroutine('fancyJSObject', function(rs, args){
-	// doing complex stuff here
-});
+	// Load our files from the brain/ folder.
+	rs.loadFile([
+		"../brain/begin.rive",
+		"../brain/admin.rive",
+		"../brain/clients.rive",
+		"../brain/eliza.rive",
+		"../brain/myself.rive",
+		"../brain/rpg.rive",
+		"../brain/javascript.rive"
+	]).then(onReady).catch(onError);
 
-function on_load_success () {
+	// You can register objects that can then be called
+	// using <call></call> syntax
+	rs.setSubroutine('fancyJSObject', function(rs, args){
+		// doing complex stuff here
+	});
+}
+
+function onReady() {
+	$("#dialogue").append("<div><span class='bot'>Bot:</span> Welcome, this is RiveScript.js v" + rs.version() + ", ready to chat!");
 	$("#message").removeAttr("disabled");
 	$("#message").attr("placeholder", "Send message");
 	$("#message").focus();
@@ -89,8 +149,8 @@ function on_load_success () {
 	rs.sortReplies();
 }
 
-function on_load_error (err) {
-	console.log("Loading error: " + err);
+function onError(err, filename, lineno) {
+	$("#dialogue").append('<div><span class="bot">Error:</span> ' + err + '</div>');
 }
 
 // Handle sending a message to the bot.
@@ -98,15 +158,15 @@ function sendMessage () {
 	var text = $("#message").val();
 	$("#message").val("");
 	$("#dialogue").append("<div><span class='user'>You:</span> " + text + "</div>");
-	try {
-	var reply = rs.reply("soandso", text);
-	reply = reply.replace(/\n/g, "<br>");
-	$("#dialogue").append("<div><span class='bot'>Bot:</span> " + reply + "</div>");
-	$("#dialogue").animate({ scrollTop: $("#dialogue").height() }, 1000);
-	} catch(e) {
+
+	rs.reply("soandso", text, this).then(function(reply) {
+		reply = reply.replace(/\n/g, "<br>");
+		$("#dialogue").append("<div><span class='bot'>Bot:</span> " + reply + "</div>");
+		$("#dialogue").animate({ scrollTop: $("#dialogue").height() }, 1000);
+	}).catch(function(e) {
 		window.alert(e.message + "\n" + e.line);
 		console.log(e);
-	}
+	});
 
 	return false;
 }

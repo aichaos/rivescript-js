@@ -1,11 +1,9 @@
 language: node_js
 node_js:
   - "node"
+  - "8"
+  - "7"
   - "6"
-  - "5"
-  - "4"
-  - "0.12"
-  - "iojs"
 before_install:
-  - npm install -g grunt-cli coffee-script
-script: grunt test
+  - npm install -g babel-cli webpack uglify-js nodeunit
+script: npm run test

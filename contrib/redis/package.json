@@ -1,0 +1,25 @@
+{
+  "name": "rivescript-redis",
+  "version": "1.0.0",
+  "description": "A Redis session driver to actively store RiveScript user variables.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aichaos/rivescript-js.git"
+  },
+  "keywords": [
+    "rivescript"
+  ],
+  "author": "root@kirsle.net",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/aichaos/rivescript-js/issues"
+  },
+  "homepage": "https://github.com/aichaos/rivescript-js#readme",
+  "dependencies": {
+    "redis": "^2.8.0"
+  }
+}

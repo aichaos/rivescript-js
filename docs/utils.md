@@ -40,10 +40,31 @@ Formats a string according to one of the following types:
 - uppercase
 - lowercase
 
+## []string parseCallArgs
+
+Parse a string and return shell-like arguments as an array. Normally this
+means each word in the string becomes an item in the result, but quoted
+sections of the input will come back as a single item.
+
+Example:
+
+```javascript
+console.log( parseCallArgs('please google "writing chat bot"'));
+// ["please", "google", "writing chat bot"]
+```
+
 ## object clone (object)
 
 Clone an object.
 
-## boolean isAPromise (object)
+## int nIndexOf (string, string match, int index)
 
-Determines if obj looks like a promise
+Finds a match in a string at a given index
+
+Usage:
+string = "My name is Rive"
+match = " "
+index = 2
+return = 7
+
+Summary: It will look for a second space in the string

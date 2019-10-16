@@ -8,13 +8,9 @@
 
 <h1>Brain (RiveScript master)</h1>
 <p>Create a Brain object which handles the actual process of fetching a reply.</p>
-<h2>string reply (string user, string msg[, scope])</h2>
-<p>Fetch a reply for the user.</p>
-<h2>string|Promise processCallTags (string reply, object scope, bool async)</h2>
-<p>Process &lt;call&gt; tags in the preprocessed reply string.
-If <code>async</code> is true, processCallTags can handle asynchronous subroutines
-and it returns a promise, otherwise a string is returned</p>
-<h2>string _getReply (string user, string msg, string context, int step, scope)</h2>
+<h2>async reply (string user, string msg[, scope])</h2>
+<p>Fetch a reply for the user. This returns a Promise that may be awaited on.</p>
+<h2>async _getReply (string user, string msg, string context, int step, scope)</h2>
 <p>The internal reply method. DO NOT CALL THIS DIRECTLY.</p>
 <ul>
 <li>user, msg and scope are the same as reply()</li>
@@ -24,12 +20,10 @@ and it returns a promise, otherwise a string is returned</p>
 </ul>
 <h2>string formatMessage (string msg)</h2>
 <p>Format a user's message for safe processing.</p>
-<h2>string triggerRegexp (string user, string trigger)</h2>
+<h2>async triggerRegexp (string user, string trigger)</h2>
 <p>Prepares a trigger for the regular expression engine.</p>
 <h2>string processTags (string user, string msg, string reply, string[] stars, string[] botstars, int step, scope)</h2>
 <p>Process tags in a reply element.</p>
-<p>All the tags get processed here except for <code>&lt;call&gt;</code> tags which have
-a separate subroutine (refer to <code>processCallTags</code> for more info)</p>
 <h2>string substitute (string msg, string type)</h2>
 <p>Run substitutions against a message. <code>type</code> is either "sub" or "person" for
 the type of substitution to run.</p>
