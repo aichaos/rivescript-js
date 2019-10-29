@@ -387,7 +387,7 @@ class Brain {
 
 							// OK?
 							if (passed) {
-								reply = potreply;
+								reply.push(potreply);
 								break;
 							}
 						}
