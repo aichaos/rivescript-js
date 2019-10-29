@@ -447,6 +447,7 @@ class Brain {
 
 				let name = match[1];
 				await self.master.setUservar(user, "topic", name);
+				reply = reply.map(box => box.replace(new RegExp("{topic=" + utils.quotemeta(name) + "}", "ig"), ""));
 				match = reply.join("\n").match(/\{topic=(.+?)\}/i);
 			}
 
@@ -464,6 +465,7 @@ class Brain {
 				let value = match[2];
 
 				await self.master.setUservar(user, name, value);
+				reply = reply.map(box => box.replace(new RegExp("<set " + utils.quotemeta(name) + "=" + utils.quotemeta(value) + ">", "ig"), ""));
 				match = reply.join("\n").match(/<set (.+?)=(.+?)>/i);
 			}
 		} else {
@@ -714,29 +716,30 @@ class Brain {
 				result = `\x00@${name}\x00`;
 			}
 
+			reply = reply.map(box => box.replace(new RegExp("\\(@" + utils.quotemeta(name) + "\\)", "ig"), result));
 			match = reply.join("\n").match(/\(@([A-Za-z0-9_]+)\)/i);
 		}
 
 		// Restore literal arrays that didn't exist.
-		reply = reply.replace(/\x00@([A-Za-z0-9_]+)\x00/g, "(@$1)");
+		reply = reply.map(box => box.replace(/\x00@([A-Za-z0-9_]+)\x00/g, "(@$1)"));
 
 		// Tag shortcuts.
-		reply = reply.replace(/<person>/ig, "{person}<star>{/person}");
-		reply = reply.replace(/<@>/ig, "{@<star>}");
-		reply = reply.replace(/<formal>/ig, "{formal}<star>{/formal}");
-		reply = reply.replace(/<sentence>/ig, "{sentence}<star>{/sentence}");
-		reply = reply.replace(/<uppercase>/ig, "{uppercase}<star>{/uppercase}");
-		reply = reply.replace(/<lowercase>/ig, "{lowercase}<star>{/lowercase}");
+		reply = reply.map(box => box.replace(/<person>/ig, "{person}<star>{/person}"));
+		reply = reply.map(box => box.replace(/<@>/ig, "{@<star>}"));
+		reply = reply.map(box => box.replace(/<formal>/ig, "{formal}<star>{/formal}"));
+		reply = reply.map(box => box.replace(/<sentence>/ig, "{sentence}<star>{/sentence}"));
+		reply = reply.map(box => box.replace(/<uppercase>/ig, "{uppercase}<star>{/uppercase}"));
+		reply = reply.map(box => box.replace(/<lowercase>/ig, "{lowercase}<star>{/lowercase}"));
 
 		// Weight and star tags.
-		reply = reply.replace(/\{weight=\d+\}/ig, ""); // Remove {weight}s
-		reply = reply.replace(/<star>/ig, stars[1]);
-		reply = reply.replace(/<botstar>/ig, botstars[1]);
+		reply = reply.map(box => box.replace(/\{weight=\d+\}/ig, "")); // Remove {weight}s
+		reply = reply.map(box => box.replace(/<star>/ig, stars[1]));
+		reply = reply.map(box => box.replace(/<botstar>/ig, botstars[1]));
 		for (let i = 1, len = stars.length; i <= len; i++) {
-			reply = reply.replace(new RegExp(`<star${i}>`, "ig"), stars[i]);
+			reply = reply.map(box => box.replace(new RegExp(`<star${i}>`, "ig"), stars[i]));
 		}
 		for (let i = 1, len = botstars.length; i <= len; i++) {
-			reply = reply.replace(new RegExp(`<botstar${i}>`, "ig"), botstars[i]);
+			reply = reply.map(box => box.replace(new RegExp(`<botstar${i}>`, "ig"), botstars[i]));
 		}
 
 		// <input> and <reply>
@@ -744,22 +747,22 @@ class Brain {
 		if (history == "undefined") { // purposeful typecast for `undefined` too
 			history = newHistory();
 		}
-		reply = reply.replace(/<input>/ig, history.input ? history.input[0] : "undefined");
-		reply = reply.replace(/<reply>/ig, history.reply ? history.reply[0] : "undefined");
+		reply = reply.map(box => box.replace(/<input>/ig, history.input ? history.input[0] : "undefined"));
+		reply = reply.map(box => box.replace(/<reply>/ig, history.reply ? history.reply[0] : "undefined"));
 		for (let i = 1; i <= 9; i++) {
 			if (reply.indexOf(`<input${i}>`) > -1) {
-				reply = reply.replace(new RegExp(`<input${i}>`, "ig"), history.input[i-1]);
+				reply = reply.map(box => box.replace(new RegExp(`<input${i}>`, "ig"), history.input[i-1]));
 			}
 			if (reply.indexOf(`<reply${i}>`) > -1) {
-				reply = reply.replace(new RegExp(`<reply${i}>`, "ig"), history.reply[i-1]);
+				reply = reply.map(box => box.replace(new RegExp(`<reply${i}>`, "ig"), history.reply[i-1]));
 			}
 		}
 
 		// <id> and escape codes
-		reply = reply.replace(/<id>/ig, user);
-		reply = reply.replace(/\\s/ig, " ");
-		reply = reply.replace(/\\n/ig, "\n");
-		reply = reply.replace(/\\#/ig, "#");
+		reply = reply.map(box => box.replace(/<id>/ig, user));
+		reply = reply.map(box => box.replace(/\\s/ig, " "));
+		reply = reply.map(box => box.replace(/\\n/ig, "\n"));
+		reply = reply.map(box => box.replace(/\\#/ig, "#"));
 
 		// {random}
 		match = reply.join("\n").match(/\{random\}(.+?)\{\/random\}/i);
@@ -779,6 +782,7 @@ class Brain {
 			}
 
 			let output = random[parseInt(Math.random() * random.length)];
+			reply = reply.map(box => box.replace(new RegExp("\\{random\\}" + utils.quotemeta(text) + "\\{\\/random\\}", "ig"), output));
 			match = reply.join("\n").match(/\{random\}(.+?)\{\/random\}/i);
 		}
 
@@ -803,6 +807,7 @@ class Brain {
 					replace = utils.stringFormat(type, content);
 				}
 
+				reply = reply.map(box => box.replace(new RegExp(`{${type}}` + utils.quotemeta(content) + `{/${type}}`, "ig"), replace));
 				match = reply.join("\n").match(new RegExp(`{${type}}(.+?){/${type}}`, "i"));
 			}
 		}
@@ -810,8 +815,8 @@ class Brain {
 		// Handle all variable-related tags with an iterative regexp approach, to
 		// allow for nesting of tags in arbitrary ways (think <set a=<get b>>)
 		// Dummy out the <call> tags first, because we don't handle them right here.
-		reply = reply.replace(/<call>/ig, "«__call__»");
-		reply = reply.replace(/<\/call>/ig, "«/__call__»");
+		reply = reply.map(box => box.replace(/<call>/ig, "«__call__»"));
+		reply = reply.map(box => box.replace(/<\/call>/ig, "«/__call__»"));
 		while (true) {
 			// This regexp will match a <tag> which contains no other tag inside it,
 			// i.e. in the case of <set a=<get b>> it will match <get b> but not the
@@ -894,12 +899,12 @@ class Brain {
 				// Unrecognized tag, preserve it
 				insert = `\x00${match}\x01`;
 			}
-			reply = reply.replace(new RegExp(`<${utils.quotemeta(match)}>`), insert);
+			reply = reply.map(box => box.replace(new RegExp(`<${utils.quotemeta(match)}>`), insert));
 		}
 
 		// Recover mangled HTML-like tags
-		reply = reply.replace(/\x00/g, "<");
-		reply = reply.replace(/\x01/g, ">");
+		reply = reply.map(box => box.replace(/\x00/g, "<"));
+		reply = reply.map(box => box.replace(/\x01/g, ">"));
 
 		// Topic setter
 		match = reply.join("\n").match(/\{topic=(.+?)\}/i);
@@ -913,6 +918,7 @@ class Brain {
 
 			let name = match[1];
 			await self.master.setUservar(user, "topic", name);
+			reply = reply.map(box => box.replace(new RegExp("{topic=" + utils.quotemeta(name) + "}", "ig"), ""));
 			match = reply.join("\n").match(/\{topic=(.+?)\}/i); // Look for more
 		}
 
@@ -930,10 +936,13 @@ class Brain {
 			self.say(`Inline redirection to: ${target}`);
 
 			let subreply = (await self._getReply(user, target, "normal", step + 1, scope));
+			reply = reply.map(box => box.replace(new RegExp("\\{@" + utils.quotemeta(match[1]) + "\\}", "i"), subreply));
 			match = reply.join("\n").match(/\{@([^\}]*?)\}/);
 		}
 
 		// Object caller
+		reply = reply.map(box => box.replace(/«__call__»/g, "<call>"));
+		reply = reply.map(box => box.replace(/«\/__call__»/g, "</call>"));
 		match = reply.join("\n").match(/<call>([\s\S]+?)<\/call>/);
 		giveup = 0;
 		while (match) {
@@ -971,6 +980,7 @@ class Brain {
 					output = "[ERR: No Object Handler]";
 				}
 			}
+			reply = reply.map(box => box.replace(match[0], output));
 			match = reply.join("\n").match(/<call>(.+?)<\/call>/);
 		}
 		return reply;
