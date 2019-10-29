@@ -530,6 +530,22 @@ const Parser = class Parser {
 						curTrig.reply[curTrig.reply.length - 1].push(line);
 					}
 					break;
+				case ":":
+					// :: Block Response
+					if (curTrig === null) {
+						self.warn("Response found before trigger", filename, lineno);
+						continue;
+					}
+
+					// Warn if we also saw a hard redirect.
+					if (curTrig.redirect !== null) {
+						self.warn("You can't mix @Redirects with -Replies", filename, lineno);
+					}
+
+					self.say('\tBlock Response');
+					if (!curTrig.reply.length) continue;
+					curTrig.reply.push([]);
+					break;
 				case "*":
 					// * Condition
 					if (curTrig === null) {
