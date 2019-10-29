@@ -342,8 +342,8 @@ class Brain {
 							let potreply = halves[1].trim();
 
 							// Process tags all around
-							left = (await self.processTags(user, msg, left, stars, thatstars, step, scope));
-							right = (await self.processTags(user, msg, right, stars, thatstars, step, scope));
+							left = (await self.processTags(user, msg, left, stars, thatstars, step, scope))[0];
+							right = (await self.processTags(user, msg, right, stars, thatstars, step, scope))[0];
 
 							// Defaults?
 							if (left.length === 0) {
