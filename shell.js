@@ -114,8 +114,7 @@ rl.on('line', async function(cmd) {
 	} else {
 		// Get a reply from the bot.
 		if (bot && ready) {
-			var reply = await bot.reply("localuser", cmd);
-			console.log("Bot>", reply);
+			await bot.replyByBox("localuser", cmd).then(reply => reply.forEach(box => console.log("Bot>", box)));
 		} else {
 			console.log("ERR: Bot Not Ready Yet");
 		}
