@@ -401,8 +401,11 @@ class Brain {
 
 				// Process weights in the replies.
 				let bucket = [];
-				for (let q = 0, len5 = matched.reply.length; q < len5; q++) {
-					let rep = matched.reply[q];
+				for (let i = 0, amountOfReplyBoxes = matched.reply.length; i < amountOfReplyBoxes; i++) {
+					bucket.push([]);
+					let replyBox = matched.reply[i];
+					for (let q = 0, len5 = replyBox.length; q < len5; q++) {
+						let rep = replyBox[q];
 					let weight = 1;
 					let match = rep.match(/\{weight=(\d+?)\}/i);
 					if (match) {
@@ -414,13 +417,18 @@ class Brain {
 					}
 
 					for (let i = 0; i < weight; i++) {
-						bucket.push(rep);
+							bucket[bucket.length - 1].push(rep);
+						}
 					}
 				}
 
-				// Get a random reply.
-				let choice = parseInt(Math.random() * bucket.length);
-				reply = bucket[choice];
+
+				// Get a random reply by box.
+				bucket.forEach(bucketBox => {
+					let choice = parseInt(Math.random() * bucketBox.length);
+					reply.push(bucketBox[choice]);
+				})
+
 				break;
 			}
 		}
