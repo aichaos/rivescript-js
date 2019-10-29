@@ -83,7 +83,7 @@ class Brain {
 			history.input.pop();
 			history.input.unshift(msg);
 			history.reply.pop();
-			history.reply.unshift(reply);
+			history.reply.unshift(reply.join("\n"));
 		} catch(e) {
 			history = newHistory();
 		}
@@ -436,7 +436,7 @@ class Brain {
 			// The BEGIN block can set {topic} and user vars.
 
 			// Topic setter
-			let match = reply.match(/\{topic=(.+?)\}/i);
+			let match = reply.join("\n").match(/\{topic=(.+?)\}/i);
 			let giveup = 0;
 			while (match) {
 				giveup++;
@@ -447,12 +447,11 @@ class Brain {
 
 				let name = match[1];
 				await self.master.setUservar(user, "topic", name);
-				reply = reply.replace(new RegExp("{topic=" + utils.quotemeta(name) + "}", "ig"), "");
-				match = reply.match(/\{topic=(.+?)\}/i);
+				match = reply.join("\n").match(/\{topic=(.+?)\}/i);
 			}
 
 			// Set user vars
-			match = reply.match(/<set (.+?)=(.+?)>/i);
+			match = reply.join("\n").match(/<set (.+?)=(.+?)>/i);
 			giveup = 0;
 			while (match) {
 				giveup++;
@@ -465,8 +464,7 @@ class Brain {
 				let value = match[2];
 
 				await self.master.setUservar(user, name, value);
-				reply = reply.replace(new RegExp("<set " + utils.quotemeta(name) + "=" + utils.quotemeta(value) + ">", "ig"), "");
-				match = reply.match(/<set (.+?)=(.+?)>/i);
+				match = reply.join("\n").match(/<set (.+?)=(.+?)>/i);
 			}
 		} else {
 			// Process all the tags.
@@ -699,7 +697,7 @@ class Brain {
 		}
 
 		// Turn arrays into randomized sets.
-		let match = reply.match(/\(@([A-Za-z0-9_]+)\)/i);
+		let match = reply.join("\n").match(/\(@([A-Za-z0-9_]+)\)/i);
 		let giveup = 0;
 		while (match) {
 			if (giveup++ > self.master._depth) {
@@ -716,8 +714,7 @@ class Brain {
 				result = `\x00@${name}\x00`;
 			}
 
-			reply = reply.replace(new RegExp("\\(@" + utils.quotemeta(name) + "\\)", "ig"), result);
-			match = reply.match(/\(@([A-Za-z0-9_]+)\)/i);
+			match = reply.join("\n").match(/\(@([A-Za-z0-9_]+)\)/i);
 		}
 
 		// Restore literal arrays that didn't exist.
@@ -765,7 +762,7 @@ class Brain {
 		reply = reply.replace(/\\#/ig, "#");
 
 		// {random}
-		match = reply.match(/\{random\}(.+?)\{\/random\}/i);
+		match = reply.join("\n").match(/\{random\}(.+?)\{\/random\}/i);
 		giveup = 0;
 		while (match) {
 			if (giveup++ > self.master._depth) {
@@ -782,15 +779,14 @@ class Brain {
 			}
 
 			let output = random[parseInt(Math.random() * random.length)];
-			reply = reply.replace(new RegExp("\\{random\\}" + utils.quotemeta(text) + "\\{\\/random\\}", "ig"), output);
-			match = reply.match(/\{random\}(.+?)\{\/random\}/i);
+			match = reply.join("\n").match(/\{random\}(.+?)\{\/random\}/i);
 		}
 
 		// Person substitutions & string formatting
 		let formats = ["person", "formal", "sentence", "uppercase", "lowercase"];
 		for (let m = 0, len = formats.length; m < len; m++) {
 			let type = formats[m];
-			match = reply.match(new RegExp(`{${type}}(.+?){/${type}}`, "i"));
+			match = reply.join("\n").match(new RegExp(`{${type}}(.+?){/${type}}`, "i"));
 			giveup = 0;
 			while (match) {
 				giveup++;
@@ -807,8 +803,7 @@ class Brain {
 					replace = utils.stringFormat(type, content);
 				}
 
-				reply = reply.replace(new RegExp(`{${type}}` + utils.quotemeta(content) + `{/${type}}`, "ig"), replace);
-				match = reply.match(new RegExp(`{${type}}(.+?){/${type}}`, "i"));
+				match = reply.join("\n").match(new RegExp(`{${type}}(.+?){/${type}}`, "i"));
 			}
 		}
 
@@ -822,7 +817,7 @@ class Brain {
 			// i.e. in the case of <set a=<get b>> it will match <get b> but not the
 			// <set> tag, on the first pass. The second pass will get the <set> tag,
 			// and so on.
-			match = reply.match(/<([^<]+?)>/);
+			match = reply.join("\n").match(/<([^<]+?)>/);
 			if (!match) {
 				break; // No remaining tags!
 			}
@@ -907,7 +902,7 @@ class Brain {
 		reply = reply.replace(/\x01/g, ">");
 
 		// Topic setter
-		match = reply.match(/\{topic=(.+?)\}/i);
+		match = reply.join("\n").match(/\{topic=(.+?)\}/i);
 		giveup = 0;
 		while (match) {
 			giveup++;
@@ -918,12 +913,11 @@ class Brain {
 
 			let name = match[1];
 			await self.master.setUservar(user, "topic", name);
-			reply = reply.replace(new RegExp("{topic=" + utils.quotemeta(name) + "}", "ig"), "");
-			match = reply.match(/\{topic=(.+?)\}/i); // Look for more
+			match = reply.join("\n").match(/\{topic=(.+?)\}/i); // Look for more
 		}
 
 		// Inline redirector
-		match = reply.match(/\{@([^\}]*?)\}/);
+		match = reply.join("\n").match(/\{@([^\}]*?)\}/);
 		giveup = 0;
 		while (match) {
 			giveup++;
@@ -936,14 +930,11 @@ class Brain {
 			self.say(`Inline redirection to: ${target}`);
 
 			let subreply = (await self._getReply(user, target, "normal", step + 1, scope));
-			reply = reply.replace(new RegExp("\\{@" + utils.quotemeta(match[1]) + "\\}", "i"), subreply);
-			match = reply.match(/\{@([^\}]*?)\}/);
+			match = reply.join("\n").match(/\{@([^\}]*?)\}/);
 		}
 
 		// Object caller
-		reply = reply.replace(/«__call__»/g, "<call>");
-		reply = reply.replace(/«\/__call__»/g, "</call>");
-		match = reply.match(/<call>([\s\S]+?)<\/call>/);
+		match = reply.join("\n").match(/<call>([\s\S]+?)<\/call>/);
 		giveup = 0;
 		while (match) {
 			giveup++;
@@ -980,8 +971,7 @@ class Brain {
 					output = "[ERR: No Object Handler]";
 				}
 			}
-			reply = reply.replace(match[0], output);
-			match = reply.match(/<call>(.+?)<\/call>/);
+			match = reply.join("\n").match(/<call>(.+?)<\/call>/);
 		}
 		return reply;
 	}
