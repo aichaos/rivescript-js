@@ -695,6 +695,7 @@ class Brain {
 	Process tags in a reply element.
 	*/
 	async processTags(user, msg, reply, st, bst, step, scope) {
+		reply = reply.constructor === Array ? reply : [reply];
 		var self = this;
 
 		// Prepare the stars and botstars.
