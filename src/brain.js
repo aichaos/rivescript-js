@@ -51,7 +51,7 @@ class Brain {
 
 		// Format their message.
 		msg = self.formatMessage(msg);
-		let reply = "";
+		let reply = [];
 
 		// Set initial match to be undefined
 		await self.master._session.set(user, {
@@ -124,7 +124,7 @@ class Brain {
 
 		let stars = [];
 		let thatstars = []; // For %Previous
-		let reply = "";
+		let reply = [];
 
 		// Avoid letting them fall into a missing topic.
 		if (!self.master._topics[topic]) {
