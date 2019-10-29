@@ -321,8 +321,11 @@ class Brain {
 					self.say(`Redirecting us to ${matched.redirect}`);
 					let redirect = (await self.processTags(user, msg, matched.redirect, stars, thatstars, step, scope));
 
+					reply = await redirect.map(async redirect => {
 					self.say(`Pretend user said: ${redirect}`);
-					reply = (await self._getReply(user, redirect, context, step + 1, scope));
+						return (await self._getReply(user, redirect, context, step + 1, scope))
+					}).reduce(async (a, b) => a.concat(await b), [])
+
 					break;
 				}
 
