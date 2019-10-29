@@ -60,7 +60,7 @@ class Brain {
 
 		// If the BEGIN block exists, consult it first.
 		if (self.master._topics.__begin__) {
-			let begin = (await self._getReply(user, "request", "begin", 0, scope));
+			let begin = (await self._getReply(user, "request", "begin", 0, scope))[0];
 
 			// OK to continue?
 			if (begin.indexOf("{ok}") > -1) {
