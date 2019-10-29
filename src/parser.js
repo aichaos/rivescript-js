@@ -621,7 +621,7 @@ const Parser = class Parser {
 					for (let l = 0, len2 = t.reply.length; l < len2; l++) {
 						let r = t.reply[l];
 						if (r) {
-							output.push(`${id}- ${r.replace(/\n/mg, "\\n")}`);
+							output.push(`${id}- ${r.join("\n").replace(/\n/mg, "\\n")}`);
 						}
 					}
 				}
