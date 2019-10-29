@@ -524,7 +524,11 @@ const Parser = class Parser {
 					}
 
 					self.say(`\tResponse: ${line}`);
-					curTrig.reply.push(line);
+					if (!curTrig.reply.length) {
+						curTrig.reply.push([line]);
+					} else {
+						curTrig.reply[curTrig.reply.length - 1].push(line);
+					}
 					break;
 				case "*":
 					// * Condition
