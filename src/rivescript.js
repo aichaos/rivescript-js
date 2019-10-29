@@ -1155,7 +1155,14 @@ const RiveScript = (function() {
 		*/
 		async reply(user, msg, scope) {
 			var self = this;
-			return (await self.brain.reply(user, msg, scope));
+
+			return self.replyByBox(user, msg, scope).then(reply => reply.join('\n'));
+		}
+
+		async replyByBox(user, msg, scope) {
+			var self = this;
+
+			return self.brain.reply(user, msg, scope);
 		}
 
 		/**
