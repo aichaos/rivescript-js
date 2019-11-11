@@ -184,7 +184,7 @@ const Parser = class Parser {
 			}
 
 			// Separate the command from the data
-			if (line.length < 2) {
+			if (line.length < 2 && line != ':') {
 				self.warn(`Weird single-character line '${line}' found (in topic ${topic})`, filename, lineno);
 				continue;
 			}
