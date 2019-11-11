@@ -65,7 +65,7 @@ class Brain {
 			// OK to continue?
 			if (begin.indexOf("{ok}") > -1) {
 				reply = (await self._getReply(user, msg, "normal", 0, scope));
-				begin = begin.replace(/\{ok\}/g, reply);
+				begin = reply.map(box => begin.replace(/\{ok\}/g, box))
 			}
 
 			reply = (await self.processTags(user, msg, begin, [], [], 0, scope));
