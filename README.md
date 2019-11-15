@@ -25,6 +25,30 @@ async ones that return Promises like `replyAsync()` did.
 See the [Upgrading-v2](https://github.com/aichaos/rivescript-js/blob/master/Upgrading-v2.md) document for information on the changes
 and how to fix your code for the new version.
 
+## INSTALLATION
+
+For nodejs and other similar JavaScript engines, you can install this module in your project through npm:
+
+```bash
+$ npm install rivescript
+```
+
+For the web you can use the unpkg:
+
+```html
+<script src="https://unpkg.com/rivescript@latest/dist/rivescript.min.js"></script>
+```
+
+The git repository for this project includes ES2015+ source code. For
+ES5 builds targeting older browsers and Node versions, check the
+[Releases](https://github.com/aichaos/rivescript-js/releases) tab. The compiled
+distribution includes a `lib/` directory with ES5 sources to use with
+node <= 6, and a `dist/` directory containing a "browserified" script that can be
+used on a web page.
+
+To use on the web, just load `dist/rivescript.min.js` with a `<script>` tag
+like usual.
+
 ## USAGE
 
 ```javascript
@@ -73,26 +97,32 @@ function loading_error(error, filename, lineno) {
 }
 ```
 
-The distribution of RiveScript.js includes an interactive shell for testing your
-RiveScript bot, `shell.js`. Run it with Node and point it to a folder where you
-have your RiveScript documents. Example:
-
-```bash
-node shell.js eg/brain
-```
+### Interactive shell
+The distribution of RiveScript.js includes an interactive command-line shell called _**riveshell**_ for testing your RiveScript bot. It takes as argument the path (relative or absolute) to the "brain" - the folder that contains your RiveScript documents (_.rive_ files).
+- If you installed RiveScript locally via npm (with `npm install rivescript`), you can start the shell using **npx** while in your project folder. Example:
+    ```bash
+    $ npx riveshell /path/to/brain
+    ```
+- If you installed RiveScript globally via npm (with `npm install -g rivescript`), you can start the shell from anywhere. Example:
+    ```bash
+    $ riveshell /path/to/brain
+    ```
+- If you cloned the repository from GitHub, you can start the shell directly from `shell.js` at the root of the project, using node. Example using the default brain that comes in the _eg/_ folder :
+    ```bash
+    $ node shell.js /eg/brain
+    ```
 
 Once inside the shell you can chat with the bot using the RiveScript files in
 that directory. For simple debugging you can type `/eval` to run single lines
 of JavaScript code. See `/help` for more.
 
-Both shell scripts accept command line parameters:
+The shell accepts a few command line parameters:
 
 * `--debug`: enables verbose debug logging.
 * `--watch`: watch the reply folder for changes and automatically reload the
   bot when files are modified.
 * `--utf8`: enables UTF-8 mode.
 
-When using RiveScript.js as a library, the synopsis is as follows:
 
 ## DOCUMENTATION
 
@@ -102,29 +132,6 @@ The main module is at [rivescript](https://github.com/aichaos/rivescript-js/blob
 
 Also check out the [**RiveScript Community Wiki**](https://github.com/aichaos/rivescript/wiki)
 for common design patterns and tips & tricks for RiveScript.
-
-## INSTALLATION
-
-For nodejs and other similar JavaScript engines, you can install this module
-through npm:
-
-`npm install rivescript`
-
-For the web you can use the unpkg:
-
-```html
-<script src="https://unpkg.com/rivescript@latest/dist/rivescript.min.js"></script>
-```
-
-The git repository for this project includes ES2015+ source code. For
-ES5 builds targeting older browsers and Node versions, check the
-[Releases](https://github.com/aichaos/rivescript-js/releases) tab. The compiled
-distribution includes a `lib/` directory with ES5 sources to use with
-node <= 6, and a `dist/` directory containing a "browserified" script that can be
-used on a web page.
-
-To use on the web, just load `dist/rivescript.min.js` with a `<script>` tag
-like usual.
 
 ## EXAMPLES
 
@@ -222,11 +229,11 @@ Steps for the npm maintainer of this module:
 1. Increment the version number in `package.json` and `src/rivescript.js`
 2. Add a change log notice to `Changes.md`
 3. Run `npm run dist` to build the ES5 sources and run unit tests.
-3. Test a local installation from a different directory
+4. Test a local installation from a different directory
    (`npm install ../rivescript-js`)
-4. `npm login` if it's the first time on a new system, and `npm publish` to
+5. `npm login` if it's the first time on a new system, and `npm publish` to
    publish the module to NPM.
-5. Create compiled zip and tarballs for GitHub releases:
+6. Create compiled zip and tarballs for GitHub releases:
   * Copy git repo to a new folder.
   * `rm -rf .git node_modules` to remove cruft from the new folder.
   * `zip -r rivescript-js-VERSION.zip rivescript-js`

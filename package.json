@@ -75,6 +75,6 @@
   },
   "typings": "rivescript.d.ts",
   "bin": {
-      "riveshell": "./shell.js"
+    "riveshell": "./shell.js"
   }
 }
