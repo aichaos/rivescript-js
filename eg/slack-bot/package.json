@@ -9,6 +9,6 @@
   "author": "Noah Petherbridge",
   "license": "MIT",
   "dependencies": {
-    "slack-client": "~1.4.1"
+    "slack-client": "~2.0.6"
   }
 }

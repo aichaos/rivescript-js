@@ -4,7 +4,7 @@
   "description": "Your weather report",
   "main": "weatherman.js",
   "dependencies": {
-    "colors": "^1.1.2",
-    "request": "^2.69.0"
+    "colors": "^1.4.0",
+    "request": "^2.88.0"
   }
 }
