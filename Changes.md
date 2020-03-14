@@ -4,7 +4,7 @@
 
 - The RiveScript `shell.js` script is now installed as a command line program
   when you `npm install rivescript`. Call it like `riveshell /path/to/brain`
-  or, if installed locally, `npx riveshell /path/to/brain`
+  or, if installed locally, `npx riveshell /path/to/brain` (PR #330)
 - TypeScript definition fixes.
 
 ## 2.0.0: The Async/Await Update
