@@ -6,7 +6,13 @@
  * Requires Node 7 or greater with async/await support. This module can be    *
  * built and webpacked with Node <= 6 but this shell script won't run.        *
  *                                                                            *
- * Usage: node shell.js /path/to/brain                                        *
+ * Usage:                                                                     *
+ * - If you cloned the repo from GitHub :                                     *
+ *                   $ node shell.js /path/to/brain                           *
+ * - If you installed locally as a project dependency via npm :               *
+ *                   $ npx riveshell /path/to/brain                           *
+ * - If you installed globally via npm :                                      *
+ *                   $ riveshell /path/to/brain                               *
  ******************************************************************************/
 
 var readline = require("readline"),
