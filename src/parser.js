@@ -630,7 +630,7 @@ const Parser = class Parser {
 					} else {
 						// Array elements need to be joined by either spaces or pipes.
 						let pipes = " ";
-						for (k = 0, len1 = value.length; k < len1; k++) {
+						for (let k = 0, len1 = value.length; k < len1; k++) {
 							let test = value[k];
 							if (test.match(/\s+/)) {
 								pipes = "|";
