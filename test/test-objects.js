@@ -389,7 +389,7 @@ exports.test_await_macro = async function(test) {
 	// Test if we have async support in our local JS environment, or else skip
 	// this test.
 	try {
-		eval("(asyc function() {})");
+		eval("(async function() {})");
 	} catch(e) {
 		console.log("skip test_await_macro: local JS environment doesn't support async/await");
 		return test.done();
