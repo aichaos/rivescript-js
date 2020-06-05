@@ -389,7 +389,7 @@ exports.test_await_macro = async function(test) {
 	// Test if we have async support in our local JS environment, or else skip
 	// this test.
 	try {
-		eval("(asyc function() {})");
+		eval("(async function() {})");
 	} catch(e) {
 		console.log("skip test_await_macro: local JS environment doesn't support async/await");
 		return test.done();
@@ -419,5 +419,30 @@ exports.test_await_macro = async function(test) {
 	await bot.reply("test async", "Ok: Alice, you have called this macro 1 time.");
 	await bot.reply("test async", "Ok: Alice, you have called this macro 2 times.");
 	await bot.reply("test async", "Ok: Alice, you have called this macro 3 times.");
+	test.done();
+};
+
+exports.test_error_in_await_macro = async function(test) {
+	// In RiveScript 2.0.0, macros parsed from RiveScript code are loaded as
+	// async functions, allowing them to use the await keyword.
+
+	// Test if we have async support in our local JS environment, or else skip
+	// this test.
+	try {
+		eval("(async function() {})");
+	} catch(e) {
+		console.log("skip test_error_in_await_macro: local JS environment doesn't support async/await");
+		return test.done();
+	}
+
+	var bot = new TestCase(test, `
+		> object awaitable javascript
+			throw new Error('TestError');
+		< object
+
+		+ test async
+		- Ok: <call>awaitable</call>
+	`);
+	await bot.reply("test async", "Ok: [ERR: Error raised by object macro: TestError]");
 	test.done();
 };
