@@ -974,7 +974,7 @@ class Brain {
 						if (error != undefined) {
 							self.warn(error);
 						}
-						output = "[ERR: Error raised by object macro]";
+						output = `[ERR: Error raised by object macro: ${error.message}]`;
 					}
 				} else {
 					output = "[ERR: No Object Handler]";
