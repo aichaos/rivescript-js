@@ -49,6 +49,21 @@ exports.test_global_variables = async function(test) {
 	return test.done();
 };
 
+exports.test_global_variables_set_by = async function(test) {
+	var bot;
+	bot = new TestCase(test, `
+		+ get mode
+		- Debug mode is: <env myMode>
+
+		+ set debug mode *
+		- <env debug=<star>>Switched to <star>.
+	`);
+  await bot.reply("Get mode.", "Debug mode is: undefined");
+  bot.rs._global['myMode'] = 0;
+  await bot.reply("Get mode.", "Debug mode is: 0");
+	return test.done();
+};
+
 exports.test_bot_variables_utf8 = async function(test) {
 	var bot;
 	bot = new TestCase(test, `
