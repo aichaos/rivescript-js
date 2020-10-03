@@ -847,7 +847,7 @@ class Brain {
 					target[parts[0]] = parts[1];
 				} else {
 					// Getting a bot/env variable
-					insert = target[data] || "undefined";
+					insert = target[data] !== undefined ? target[data] : "undefined";
 				}
 			} else if (tag === "set") {
 				// <set> user vars
