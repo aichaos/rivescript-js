@@ -20,6 +20,6 @@
   },
   "homepage": "https://github.com/aichaos/rivescript-js#readme",
   "dependencies": {
-    "redis": "^2.8.0"
+    "redis": "^3.1.1"
   }
 }
