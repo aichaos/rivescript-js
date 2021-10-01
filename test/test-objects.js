@@ -458,10 +458,7 @@ exports.test_nested_macro_calls = async function(test) {
 		return "hello:" + args[0];
 		< object
 		
-		+ works *
-		- <call>wrapper <star></call>
-		
-		+ object not found *
+		+ *
 		- <call>wrapper <call>add_hello <star></call></call>
 	`);
 	await bot.reply("test", "_hello:test_");
