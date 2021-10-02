@@ -1,0 +1,14 @@
+{
+  "name": "rive-weatherman",
+  "version": "1.0.0",
+  "description": "Your weather report",
+  "main": "weatherman.js",
+  "dependencies": {
+    "body-parser": "~1.14.2",
+    "colors": "^1.1.2",
+    "cookie-parser": "^1.4.3",
+    "elasticsearch": "^12.1.3",
+    "express": "~4.13.3",
+    "request": "^2.69.0"
+  }
+}
