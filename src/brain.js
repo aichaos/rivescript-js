@@ -11,6 +11,141 @@
 const utils = require("./utils");
 const inherit_utils = require("./inheritance");
 
+const tags = {
+	'bot': { selfClosing: true, handle: async (rive, data, user, scope) => {
+		let split = data.split("=");
+
+		if (split.length > 1) {
+			rive._var[split[0].trim()] = split[1];
+			return "";
+		} else if (split.length === 1) {
+			let val = rive._var[split[0].trim()];
+			if (val === undefined) val = "undefined";
+			return val;
+		} else {
+			return "undefined";
+		}
+	} },
+	'env': { selfClosing: true, handle: async (rive, data, user, scope) => {
+		let split = data.split("=");
+
+		if (split.length > 1) {
+			rive._global[split[0].trim()] = split[1];
+			return "";
+		} else if (split.length === 1) {
+			let val = rive._global[split[0].trim()];
+			if (val === undefined) val = "undefined";
+			return val;
+		} else {
+			return "undefined";
+		}
+	} },
+	'set': { selfClosing: true, handle: async (rive, data, user, scope) => {
+		let split = data.split("=");
+		await rive.setUservar(user, split[0].trim(), split[1]);
+		return "";
+	} },
+	'get': { selfClosing: true, handle: async (rive, data, user, scope) => {
+		let result = await rive.getUservar(user, data.trim());
+		return result;
+	} },
+	'add': { selfClosing: true, handle: async (rive, data, user, scope) => {
+		let split = data.split("=");
+		let name = split[0].trim();
+		let existingValue = await rive.getUservar(user, name) || 0;
+		let value = parseInt(split[1].trim());
+		let existingNumber = parseInt(existingValue);
+		if (isNaN(value)) {
+			return `[ERR: Math can't 'add' non-numeric value '${value}']`;
+		} else if (isNaN(existingNumber)) {
+			return `[ERR: Math can't 'add' non-numeric user variable '${name}']`;
+		} else {
+			let result = Number(existingValue + value);
+			await rive.setUservar(user, name, result);
+		}
+		return '';
+	} },
+	'sub': { selfClosing: true, handle: async (rive, data, user, scope) => {
+		let split = data.split("=");
+		let name = split[0].trim();
+		let existingValue = await rive.getUservar(user, name) || 0;
+		let value = parseInt(split[1].trim());
+		let existingNumber = parseInt(existingValue);
+		if (isNaN(value)) {
+			return `[ERR: Math can't 'sub' non-numeric value '${value}']`;
+		} else if (isNaN(existingNumber)) {
+			return `[ERR: Math can't 'sub' non-numeric user variable '${name}']`;
+		} else {
+			let result = Number(existingValue - value);
+			await rive.setUservar(user, name, result);
+		}
+		return '';
+	} },
+	'mult': { selfClosing: true, handle: async (rive, data, user, scope) => {
+		let split = data.split("=");
+		let name = split[0].trim();
+		let existingValue = await rive.getUservar(user, name) || 0;
+		let value = parseInt(split[1].trim());
+		let existingNumber = parseInt(existingValue);
+		if (isNaN(value)) {
+			return `[ERR: Math can't 'mult' non-numeric value '${value}']`;
+		} else if (isNaN(existingNumber)) {
+			return `[ERR: Math can't 'mult' non-numeric user variable '${name}']`;
+		} else {
+			let result = Number(existingValue * value);
+			await rive.setUservar(user, name, result);
+		}
+		return '';
+	} },
+	'div': { selfClosing: true, handle: async (rive, data, user, scope) => {
+		let split = data.split("=");
+		let name = split[0].trim();
+		let existingValue = await rive.getUservar(user, name) || 0;
+		let value = parseInt(split[1].trim());
+		let existingNumber = parseInt(existingValue);
+		if (isNaN(value)) {
+			return `[ERR: Math can't 'div' non-numeric value '${value}']`;
+		} else if (isNaN(existingNumber)) {
+			return `[ERR: Math can't 'div' non-numeric user variable '${name}']`;
+		} else if (value === 0) {
+			return `[ERR: Can't Divide By Zero]`;
+		} else {
+			let result = Number(existingValue / value);
+			await rive.setUservar(user, name, result);
+		}
+		return '';
+	}},
+	'call': { selfClosing: false, handle: async (rive, data, user, scope) => {
+		let parts = utils.trim(data).split(" ");
+		let output = rive.errors.objectNotFound;
+		let obj = parts[0];
+
+		let args = [];
+		if (parts.length > 1) {
+			args = utils.parseCallArgs(parts.slice(1).join(" "));
+		}
+
+		if (obj in rive._objlangs) {
+			// We do, but do we have a handler for that language?
+			let lang = rive._objlangs[obj];
+			if (lang in rive._handlers) {
+				try {
+					// We do.
+					output = (await rive._handlers[lang].call(rive, obj, args, scope));
+				} catch (error) {
+					if (error != undefined) {
+						rive.brain.warn(error);
+					}
+					output = `[ERR: Error raised by object macro: ${error.message}]`;
+				}
+			} else {
+				output = "[ERR: No Object Handler]";
+			}
+		}
+		return output;
+	} },
+};
+
 /**
 Brain (RiveScript master)
 
@@ -677,6 +812,55 @@ class Brain {
 		return regexp;
 	}
 
+	async handleTag(rive, user, content, scope, depth) {
+		let tag = "";
+		let reminder = "";
+		for (let i = 0; i < content.length; i++) {
+			if (tags[tag]) {
+				reminder = content.substring(i + 1);
+				break;
+			} else if (content[i] === " ") {
+				reminder = content.substring(i + 1);
+				break;
+			} else if (content[i] === ">") {
+				reminder = content.substring(i + 1);
+				return { response: "<" + tag + ">", reminder };
+			}
+			tag += content[i];
+		}
+		
+		const selfClosing = tags[tag] ? tags[tag].selfClosing : true;
+		const endTag = selfClosing ? ">" : "</" + tag + ">";
+		const result = await this.parseComplexTags(rive, user, reminder, scope, depth, endTag);
+		reminder = result.reminder;
+
+		const response = tags[tag] && tags[tag].handle ? await tags[tag].handle(rive, result.response, user, scope) : "<" + tag + " " + result.response + ">";
+		return { response, reminder};
+	}
+
+	async parseComplexTags(rive, user, content, scope, depth, endTag = "") {
+		if (depth > 50) return { response: content, reminder: "" };
+
+		let response = '';
+		let reminder = content;
+		let nextTag = reminder.indexOf("<");
+		let nextEnd = endTag ? reminder.indexOf(endTag) : reminder.length;
+
+		while(reminder.length > 0 && nextTag > -1 && nextTag < nextEnd ) {
+			response += reminder.substring(0, nextTag);
+			reminder = reminder.substring(nextTag + 1);
+			let result = await this.handleTag(rive, user, reminder, scope, depth + 1);
+			response += result.response;
+			reminder = result.reminder;
+			nextTag = reminder.indexOf("<");
+			nextEnd = endTag ? reminder.indexOf(endTag) : reminder.length;
+		}
+		response += reminder.substring(0, nextEnd);
+		reminder = reminder.substring(nextEnd + endTag.length);
+
+		return { response, reminder }
+	}
+
 	/**
 	string processTags (string user, string msg, string reply, string[] stars,
 	                    string[] botstars, int step, scope)
@@ -812,99 +996,7 @@ class Brain {
 			}
 		}
 
-		// Handle all variable-related tags with an iterative regexp approach, to
-		// allow for nesting of tags in arbitrary ways (think <set a=<get b>>)
-		// Dummy out the <call> tags first, because we don't handle them right here.
-		reply = reply.replace(/<call>/ig, "«__call__»");
-		reply = reply.replace(/<\/call>/ig, "«/__call__»");
-		while (true) {
-			// This regexp will match a <tag> which contains no other tag inside it,
-			// i.e. in the case of <set a=<get b>> it will match <get b> but not the
-			// <set> tag, on the first pass. The second pass will get the <set> tag,
-			// and so on.
-			match = reply.match(/<([^<]+?)>/);
-			if (!match) {
-				break; // No remaining tags!
-			}
-
-			match = match[1];
-			let parts = match.split(" ");
-			let tag = parts[0].toLowerCase();
-			let data = "";
-			if (parts.length > 1) {
-				data = parts.slice(1).join(" ");
-			}
-			let insert = "";
-
-			// Handle the tags.
-			if (tag === "bot" || tag === "env") {
-				// <bot> and <env> tags are similar
-				let target = tag === "bot" ? self.master._var : self.master._global;
-				if (data.indexOf("=") > -1) {
-					// Assigning a variable
-					parts = data.split("=", 2);
-					self.say(`Set ${tag} variable ${parts[0]} = ${parts[1]}`);
-					target[parts[0]] = parts[1];
-				} else {
-					// Getting a bot/env variable
-					insert = target[data] !== undefined ? target[data] : "undefined";
-				}
-			} else if (tag === "set") {
-				// <set> user vars
-				parts = data.split("=", 2);
-				self.say(`Set uservar ${parts[0]} = ${parts[1]}`);
-				await self.master.setUservar(user, parts[0], parts[1]);
-			} else if (tag === "add" || tag === "sub" || tag === "mult" || tag === "div") {
-				// Math operator tags
-				parts = data.split("=");
-				let name = parts[0];
-				let value = parts[1];
-
-				// Initialize the variable?
-				let existingValue = (await self.master.getUservar(user, name));
-				if (existingValue === "undefined") {
-					existingValue = 0;
-				}
-
-				// Sanity check
-				value = parseInt(value);
-				if (isNaN(value)) {
-					insert = `[ERR: Math can't '${tag}' non-numeric value '${value}']`;
-				} else if (isNaN(parseInt(existingValue))) {
-					insert = `[ERR: Math can't '${tag}' non-numeric user variable '${name}']`;
-				} else {
-					let result = parseInt(existingValue);
-					if (tag === "add") {
-						result += value;
-					} else if (tag === "sub") {
-						result -= value;
-					} else if (tag === "mult") {
-						result *= value;
-					} else if (tag === "div") {
-						if (value === 0) {
-							insert = "[ERR: Can't Divide By Zero]";
-						} else {
-							result /= value;
-						}
-					}
-
-					// No errors?
-					if (insert === "") {
-						await self.master.setUservar(user, name, result);
-					}
-				}
-			} else if (tag === "get") {
-				insert = (await self.master.getUservar(user, data));
-			} else {
-				// Unrecognized tag, preserve it
-				insert = `\x00${match}\x01`;
-			}
-			reply = reply.replace(new RegExp(`<${utils.quotemeta(match)}>`), insert);
-		}
-
-		// Recover mangled HTML-like tags
-		reply = reply.replace(/\x00/g, "<");
-		reply = reply.replace(/\x01/g, ">");
+		reply = (await self.parseComplexTags(self.master, user, reply, scope, 0)).response;
 
 		// Topic setter
 		match = reply.match(/\{topic=(.+?)\}/i);
@@ -940,49 +1032,6 @@ class Brain {
 			match = reply.match(/\{@([^\}]*?)\}/);
 		}
 
-		// Object caller
-		reply = reply.replace(/«__call__»/g, "<call>");
-		reply = reply.replace(/«\/__call__»/g, "</call>");
-		match = reply.match(/<call>([\s\S]+?)<\/call>/);
-		giveup = 0;
-		while (match) {
-			giveup++;
-			if (giveup >= 50) {
-				self.warn("Infinite loop looking for call tags!");
-				break;
-			}
-
-			let parts = utils.trim(match[1]).split(" ");
-			let output = self.master.errors.objectNotFound;
-			let obj = parts[0];
-
-			// Make the args shell-like.
-			let args = [];
-			if (parts.length > 1) {
-				args = utils.parseCallArgs(parts.slice(1).join(" "));
-			}
-
-			// Do we know self object?
-			if (obj in self.master._objlangs) {
-				// We do, but do we have a handler for that language?
-				let lang = self.master._objlangs[obj];
-				if (lang in self.master._handlers) {
-					try {
-						// We do.
-						output = (await self.master._handlers[lang].call(self.master, obj, args, scope));
-					} catch (error) {
-						if (error != undefined) {
-							self.warn(error);
-						}
-						output = `[ERR: Error raised by object macro: ${error.message}]`;
-					}
-				} else {
-					output = "[ERR: No Object Handler]";
-				}
-			}
-			reply = reply.replace(match[0], output);
-			match = reply.match(/<call>(.+?)<\/call>/);
-		}
 		return reply;
 	}
 

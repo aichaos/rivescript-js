@@ -446,3 +446,47 @@ exports.test_error_in_await_macro = async function(test) {
 	await bot.reply("test async", "Ok: [ERR: Error raised by object macro: TestError]");
 	test.done();
 };
+
+exports.test_nested_macro_calls = async function(test) {
+	var bot;
+	bot = new TestCase(test, `
+		> object wrapper javascript
+		return "_" + args[0] + "_";
+		< object
+		
+		> object add_hello javascript
+		return "hello:" + args[0];
+		< object
+		
+		+ *
+		- <call>wrapper <call>add_hello <star></call></call>
+	`);
+	await bot.reply("test", "_hello:test_");
+	return test.done();
+};
+
+exports.test_macros_execute_upon_being_set = async function(test) {
+	var bot;
+	bot = new TestCase(test, `
+		> object add_initial javascript
+		return (await rs.getUservar(rs.currentUser(), 'initial')) + ":" + args[0];
+		< object
+		> object get_value javascript
+		return rs.getUservar(rs.currentUser(), 'value');
+		< object
+		
+		+ set *
+		- <set value=<call>add_initial <star></call>>Set initialed value
+		
+		+ initial *
+		- <set initial=<star>>Initial set to <star>
+		
+		+ get
+		- <get value>
+	`);
+	await bot.reply("initial hello", "Initial set to hello");
+	await bot.reply("set test", "Set initialed value");
+	await bot.reply("initial goodbye", "Initial set to goodbye");
+	await bot.reply("get", "hello:test");
+	return test.done();
+}
