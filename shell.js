@@ -27,10 +27,11 @@ var opts = {
 	debug: false,
 	utf8: false,
 	watch: false,
+	caseSensitive: false,
 	brain: undefined
 };
 
-process.argv.slice(2).forEach(function(val, index, array) {
+process.argv.slice(2).forEach(function (val, index, array) {
 
 	if (val === "--debug") {
 		opts.debug = true;
@@ -40,6 +41,9 @@ process.argv.slice(2).forEach(function(val, index, array) {
 	}
 	else if (val === "--watch") {
 		opts.watch = true;
+	}
+	else if (val.indexOf("--case") > -1) {
+		opts.caseSensitive = true;
 	}
 	else if (val.indexOf("-") === 0) {
 		console.error("Unknown option: %s", val);
@@ -70,14 +74,15 @@ var rl = readline.createInterface({
 
 var ready = false;
 var bot = new RiveScript({
-	debug:  opts.debug,
-	utf8:   opts.utf8,
+	debug: opts.debug,
+	utf8: opts.utf8,
 	concat: "newline",
+	caseSensitive: opts.caseSensitive,
 	// sessionManager: new NullSessionManager()
 });
 
 if (opts.watch) {
-	fs.watch(opts.brain, {recursive: false}, function() {
+	fs.watch(opts.brain, { recursive: false }, function () {
 		console.log("");
 		console.log('[INFO] Brain changed, reloading bot.');
 		rl.prompt();
@@ -105,7 +110,7 @@ console.log("");
 
 rl.setPrompt("You> ");
 rl.prompt();
-rl.on('line', async function(cmd) {
+rl.on('line', async function (cmd) {
 	// Handle commands.
 	if (cmd === "/help") {
 		help();
@@ -128,7 +133,7 @@ rl.on('line', async function(cmd) {
 	}
 
 	rl.prompt();
-}).on('close', function() {
+}).on('close', function () {
 	console.log("");
 	process.exit(0);
 });

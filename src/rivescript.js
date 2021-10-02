@@ -40,7 +40,6 @@ RiveScript (hash options)
 Create a new RiveScript interpreter. `options` is an object with the
 following keys:
 
-```
 * bool debug:     Debug mode               (default false)
 * int  depth:     Recursion depth limit    (default 50)
 * bool strict:    Strict mode              (default true)
@@ -49,15 +48,22 @@ following keys:
 * func onDebug:   Set a custom handler to catch debug log messages (default null)
 * obj  errors:    Customize certain error messages (see below)
 * str  concat:    Globally replace the default concatenation mode when parsing
-                  RiveScript source files (default `null`. be careful when
-                  setting this option if using somebody else's RiveScript
-                  personality; see below)
+				  RiveScript source files (default `null`. be careful when
+				  setting this option if using somebody else's RiveScript
+				  personality; see below)
 * sessionManager: provide a custom session manager to store user variables.
-                  The default is to store variables in memory, but you may
-                  use any async data store by providing an implementation of
-                  RiveScript's SessionManager. See the
-                  [sessions](./sessions.md) documentation.
-```
+				  The default is to store variables in memory, but you may
+				  use any async data store by providing an implementation of
+				  RiveScript's SessionManager. See the
+				  [sessions](./sessions.md) documentation.
+* bool caseSensitive:
+				  The user's message will not be lowercased when processed
+				  by the bot; so their original capitalization will be
+				  preserved when repeated back in <star> tags.
+* regexp unicodePunctuation: 
+				  You may provide a custom regexp for what you define to be
+				  punctuation characters to be stripped from the user's
+				  message in UTF-8 mode.
 
 ## UTF-8 Mode
 
@@ -176,7 +182,7 @@ replyNotFound: "I don't know how to reply to that."
 bot.errors.objectNotFound = "Something went terribly wrong.";
 ```
 */
-const RiveScript = (function() {
+const RiveScript = (function () {
 	class RiveScript {
 		////////////////////////////////////////////////////////////////////////
 		// Constructor and Debug Methods                                      //
@@ -188,23 +194,24 @@ const RiveScript = (function() {
 			}
 
 			// Default parameters
-			self._debug     = opts.debug ? opts.debug : false;
-			self._strict    = opts.strict ? opts.strict : true;
-			self._depth     = opts.depth ? parseInt(opts.depth) : 50;
-			self._utf8      = opts.utf8 ? opts.utf8 : false;
+			self._debug = opts.debug ? opts.debug : false;
+			self._strict = opts.strict ? opts.strict : true;
+			self._depth = opts.depth ? parseInt(opts.depth) : 50;
+			self._utf8 = opts.utf8 ? opts.utf8 : false;
 			self._forceCase = opts.forceCase ? opts.forceCase : false;
-			self._onDebug   = opts.onDebug ? opts.onDebug : null;
-			self._concat    = opts.concat ? opts.concat : null;
+			self._onDebug = opts.onDebug ? opts.onDebug : null;
+			self._concat = opts.concat ? opts.concat : null;
+			self._caseSensitive = opts.caseSensitive ? opts.caseSensitive : false;
 
 			// UTF-8 punctuation, overridable by the user.
-			self.unicodePunctuation = new RegExp(/[.,!?;:]/g);
+			self.unicodePunctuation = opts.unicodePunctuation ? opts.unicodePunctuation : new RegExp(/[.,!?;:]/g);
 
 			// Customized error messages.
 			self.errors = {
 				replyNotMatched: "ERR: No Reply Matched",
-				replyNotFound:   "ERR: No Reply Found",
-				objectNotFound:  "[ERR: Object Not Found]",
-				deepRecursion:   "ERR: Deep Recursion Detected"
+				replyNotFound: "ERR: No Reply Found",
+				objectNotFound: "[ERR: Object Not Found]",
+				deepRecursion: "ERR: Deep Recursion Detected"
 			};
 			if (typeof opts.errors === "object") {
 				let ref = opts.errors;
@@ -216,12 +223,12 @@ const RiveScript = (function() {
 				}
 			}
 			// Identify our runtime environment. Web, or node?
-			self._node    = {}; // NodeJS objects
+			self._node = {}; // NodeJS objects
 			self._runtime = self.runtime();
 
 			// Sub-module helpers.
 			self.parser = new Parser(self);
-			self.brain  = new Brain(self);
+			self.brain = new Brain(self);
 
 			// Loading files in will be asynchronous, so we'll need to abe able to
 			// identify when we've finished loading files! This will be an object
@@ -389,7 +396,7 @@ const RiveScript = (function() {
 			for (let i = 0, len = path.length; i < len; i++) {
 				let file = path[i];
 				self.say(`Request to load file: ${file}`);
-				promises.push(function(f) {
+				promises.push(function (f) {
 					// This function returns a Promise. How are we going to load
 					// the file?
 					if (self._runtime === "web") {
@@ -408,10 +415,10 @@ const RiveScript = (function() {
 			});
 
 			// Legacy callback style?
-			if (typeof(onSuccess) === "function") {
+			if (typeof (onSuccess) === "function") {
 				self.warn("DEPRECATED: RiveScript.loadFile() now returns a Promise instead of using callbacks")
-				return promise.then(onSuccess).catch(function(err, filename, lineno) {
-					if (typeof(onError) === "function") {
+				return promise.then(onSuccess).catch(function (err, filename, lineno) {
+					if (typeof (onError) === "function") {
 						onError.call(null, err, filename, lineno);
 					}
 				});
@@ -424,7 +431,7 @@ const RiveScript = (function() {
 		// Returns a Promise.
 		async _ajaxLoadFile(file) {
 			var self = this;
-			return new Promise(function(resolve, reject) {
+			return new Promise(function (resolve, reject) {
 				let xhr = new XMLHttpRequest();
 				xhr.open("GET", file, true);
 				xhr.onreadystatechange = () => {
@@ -457,7 +464,7 @@ const RiveScript = (function() {
 		// Returns a Promise.
 		async _nodeLoadFile(file) {
 			var self = this;
-			return new Promise(function(resolve, reject) {
+			return new Promise(function (resolve, reject) {
 				// Load the file.
 				return self._node.fs.readFile(file, (err, data) => {
 					if (err) {
@@ -492,7 +499,7 @@ const RiveScript = (function() {
 		*/
 		async loadDirectory(path, onSuccess, onError) {
 			var self = this;
-			var promise = new Promise(function(resolve, reject) {
+			var promise = new Promise(function (resolve, reject) {
 				// Can't be done on the web!
 				if (self._runtime === "web") {
 					reject("loadDirectory can't be used on the web!");
@@ -526,10 +533,10 @@ const RiveScript = (function() {
 			});
 
 			// Legacy callback-style?
-			if (typeof(onSuccess) === "function") {
+			if (typeof (onSuccess) === "function") {
 				self.warn("DEPRECATED: RiveScript.loadDirectory() now returns a Promise instead of using callbacks")
-				return promise.then(onSuccess).catch(function(err, filename, lineno) {
-					if (typeof(onError) === "function") {
+				return promise.then(onSuccess).catch(function (err, filename, lineno) {
+					if (typeof (onError) === "function") {
 						onError.call(null, err, filename, lineno);
 					}
 				});
@@ -571,7 +578,7 @@ const RiveScript = (function() {
 			// Get the "abstract syntax tree"
 			let ok = true;
 			let ast = self.parser.parse(filename, code, (err, fn, ln) => {
-				if (typeof(onError) === "function") {
+				if (typeof (onError) === "function") {
 					onError.call(null, err, fn, ln);
 				}
 				ok = false;
@@ -805,7 +812,7 @@ const RiveScript = (function() {
 				return;
 			}
 
-			return self._node.fs.writeFile(filename, self.stringify(deparsed), function(err) {
+			return self._node.fs.writeFile(filename, self.stringify(deparsed), function (err) {
 				if (err) {
 					return self.warn(`Error writing to file ${filename}: ${err}`);
 				}
@@ -1032,7 +1039,7 @@ const RiveScript = (function() {
 		* keep: Keep the frozen copy after restoring
 		* thaw: Restore the variables and delete the frozen copy (default)
 		*/
-		async thawUservars(user, action="thaw") {
+		async thawUservars(user, action = "thaw") {
 			var self = this;
 			return self._session.thaw(user, action);
 		}
@@ -1143,13 +1150,13 @@ const RiveScript = (function() {
 		```javascript
 		// Normal usage as a promise
 		bot.reply(username, message, this).then(function(reply) {
-		    console.log("Bot>", reply);
+			console.log("Bot>", reply);
 		});
 
 		// Async-Await usage in an async function.
 		async function getReply(username, message) {
-		    var reply = await bot.reply(username, message);
-		    console.log("Bot>", reply);
+			var reply = await bot.reply(username, message);
+			console.log("Bot>", reply);
 		}
 		```
 		*/
@@ -1181,9 +1188,9 @@ const RiveScript = (function() {
 		```javascript
 		rs.replyAsync(username, msg, this, function(error, reply) {
 		  if (!error) {
-		    console.log("Bot>", reply);
+			console.log("Bot>", reply);
 		  } else {
-		    console.error("Error: ", error);
+			console.error("Error: ", error);
 		  }
 		});
 		```

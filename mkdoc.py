@@ -108,7 +108,6 @@ def render_markdown(title, path, text):
         text=markdown.markdown(text,
             extensions=[
                 "fenced_code",
-                "smart_strong",
                 "codehilite",
                 "sane_lists",
             ],

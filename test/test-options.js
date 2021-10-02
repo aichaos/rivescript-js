@@ -6,7 +6,7 @@ TestCase = require("./test-base");
 //###############################################################################
 // Parser option tests
 //###############################################################################
-exports.test_concat = async function(test) {
+exports.test_concat = async function (test) {
 	var bot;
 	bot = new TestCase(test, `
 		// Default concat mode = none
@@ -55,7 +55,7 @@ exports.test_concat = async function(test) {
 	return test.done();
 };
 
-exports.test_concat_with_conditionals = async function(test) {
+exports.test_concat_with_conditionals = async function (test) {
 	var bot;
 
 	// Newline
@@ -103,7 +103,7 @@ exports.test_concat_with_conditionals = async function(test) {
 	return test.done();
 };
 
-exports.test_concat_space_with_conditionals = async function(test) {
+exports.test_concat_space_with_conditionals = async function (test) {
 	var bot;
 	bot = new TestCase(test, `
 		! local concat = newline
@@ -121,7 +121,7 @@ exports.test_concat_space_with_conditionals = async function(test) {
 	return test.done();
 };
 
-exports.test_concat_newline_stringify = function(test) {
+exports.test_concat_newline_stringify = function (test) {
 	var bot, expect, src;
 	bot = new TestCase(test, `
 		! local concat = newline
@@ -170,7 +170,7 @@ exports.test_concat_newline_stringify = function(test) {
 	return test.done();
 };
 
-exports.test_force_case = async function(test) {
+exports.test_force_case = async function (test) {
 	var bot;
 	bot = new TestCase(test, `
 		+ hello bot
@@ -198,7 +198,7 @@ exports.test_force_case = async function(test) {
 	return test.done();
 };
 
-exports.test_no_force_case = function(test) {
+exports.test_no_force_case = function (test) {
 	var bot, e;
 	bot = new TestCase(test, "");
 	try {
@@ -211,5 +211,35 @@ exports.test_no_force_case = function(test) {
 		// An exception was expected here.
 		test.equal(e, "Syntax error: Triggers may only contain lowercase letters, numbers, and these symbols: ( | ) [ ] * _ # { } < > = at stream() line 1 near + I am # years old");
 	}
+	return test.done();
+};
+
+exports.test_case_sensitive = async function (test) {
+	var bot;
+	bot = new TestCase(test, `
+		+ js *
+		- <call>repl <star></call>
+
+		+ say *
+		- Hmm.. <star>
+
+		> object repl javascript
+			var value = args.join('')
+			return eval(value)
+		< object
+	`, { caseSensitive: true, utf8: true, unicodePunctuation: /~/g });
+	await bot.reply("js Math.cos(0)", "1");
+	await bot.reply("say Bojack Horseman", "Hmm.. Bojack Horseman");
+	await bot.reply("say hello HELLO", "Hmm.. hello HELLO");
+	return test.done();
+};
+
+exports.test_no_case_sensitive = async function (test) {
+	var bot;
+	bot = new TestCase(test, `
+		+ say *
+		- Hmm.. <star>
+	`, { caseSensitive: false, utf8: true });
+	await bot.reply("say Rick and Morty", "Hmm.. rick and morty");
 	return test.done();
 };
