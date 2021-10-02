@@ -19,25 +19,32 @@ near future.</p>
 <h1>RiveScript (hash options)</h1>
 <p>Create a new RiveScript interpreter. <code>options</code> is an object with the
 following keys:</p>
-<div class="codehilite"><pre><span></span>* bool debug:     Debug mode               (default false)
-* int  depth:     Recursion depth limit    (default 50)
-* bool strict:    Strict mode              (default true)
-* bool utf8:      Enable UTF-8 mode        (default false, see below)
-* bool forceCase: Force-lowercase triggers (default false, see below)
-* func onDebug:   Set a custom handler to catch debug log messages (default null)
-* obj  errors:    Customize certain error messages (see below)
-* str  concat:    Globally replace the default concatenation mode when parsing
-                  RiveScript source files (default `null`. be careful when
-                  setting this option if using somebody else&#39;s RiveScript
-                  personality; see below)
-* sessionManager: provide a custom session manager to store user variables.
+<ul>
+<li>bool debug:     Debug mode               (default false)</li>
+<li>int  depth:     Recursion depth limit    (default 50)</li>
+<li>bool strict:    Strict mode              (default true)</li>
+<li>bool utf8:      Enable UTF-8 mode        (default false, see below)</li>
+<li>bool forceCase: Force-lowercase triggers (default false, see below)</li>
+<li>func onDebug:   Set a custom handler to catch debug log messages (default null)</li>
+<li>obj  errors:    Customize certain error messages (see below)</li>
+<li>str  concat:    Globally replace the default concatenation mode when parsing
+                  RiveScript source files (default <code>null</code>. be careful when
+                  setting this option if using somebody else's RiveScript
+                  personality; see below)</li>
+<li>sessionManager: provide a custom session manager to store user variables.
                   The default is to store variables in memory, but you may
                   use any async data store by providing an implementation of
-                  RiveScript&#39;s SessionManager. See the
-                  [sessions](./sessions.md) documentation.
-</pre></div>
-
-
+                  RiveScript's SessionManager. See the
+                  <a href="./sessions.md">sessions</a> documentation.</li>
+<li>bool caseSensitive:
+                  The user's message will not be lowercased when processed
+                  by the bot; so their original capitalization will be
+                  preserved when repeated back in <star> tags.</li>
+<li>regexp unicodePunctuation:
+                  You may provide a custom regexp for what you define to be
+                  punctuation characters to be stripped from the user's
+                  message in UTF-8 mode.</li>
+</ul>
 <h2>UTF-8 Mode</h2>
 <p>In UTF-8 mode, most characters in a user's message are left intact, except for
 certain metacharacters like backslashes and common punctuation characters like
@@ -45,10 +52,9 @@ certain metacharacters like backslashes and common punctuation characters like
 <p>If you want to override the punctuation regexp, you can provide a new one by
 assigning the <code>unicodePunctuation</code> attribute of the bot object after
 initialization. Example:</p>
-<div class="codehilite"><pre><span></span><span class="kd">var</span> <span class="nx">bot</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">RiveScript</span><span class="p">({</span><span class="nx">utf8</span><span class="o">:</span> <span class="kc">true</span><span class="p">});</span>
-<span class="nx">bot</span><span class="p">.</span><span class="nx">unicodePunctuation</span> <span class="o">=</span> <span class="k">new</span> <span class="nb">RegExp</span><span class="p">(</span><span class="sr">/[.,!?;:]/g</span><span class="p">);</span>
-</pre></div>
-
+<pre class="codehilite"><code class="language-javascript">var bot = new RiveScript({utf8: true});
+bot.unicodePunctuation = new RegExp(/[.,!?;:]/g);
+</code></pre>
 
 <h2>Force Case</h2>
 <p>This option to the constructor will make RiveScript lowercase all the triggers
@@ -93,10 +99,9 @@ match any triggers in your RiveScript code.</li>
 <p><strong>Note:</strong> the recommended way to handle this case is to provide a trigger of
 simply <code>*</code>, which serves as the catch-all trigger and is the default one
 that will match if nothing else matches the user's message. Example:</p>
-<div class="codehilite"><pre><span></span>+ *
-- I don&#39;t know what to say to that!
-</pre></div>
-
+<pre class="codehilite"><code>+ *
+- I don't know what to say to that!
+</code></pre>
 
 <ul>
 <li><code>replyNotFound</code>: This message is returned when the user <em>did</em> in fact match
@@ -108,11 +113,10 @@ reply, this error message is given to the user instead.</li>
 <p><strong>Note:</strong> the recommended way to handle this case is to provide at least one
 normal reply (with the <code>-</code> command) to every trigger to cover the cases
 where none of the conditions are true. Example:</p>
-<div class="codehilite"><pre><span></span>+ hello
+<pre class="codehilite"><code>+ hello
 * &lt;get name&gt; != undefined =&gt; Hello there, &lt;get name&gt;.
 - Hi there.
-</pre></div>
-
+</code></pre>
 
 <ul>
 <li><code>objectNotFound</code>: This message is inserted into the bot's reply in-line when
@@ -128,15 +132,14 @@ redirects back to the first trigger, creating an infinite loop.</p>
 <p>These custom error messages can be provided during the construction of the
 RiveScript object, or set afterwards on the object's <code>errors</code> property.</p>
 <p>Examples:</p>
-<div class="codehilite"><pre><span></span><span class="kd">var</span> <span class="nx">bot</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">RiveScript</span><span class="p">({</span>
-<span class="nx">errors</span><span class="o">:</span> <span class="p">{</span>
-<span class="nx">replyNotFound</span><span class="o">:</span> <span class="s2">&quot;I don&#39;t know how to reply to that.&quot;</span>
-<span class="p">}</span>
-<span class="p">});</span>
+<pre class="codehilite"><code class="language-javascript">var bot = new RiveScript({
+errors: {
+replyNotFound: &quot;I don't know how to reply to that.&quot;
+}
+});
 
-<span class="nx">bot</span><span class="p">.</span><span class="nx">errors</span><span class="p">.</span><span class="nx">objectNotFound</span> <span class="o">=</span> <span class="s2">&quot;Something went terribly wrong.&quot;</span><span class="p">;</span>
-</pre></div>
-
+bot.errors.objectNotFound = &quot;Something went terribly wrong.&quot;;
+</code></pre>
 
 <h2>string version ()</h2>
 <p>Returns the version number of the RiveScript.js library.</p>
@@ -227,10 +230,9 @@ example.</p>
 <p>By default, JavaScript object macros are enabled. If you want to disable
 these (e.g. for security purposes when loading untrusted third-party code),
 just set the JavaScript handler to null:</p>
-<div class="codehilite"><pre><span></span><span class="kd">var</span> <span class="nx">bot</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">RiveScript</span><span class="p">();</span>
-<span class="nx">bot</span><span class="p">.</span><span class="nx">setHandler</span><span class="p">(</span><span class="s2">&quot;javascript&quot;</span><span class="p">,</span> <span class="kc">null</span><span class="p">);</span>
-</pre></div>
-
+<pre class="codehilite"><code class="language-javascript">var bot = new RiveScript();
+bot.setHandler(&quot;javascript&quot;, null);
+</code></pre>
 
 <h2>void setSubroutine(string name, function)</h2>
 <p>Define a JavaScript object macro from your program.</p>
@@ -270,8 +272,8 @@ entire variable state, so that it can be restored later with
 <code>thawUservars()</code></p>
 <h2>async thawUservars (string user[, string action])</h2>
 <p>Thaw a user's frozen variables. The action can be one of the following:
-<em> discard: Don't restore the variables, just delete the frozen copy.
-</em> keep: Keep the frozen copy after restoring
+* discard: Don't restore the variables, just delete the frozen copy.
+* keep: Keep the frozen copy after restoring
 * thaw: Restore the variables and delete the frozen copy (default)</p>
 <h2>async lastMatch (string user) -&gt; string</h2>
 <p>Retrieve the trigger that the user matched most recently.</p>
@@ -314,42 +316,39 @@ or attributes that your code has access to, from the location that <code>reply()
 was called. For an example of this, refer to the <code>eg/scope</code> directory in
 the source distribution of RiveScript-JS.</p>
 <p>Example:</p>
-<div class="codehilite"><pre><span></span><span class="c1">// Normal usage as a promise</span>
-<span class="nx">bot</span><span class="p">.</span><span class="nx">reply</span><span class="p">(</span><span class="nx">username</span><span class="p">,</span> <span class="nx">message</span><span class="p">,</span> <span class="k">this</span><span class="p">).</span><span class="nx">then</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">reply</span><span class="p">)</span> <span class="p">{</span>
-    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">&quot;Bot&gt;&quot;</span><span class="p">,</span> <span class="nx">reply</span><span class="p">);</span>
-<span class="p">});</span>
+<pre class="codehilite"><code class="language-javascript">// Normal usage as a promise
+bot.reply(username, message, this).then(function(reply) {
+    console.log(&quot;Bot&gt;&quot;, reply);
+});
 
-<span class="c1">// Async-Await usage in an async function.</span>
-<span class="nx">async</span> <span class="kd">function</span> <span class="nx">getReply</span><span class="p">(</span><span class="nx">username</span><span class="p">,</span> <span class="nx">message</span><span class="p">)</span> <span class="p">{</span>
-    <span class="kd">var</span> <span class="nx">reply</span> <span class="o">=</span> <span class="nx">await</span> <span class="nx">bot</span><span class="p">.</span><span class="nx">reply</span><span class="p">(</span><span class="nx">username</span><span class="p">,</span> <span class="nx">message</span><span class="p">);</span>
-    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">&quot;Bot&gt;&quot;</span><span class="p">,</span> <span class="nx">reply</span><span class="p">);</span>
-<span class="p">}</span>
-</pre></div>
-
+// Async-Await usage in an async function.
+async function getReply(username, message) {
+    var reply = await bot.reply(username, message);
+    console.log(&quot;Bot&gt;&quot;, reply);
+}
+</code></pre>
 
 <h2>Promise replyAsync (string username, string message [[, scope], callback])</h2>
 <p><strong>Obsolete as of v2.0.0</strong> -- use <code>reply()</code> instead in new code.</p>
 <p>Asyncronous version of reply. Use replyAsync if at least one of the subroutines
 used with the <code>&lt;call&gt;</code> tag returns a promise.</p>
 <p>Example: using promises</p>
-<div class="codehilite"><pre><span></span><span class="nx">rs</span><span class="p">.</span><span class="nx">replyAsync</span><span class="p">(</span><span class="nx">user</span><span class="p">,</span> <span class="nx">message</span><span class="p">).</span><span class="nx">then</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">reply</span><span class="p">)</span> <span class="p">{</span>
-  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">&quot;Bot&gt;&quot;</span><span class="p">,</span> <span class="nx">reply</span><span class="p">);</span>
-<span class="p">}).</span><span class="k">catch</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">error</span><span class="p">)</span> <span class="p">{</span>
-  <span class="nx">console</span><span class="p">.</span><span class="nx">error</span><span class="p">(</span><span class="s2">&quot;Error: &quot;</span><span class="p">,</span> <span class="nx">error</span><span class="p">);</span>
-<span class="p">});</span>
-</pre></div>
-
+<pre class="codehilite"><code class="language-javascript">rs.replyAsync(user, message).then(function(reply) {
+  console.log(&quot;Bot&gt;&quot;, reply);
+}).catch(function(error) {
+  console.error(&quot;Error: &quot;, error);
+});
+</code></pre>
 
 <p>Example: using the callback</p>
-<div class="codehilite"><pre><span></span><span class="nx">rs</span><span class="p">.</span><span class="nx">replyAsync</span><span class="p">(</span><span class="nx">username</span><span class="p">,</span> <span class="nx">msg</span><span class="p">,</span> <span class="k">this</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">error</span><span class="p">,</span> <span class="nx">reply</span><span class="p">)</span> <span class="p">{</span>
-  <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">error</span><span class="p">)</span> <span class="p">{</span>
-    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">&quot;Bot&gt;&quot;</span><span class="p">,</span> <span class="nx">reply</span><span class="p">);</span>
-  <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
-    <span class="nx">console</span><span class="p">.</span><span class="nx">error</span><span class="p">(</span><span class="s2">&quot;Error: &quot;</span><span class="p">,</span> <span class="nx">error</span><span class="p">);</span>
-  <span class="p">}</span>
-<span class="p">});</span>
-</pre></div>
-
+<pre class="codehilite"><code class="language-javascript">rs.replyAsync(username, msg, this, function(error, reply) {
+  if (!error) {
+    console.log(&quot;Bot&gt;&quot;, reply);
+  } else {
+    console.error(&quot;Error: &quot;, error);
+  }
+});
+</code></pre>
 
 <h2>Promise Promise</h2>
 <p><strong>DEPRECATED</strong></p>
@@ -359,20 +358,19 @@ for older systems. In new code, return a native Promise directly from your
 object macros.</p>
 <p>This enables you to create a JavaScript object macro that returns a promise
 for asynchronous tasks (e.g. polling a web API or database). Example:</p>
-<div class="codehilite"><pre><span></span><span class="nx">rs</span><span class="p">.</span><span class="nx">setSubroutine</span><span class="p">(</span><span class="s2">&quot;asyncHelper&quot;</span><span class="p">,</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">rs</span><span class="p">,</span> <span class="nx">args</span><span class="p">)</span> <span class="p">{</span>
- <span class="k">return</span> <span class="k">new</span> <span class="nx">rs</span><span class="p">.</span><span class="nb">Promise</span><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">resolve</span><span class="p">,</span> <span class="nx">reject</span><span class="p">)</span> <span class="p">{</span>
-   <span class="nx">resolve</span><span class="p">(</span><span class="mi">42</span><span class="p">);</span>
- <span class="p">});</span>
-<span class="p">});</span>
-</pre></div>
-
+<pre class="codehilite"><code class="language-javascript">rs.setSubroutine(&quot;asyncHelper&quot;, function (rs, args) {
+ return new rs.Promise(function (resolve, reject) {
+   resolve(42);
+ });
+});
+</code></pre>
 
 <p>If you're using promises in your object macros, you need to get a reply from
 the bot using the <code>replyAsync()</code> method instead of <code>reply()</code>, for example:</p>
-<div class="codehilite"><pre><span></span><span class="nx">rs</span><span class="p">.</span><span class="nx">replyAsync</span><span class="p">(</span><span class="nx">username</span><span class="p">,</span> <span class="nx">message</span><span class="p">,</span> <span class="k">this</span><span class="p">).</span><span class="nx">then</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">reply</span><span class="p">)</span> <span class="p">{</span>
-   <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">&quot;Bot&gt; &quot;</span><span class="p">,</span> <span class="nx">reply</span><span class="p">);</span>
-<span class="p">});</span>
-</pre></div>
+<pre class="codehilite"><code class="language-javascript">rs.replyAsync(username, message, this).then(function(reply) {
+   console.log(&quot;Bot&gt; &quot;, reply);
+});
+</code></pre>
 
 </body>
 </html>

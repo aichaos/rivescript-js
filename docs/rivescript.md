@@ -16,7 +16,6 @@ near future.
 Create a new RiveScript interpreter. `options` is an object with the
 following keys:
 
-```
 * bool debug:     Debug mode               (default false)
 * int  depth:     Recursion depth limit    (default 50)
 * bool strict:    Strict mode              (default true)
@@ -25,15 +24,22 @@ following keys:
 * func onDebug:   Set a custom handler to catch debug log messages (default null)
 * obj  errors:    Customize certain error messages (see below)
 * str  concat:    Globally replace the default concatenation mode when parsing
-                  RiveScript source files (default `null`. be careful when
-                  setting this option if using somebody else's RiveScript
-                  personality; see below)
+				  RiveScript source files (default `null`. be careful when
+				  setting this option if using somebody else's RiveScript
+				  personality; see below)
 * sessionManager: provide a custom session manager to store user variables.
-                  The default is to store variables in memory, but you may
-                  use any async data store by providing an implementation of
-                  RiveScript's SessionManager. See the
-                  [sessions](./sessions.md) documentation.
-```
+				  The default is to store variables in memory, but you may
+				  use any async data store by providing an implementation of
+				  RiveScript's SessionManager. See the
+				  [sessions](./sessions.md) documentation.
+* bool caseSensitive:
+				  The user's message will not be lowercased when processed
+				  by the bot; so their original capitalization will be
+				  preserved when repeated back in <star> tags.
+* regexp unicodePunctuation:
+				  You may provide a custom regexp for what you define to be
+				  punctuation characters to be stripped from the user's
+				  message in UTF-8 mode.
 
 ## UTF-8 Mode
 
@@ -309,11 +315,11 @@ Set the value to `undefined` to delete a substitution.
 Set a person substitution. This is equivalent to `! person` in RiveScript.
 Set the value to `undefined` to delete a person substitution.
 
-## async setUservar (string user, string name, string value) -> void
+## async setUservar (string user, string name, string value)
 
 Set a user variable for a user.
 
-## async setUservars (string user, object data) -> void
+## async setUservars (string user, object data)
 
 Set multiple user variables by providing an object of key/value pairs.
 Equivalent to calling `setUservar()` for each pair in the object.
@@ -332,18 +338,18 @@ defined.
 Get all variables about a user. If no user is provided, returns all data
 about all users.
 
-## async clearUservars ([string user]) -> void
+## async clearUservars ([string user])
 
 Clear all a user's variables. If no user is provided, clears all variables
 for all users.
 
-## async freezeUservars (string user) -> void
+## async freezeUservars (string user)
 
 Freeze the variable state of a user. This will clone and preserve the user's
 entire variable state, so that it can be restored later with
 `thawUservars()`
 
-## async thawUservars (string user[, string action]) -> void
+## async thawUservars (string user[, string action])
 
 Thaw a user's frozen variables. The action can be one of the following:
 * discard: Don't restore the variables, just delete the frozen copy.
@@ -413,13 +419,13 @@ Example:
 ```javascript
 // Normal usage as a promise
 bot.reply(username, message, this).then(function(reply) {
-    console.log("Bot>", reply);
+	console.log("Bot>", reply);
 });
 
 // Async-Await usage in an async function.
 async function getReply(username, message) {
-    var reply = await bot.reply(username, message);
-    console.log("Bot>", reply);
+	var reply = await bot.reply(username, message);
+	console.log("Bot>", reply);
 }
 ```
 
@@ -445,9 +451,9 @@ Example: using the callback
 ```javascript
 rs.replyAsync(username, msg, this, function(error, reply) {
   if (!error) {
-    console.log("Bot>", reply);
+	console.log("Bot>", reply);
   } else {
-    console.error("Error: ", error);
+	console.error("Error: ", error);
   }
 });
 ```

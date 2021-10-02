@@ -2,11 +2,11 @@
 
 Create a Brain object which handles the actual process of fetching a reply.
 
-## async reply (string user, string msg[, scope]) -> string
+## async reply (string user, string msg[, scope])
 
 Fetch a reply for the user. This returns a Promise that may be awaited on.
 
-## private async _getReply (string user, string msg, string context, int step, scope) -> string
+## async _getReply (string user, string msg, string context, int step, scope)
 
 The internal reply method. DO NOT CALL THIS DIRECTLY.
 
@@ -19,11 +19,11 @@ The internal reply method. DO NOT CALL THIS DIRECTLY.
 
 Format a user's message for safe processing.
 
-## async triggerRegexp (string user, string trigger) -> string
+## async triggerRegexp (string user, string trigger)
 
 Prepares a trigger for the regular expression engine.
 
-## async processTags (string user, string msg, string reply, string[] stars, string[] botstars, int step, scope) -> string
+## string processTags (string user, string msg, string reply, string[] stars, string[] botstars, int step, scope)
 
 Process tags in a reply element.
 

@@ -20,15 +20,14 @@ variables from a MySQL, MongoDB or Redis database, you can replace the default
 session manager with one that implements that backend (or write one yourself
 that implements this SessionManager API).</p>
 <p>To use a session manager, you'd typically do something like:</p>
-<div class="codehilite"><pre><span></span><span class="kr">const</span> <span class="nx">RedisSessions</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s2">&quot;rivescript-contrib-redis&quot;</span><span class="p">);</span>
+<pre class="codehilite"><code class="language-javascript">const RedisSessions = require(&quot;rivescript-contrib-redis&quot;);
 
-<span class="c1">// Provide the sessionManager option to use this instead of</span>
-<span class="c1">// the default MemorySessionManager.</span>
-<span class="kd">var</span> <span class="nx">bot</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">RiveScript</span><span class="p">({</span>
-    <span class="nx">sessionManager</span><span class="o">:</span> <span class="k">new</span> <span class="nx">RedisSessions</span><span class="p">(</span><span class="s2">&quot;localhost:6379&quot;</span><span class="p">)</span>
-<span class="p">});</span>
-</pre></div>
-
+// Provide the sessionManager option to use this instead of
+// the default MemorySessionManager.
+var bot = new RiveScript({
+    sessionManager: new RedisSessions(&quot;localhost:6379&quot;)
+});
+</code></pre>
 
 <p>To implement your own session manager, you should extend the
 <code>SessionManager</code> class and implement a compatible object.</p>
@@ -52,17 +51,16 @@ the user. If the user doesn't exist, resolve <code>null</code>.</p>
 <p>Retrieve all variables about all users.</p>
 <p>This should return an object that maps usernames to an object of their
 variables. For example:</p>
-<div class="codehilite"><pre><span></span><span class="p">{</span> <span class="nt">&quot;user1&quot;</span><span class="p">:</span> <span class="p">{</span>
-    <span class="nt">&quot;topic&quot;</span><span class="p">:</span> <span class="s2">&quot;random&quot;</span><span class="p">,</span>
-       <span class="nt">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Alice&quot;</span>
-  <span class="p">},</span>
-  <span class="nt">&quot;user2&quot;</span><span class="p">:</span> <span class="p">{</span>
-    <span class="nt">&quot;topic&quot;</span><span class="p">:</span> <span class="s2">&quot;random&quot;</span><span class="p">,</span>
-    <span class="nt">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Bob&quot;</span>
-  <span class="p">}</span>
-<span class="p">}</span>
-</pre></div>
-
+<pre class="codehilite"><code class="language-json">{ &quot;user1&quot;: {
+    &quot;topic&quot;: &quot;random&quot;,
+       &quot;name&quot;: &quot;Alice&quot;
+  },
+  &quot;user2&quot;: {
+    &quot;topic&quot;: &quot;random&quot;,
+    &quot;name&quot;: &quot;Bob&quot;
+  }
+}
+</code></pre>
 
 <h2>async reset(string username)</h2>
 <p>Reset all variables stored about a particular user.</p>

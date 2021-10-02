@@ -1,5 +1,36 @@
 # Changes
 
+## 2.2.0 - Oct 1 2021
+
+This release includes various bugfixes and features from the GitHub
+community.
+
+There is a new algorithm for handling the nestable tags (such as
+`<get>`, `<set>`, `<bot>`, and other variable getter/setter tags)
+and it works with `<call>` tags, too! Thanks,
+[@lee-orr](https://github.com/lee-orr)! (PR #377)
+
+```
++ *
+- <set value=<call>add_hello <star></call>>
+  ^ The answer is: <get value>.
+
+> object add_hello javascript
+    return "hello:" + args[0];
+< object
+```
+
+- Bugfix: missing 'let' in for loop (#340)
+- If an error is raised within an object macro, include the error in the
+  bot's response (#341)
+- Fix a truthiness check for whether bot/env vars are 'undefined' (#350)
+- Fix the _ word wildcard not working when multiple are in the same
+  trigger (#356)
+- Add example: json-server-async (#207)
+- An option to treat user inputs as case-sensitive instead of always
+  lowercasing them (#246/#378)
+- Various Dependabot dependency updates.
+
 ## 2.1.0 - Mar 13 2020
 
 - The RiveScript `shell.js` script is now installed as a command line program

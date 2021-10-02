@@ -122,6 +122,7 @@ The shell accepts a few command line parameters:
 * `--watch`: watch the reply folder for changes and automatically reload the
   bot when files are modified.
 * `--utf8`: enables UTF-8 mode.
+* `--case`: enable case-sensitive user messages.
 
 
 ## DOCUMENTATION
