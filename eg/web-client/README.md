@@ -8,9 +8,27 @@ features preventing a local web page from accessing other local files, so if you
 open `chat.html` by double-clicking in your file browser it probably won't be
 able to read the `.rive` files the bot needs.
 
-You can use the `grunt server` command from the root of the `rivescript-js`
-project to run a built-in web server for testing this example. Otherwise,
-upload these files to a web server.
+One simple solution is to use the Nodejs `http-server` command:
+
+```bash
+# If you don't already have http-server:
+% npm install -g http-server
+
+# From the root of the rivescript-js project...
+% cd ~/git/rivescript-js
+
+# Build the `dist/rivescript.js` packed for the web browser, and then run
+# the Node http-server.
+% npm run dist
+% http-server
+```
+
+And then visit <http://127.0.0.1:8080/eg/web-client/chat.html> to load the
+web client in your browser.
+
+Another alternative, if you have Python installed (if you're on Mac or Linux,
+you probably do) is to just run `python -m SimpleHTTPServer` from the root
+of the rivescript-js project. Do remember to run `npm run dist` though!
 
 ## Usage: Built-in Server
 

@@ -9,6 +9,6 @@
   "author": "Igor Khomenko",
   "license": "MIT",
   "dependencies": {
-    "quickblox": "^2.3.1"
+    "quickblox": "^2.12.7"
   }
 }

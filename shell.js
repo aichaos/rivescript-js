@@ -3,12 +3,21 @@
 /******************************************************************************
  * Interactive RiveScript Shell for quickly testing your RiveScript bot.      *
  *                                                                            *
- * Usage: node shell.js /path/to/brain                                        *
+ * Requires Node 7 or greater with async/await support. This module can be    *
+ * built and webpacked with Node <= 6 but this shell script won't run.        *
+ *                                                                            *
+ * Usage:                                                                     *
+ * - If you cloned the repo from GitHub :                                     *
+ *                   $ node shell.js /path/to/brain                           *
+ * - If you installed locally as a project dependency via npm :               *
+ *                   $ npx riveshell /path/to/brain                           *
+ * - If you installed globally via npm :                                      *
+ *                   $ riveshell /path/to/brain                               *
  ******************************************************************************/
 
 var readline = require("readline"),
 	fs = require("fs"),
-	RiveScript = require("./lib/rivescript");
+	RiveScript = require("./src/rivescript");
 
 //------------------------------------------------------------------------------
 // Accept command line parameters.
@@ -22,7 +31,7 @@ var opts = {
 };
 
 process.argv.slice(2).forEach(function(val, index, array) {
-	
+
 	if (val === "--debug") {
 		opts.debug = true;
 	}
@@ -57,17 +66,15 @@ var rl = readline.createInterface({
 	output: process.stdout
 });
 
+// const { NullSessionManager } = require("./src/sessions");
 
-var bot = null;
-function loadBot() {
-	bot = new RiveScript({
-		debug: opts.debug,
-		utf8:  opts.utf8,
-	});
-	bot.ready = false;
-	bot.loadDirectory(opts.brain, loadingDone, loadingError);
-}
-loadBot();
+var ready = false;
+var bot = new RiveScript({
+	debug:  opts.debug,
+	utf8:   opts.utf8,
+	concat: "newline",
+	// sessionManager: new NullSessionManager()
+});
 
 if (opts.watch) {
 	fs.watch(opts.brain, {recursive: false}, function() {
@@ -98,7 +105,7 @@ console.log("");
 
 rl.setPrompt("You> ");
 rl.prompt();
-rl.on('line', function(cmd) {
+rl.on('line', async function(cmd) {
 	// Handle commands.
 	if (cmd === "/help") {
 		help();
@@ -112,28 +119,26 @@ rl.on('line', function(cmd) {
 		process.exit(0);
 	} else {
 		// Get a reply from the bot.
-		var reply = (bot && bot.ready)
-			? bot.reply("localuser", cmd)
-			: "ERR: Bot Not Ready Yet";
-		console.log("Bot>", reply);
+		if (bot && ready) {
+			var reply = await bot.reply("localuser", cmd);
+			console.log("Bot>", reply);
+		} else {
+			console.log("ERR: Bot Not Ready Yet");
+		}
 	}
-	
+
 	rl.prompt();
 }).on('close', function() {
 	console.log("");
 	process.exit(0);
 });
 
-
-
-function loadingDone(batchNumber) {
+bot.loadDirectory(opts.brain).then(() => {
 	bot.sortReplies();
-	bot.ready = true;
-}
-
-function loadingError(error, batchNumber) {
-	console.error("Loading error: " + error);
-}
+	ready = true;
+}).catch((err) => {
+	console.error("Loading error: " + err);
+});
 
 function help() {
 	console.log("Supported commands:");
@@ -142,5 +147,3 @@ function help() {
 	console.log("/log <code>  : Shortcut to /eval console.log(code).");
 	console.log("/quit        : Exit the program.");
 }
-
-
