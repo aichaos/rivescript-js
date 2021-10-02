@@ -12,138 +12,156 @@ const utils = require("./utils");
 const inherit_utils = require("./inheritance");
 
 const tags = {
-	'bot': { selfClosing: true, handle: async (rive, data, user, scope) => {
-		let split = data.split("=");
+	'bot': {
+		selfClosing: true, handle: async (rive, data, user, scope) => {
+			let split = data.split("=");
 
-		if (split.length > 1) {
-			rive._var[split[0].trim()] = split[1];
-			return "";
-		} else if (split.length === 1) {
-			let val = rive._var[split[0].trim()];
-			if (val === undefined) val = "undefined";
-			return val;
-		} else {
-			return "undefined";
-		}
-	} },
-	'env': { selfClosing: true, handle: async (rive, data, user, scope) => {
-		let split = data.split("=");
-
-		if (split.length > 1) {
-			rive._global[split[0].trim()] = split[1];
-			return "";
-		} else if (split.length === 1) {
-			let val = rive._global[split[0].trim()];
-			if (val === undefined) val = "undefined";
-			return val;
-		} else {
-			return "undefined";
-		}
-	} },
-	'set': { selfClosing: true, handle: async (rive, data, user, scope) => {
-		let split = data.split("=");
-		await rive.setUservar(user, split[0].trim(), split[1]);
-		return "";
-	} },
-	'get': { selfClosing: true, handle: async (rive, data, user, scope) => {
-		let result = await rive.getUservar(user, data.trim());
-		return result;
-	} },
-	'add': { selfClosing: true, handle: async (rive, data, user, scope) => {
-		let split = data.split("=");
-		let name = split[0].trim();
-		let existingValue = await rive.getUservar(user, name) || 0;
-		let value = parseInt(split[1].trim());
-		let existingNumber = parseInt(existingValue);
-		if (isNaN(value)) {
-			return `[ERR: Math can't 'add' non-numeric value '${value}']`;
-		} else if (isNaN(existingNumber)) {
-			return `[ERR: Math can't 'add' non-numeric user variable '${name}']`;
-		} else {
-			let result = Number(existingValue + value);
-			await rive.setUservar(user, name, result);
-		}
-		return '';
-	} },
-	'sub': { selfClosing: true, handle: async (rive, data, user, scope) => {
-		let split = data.split("=");
-		let name = split[0].trim();
-		let existingValue = await rive.getUservar(user, name) || 0;
-		let value = parseInt(split[1].trim());
-		let existingNumber = parseInt(existingValue);
-		if (isNaN(value)) {
-			return `[ERR: Math can't 'sub' non-numeric value '${value}']`;
-		} else if (isNaN(existingNumber)) {
-			return `[ERR: Math can't 'sub' non-numeric user variable '${name}']`;
-		} else {
-			let result = Number(existingValue - value);
-			await rive.setUservar(user, name, result);
-		}
-		return '';
-	} },
-	'mult': { selfClosing: true, handle: async (rive, data, user, scope) => {
-		let split = data.split("=");
-		let name = split[0].trim();
-		let existingValue = await rive.getUservar(user, name) || 0;
-		let value = parseInt(split[1].trim());
-		let existingNumber = parseInt(existingValue);
-		if (isNaN(value)) {
-			return `[ERR: Math can't 'mult' non-numeric value '${value}']`;
-		} else if (isNaN(existingNumber)) {
-			return `[ERR: Math can't 'mult' non-numeric user variable '${name}']`;
-		} else {
-			let result = Number(existingValue * value);
-			await rive.setUservar(user, name, result);
-		}
-		return '';
-	} },
-	'div': { selfClosing: true, handle: async (rive, data, user, scope) => {
-		let split = data.split("=");
-		let name = split[0].trim();
-		let existingValue = await rive.getUservar(user, name) || 0;
-		let value = parseInt(split[1].trim());
-		let existingNumber = parseInt(existingValue);
-		if (isNaN(value)) {
-			return `[ERR: Math can't 'div' non-numeric value '${value}']`;
-		} else if (isNaN(existingNumber)) {
-			return `[ERR: Math can't 'div' non-numeric user variable '${name}']`;
-		} else if (value === 0) {
-			return `[ERR: Can't Divide By Zero]`;
-		} else {
-			let result = Number(existingValue / value);
-			await rive.setUservar(user, name, result);
-		}
-		return '';
-	}},
-	'call': { selfClosing: false, handle: async (rive, data, user, scope) => {
-		let parts = utils.trim(data).split(" ");
-		let output = rive.errors.objectNotFound;
-		let obj = parts[0];
-
-		let args = [];
-		if (parts.length > 1) {
-			args = utils.parseCallArgs(parts.slice(1).join(" "));
-		}
-
-		if (obj in rive._objlangs) {
-			// We do, but do we have a handler for that language?
-			let lang = rive._objlangs[obj];
-			if (lang in rive._handlers) {
-				try {
-					// We do.
-					output = (await rive._handlers[lang].call(rive, obj, args, scope));
-				} catch (error) {
-					if (error != undefined) {
-						rive.brain.warn(error);
-					}
-					output = `[ERR: Error raised by object macro: ${error.message}]`;
-				}
+			if (split.length > 1) {
+				rive._var[split[0].trim()] = split[1];
+				return "";
+			} else if (split.length === 1) {
+				let val = rive._var[split[0].trim()];
+				if (val === undefined) val = "undefined";
+				return val;
 			} else {
-				output = "[ERR: No Object Handler]";
+				return "undefined";
 			}
 		}
-		return output;
-	} },
+	},
+	'env': {
+		selfClosing: true, handle: async (rive, data, user, scope) => {
+			let split = data.split("=");
+
+			if (split.length > 1) {
+				rive._global[split[0].trim()] = split[1];
+				return "";
+			} else if (split.length === 1) {
+				let val = rive._global[split[0].trim()];
+				if (val === undefined) val = "undefined";
+				return val;
+			} else {
+				return "undefined";
+			}
+		}
+	},
+	'set': {
+		selfClosing: true, handle: async (rive, data, user, scope) => {
+			let split = data.split("=");
+			await rive.setUservar(user, split[0].trim(), split[1]);
+			return "";
+		}
+	},
+	'get': {
+		selfClosing: true, handle: async (rive, data, user, scope) => {
+			let result = await rive.getUservar(user, data.trim());
+			return result;
+		}
+	},
+	'add': {
+		selfClosing: true, handle: async (rive, data, user, scope) => {
+			let split = data.split("=");
+			let name = split[0].trim();
+			let existingValue = await rive.getUservar(user, name) || 0;
+			let value = parseInt(split[1].trim());
+			let existingNumber = parseInt(existingValue);
+			if (isNaN(value)) {
+				return `[ERR: Math can't 'add' non-numeric value '${value}']`;
+			} else if (isNaN(existingNumber)) {
+				return `[ERR: Math can't 'add' non-numeric user variable '${name}']`;
+			} else {
+				let result = Number(existingValue + value);
+				await rive.setUservar(user, name, result);
+			}
+			return '';
+		}
+	},
+	'sub': {
+		selfClosing: true, handle: async (rive, data, user, scope) => {
+			let split = data.split("=");
+			let name = split[0].trim();
+			let existingValue = await rive.getUservar(user, name) || 0;
+			let value = parseInt(split[1].trim());
+			let existingNumber = parseInt(existingValue);
+			if (isNaN(value)) {
+				return `[ERR: Math can't 'sub' non-numeric value '${value}']`;
+			} else if (isNaN(existingNumber)) {
+				return `[ERR: Math can't 'sub' non-numeric user variable '${name}']`;
+			} else {
+				let result = Number(existingValue - value);
+				await rive.setUservar(user, name, result);
+			}
+			return '';
+		}
+	},
+	'mult': {
+		selfClosing: true, handle: async (rive, data, user, scope) => {
+			let split = data.split("=");
+			let name = split[0].trim();
+			let existingValue = await rive.getUservar(user, name) || 0;
+			let value = parseInt(split[1].trim());
+			let existingNumber = parseInt(existingValue);
+			if (isNaN(value)) {
+				return `[ERR: Math can't 'mult' non-numeric value '${value}']`;
+			} else if (isNaN(existingNumber)) {
+				return `[ERR: Math can't 'mult' non-numeric user variable '${name}']`;
+			} else {
+				let result = Number(existingValue * value);
+				await rive.setUservar(user, name, result);
+			}
+			return '';
+		}
+	},
+	'div': {
+		selfClosing: true, handle: async (rive, data, user, scope) => {
+			let split = data.split("=");
+			let name = split[0].trim();
+			let existingValue = await rive.getUservar(user, name) || 0;
+			let value = parseInt(split[1].trim());
+			let existingNumber = parseInt(existingValue);
+			if (isNaN(value)) {
+				return `[ERR: Math can't 'div' non-numeric value '${value}']`;
+			} else if (isNaN(existingNumber)) {
+				return `[ERR: Math can't 'div' non-numeric user variable '${name}']`;
+			} else if (value === 0) {
+				return `[ERR: Can't Divide By Zero]`;
+			} else {
+				let result = Number(existingValue / value);
+				await rive.setUservar(user, name, result);
+			}
+			return '';
+		}
+	},
+	'call': {
+		selfClosing: false, handle: async (rive, data, user, scope) => {
+			let parts = utils.trim(data).split(" ");
+			let output = rive.errors.objectNotFound;
+			let obj = parts[0];
+
+			let args = [];
+			if (parts.length > 1) {
+				args = utils.parseCallArgs(parts.slice(1).join(" "));
+			}
+
+			if (obj in rive._objlangs) {
+				// We do, but do we have a handler for that language?
+				let lang = rive._objlangs[obj];
+				if (lang in rive._handlers) {
+					try {
+						// We do.
+						output = (await rive._handlers[lang].call(rive, obj, args, scope));
+					} catch (error) {
+						if (error != undefined) {
+							rive.brain.warn(error);
+						}
+						output = `[ERR: Error raised by object macro: ${error.message}]`;
+					}
+				} else {
+					output = "[ERR: No Object Handler]";
+				}
+			}
+			return output;
+		}
+	},
 };
 
 /**
@@ -157,7 +175,7 @@ class Brain {
 
 		self.master = master;
 		self.strict = master._strict;
-		self.utf8   = master._utf8;
+		self.utf8 = master._utf8;
 
 		// Private variables only relevant to the reply-answering part of RiveScript.
 		self._currentUser = null; // The current user asking for a message
@@ -219,7 +237,7 @@ class Brain {
 			history.input.unshift(msg);
 			history.reply.pop();
 			history.reply.unshift(reply);
-		} catch(e) {
+		} catch (e) {
 			history = newHistory();
 		}
 		await self.master._session.set(user, {
@@ -334,7 +352,7 @@ class Brain {
 						self.say(`Try to match lastReply (${lastReply}) to ${botside}`);
 
 						// Match?
-						let match = lastReply.match(new RegExp(`^${botside}$`));
+						let match = lastReply.match(new RegExp(`^${botside}$`), 'i');
 						if (match) {
 							// Huzzah! See if OUR message is right too.
 							self.say("Bot side matched!");
@@ -401,7 +419,7 @@ class Brain {
 					}
 				} else {
 					// Non-atomic triggers always need the regexp.
-					let match = msg.match(new RegExp(`^${regexp}$`));
+					let match = msg.match(new RegExp(`^${regexp}$`, 'i'));
 					if (match) {
 						// The regexp matched!
 						isMatch = true;
@@ -431,7 +449,7 @@ class Brain {
 
 		// Store what trigger they matched on. If their matched trigger is undefined,
 		// this will be too, which is great.
-		await self.master._session.set(user, {__lastmatch__: matchedTrigger});
+		await self.master._session.set(user, { __lastmatch__: matchedTrigger });
 		let lastTriggers = [];
 		if (step === 0) {
 			await self.master._session.set(user, {
@@ -447,7 +465,7 @@ class Brain {
 		if (matched) {
 			// Keep the current match
 			lastTriggers.push(matched);
-			await self.master._session.set(user, {__last_triggers__: lastTriggers});
+			await self.master._session.set(user, { __last_triggers__: lastTriggers });
 
 			// A single loop so we can break out early
 			for (let n = 0; n < 1; n++) {
@@ -620,7 +638,9 @@ class Brain {
 
 		// Lowercase it.
 		msg = "" + msg;
-		msg = msg.toLowerCase();
+		if (self.master._caseSensitive !== true) {
+			msg = msg.toLowerCase();
+		}
 
 		// Run substitutions and sanitize what's left.
 		msg = self.substitute(msg, "sub");
@@ -793,7 +813,7 @@ class Brain {
 				let type = ref[k];
 				for (let i = 1; i <= 9; i++) {
 					if (regexp.indexOf(`<${type}${i}>`) > -1) {
-						let value = self.formatMessage(history[type][i-1], type==="reply");
+						let value = self.formatMessage(history[type][i - 1], type === "reply");
 						regexp = regexp.replace(new RegExp(`<${type}${i}>`, "g"), value);
 					}
 				}
@@ -802,7 +822,7 @@ class Brain {
 
 		// Recover escaped Unicode symbols.
 		if (self.utf8 && regexp.indexOf("\\u") > -1) {
-			regexp = regexp.replace(/\\u([A-Fa-f0-9]{4})/, function(match, grp) {
+			regexp = regexp.replace(/\\u([A-Fa-f0-9]{4})/, function (match, grp) {
 				return String.fromCharCode(parseInt(grp, 16));
 			});
 		}
@@ -828,14 +848,14 @@ class Brain {
 			}
 			tag += content[i];
 		}
-		
+
 		const selfClosing = tags[tag] ? tags[tag].selfClosing : true;
 		const endTag = selfClosing ? ">" : "</" + tag + ">";
 		const result = await this.parseComplexTags(rive, user, reminder, scope, depth, endTag);
 		reminder = result.reminder;
 
 		const response = tags[tag] && tags[tag].handle ? await tags[tag].handle(rive, result.response, user, scope) : "<" + tag + " " + result.response + ">";
-		return { response, reminder};
+		return { response, reminder };
 	}
 
 	async parseComplexTags(rive, user, content, scope, depth, endTag = "") {
@@ -846,7 +866,7 @@ class Brain {
 		let nextTag = reminder.indexOf("<");
 		let nextEnd = endTag ? reminder.indexOf(endTag) : reminder.length;
 
-		while(reminder.length > 0 && nextTag > -1 && nextTag < nextEnd ) {
+		while (reminder.length > 0 && nextTag > -1 && nextTag < nextEnd) {
 			response += reminder.substring(0, nextTag);
 			reminder = reminder.substring(nextTag + 1);
 			let result = await this.handleTag(rive, user, reminder, scope, depth + 1);
@@ -863,7 +883,7 @@ class Brain {
 
 	/**
 	string processTags (string user, string msg, string reply, string[] stars,
-	                    string[] botstars, int step, scope)
+						string[] botstars, int step, scope)
 
 	Process tags in a reply element.
 	*/
@@ -935,10 +955,10 @@ class Brain {
 		reply = reply.replace(/<reply>/ig, history.reply ? history.reply[0] : "undefined");
 		for (let i = 1; i <= 9; i++) {
 			if (reply.indexOf(`<input${i}>`) > -1) {
-				reply = reply.replace(new RegExp(`<input${i}>`, "ig"), history.input[i-1]);
+				reply = reply.replace(new RegExp(`<input${i}>`, "ig"), history.input[i - 1]);
 			}
 			if (reply.indexOf(`<reply${i}>`) > -1) {
-				reply = reply.replace(new RegExp(`<reply${i}>`, "ig"), history.reply[i-1]);
+				reply = reply.replace(new RegExp(`<reply${i}>`, "ig"), history.reply[i - 1]);
 			}
 		}
 
