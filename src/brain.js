@@ -727,7 +727,7 @@ class Brain {
 		// So then we switch it back down here. Also, we don't just use \w+ because
 		// that matches digits, and similarly [A-Za-z] doesn't work with Unicode,
 		// so this regexp excludes spaces and digits instead of including letters.
-		regexp = regexp.replace(/\\w/, "[^\\s\\d]");
+		regexp = regexp.replace(/\\w/g, "[^\\s\\d]");
 
 		// Filter in arrays.
 		giveup = 0;
