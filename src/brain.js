@@ -69,7 +69,7 @@ const tags = {
 			} else if (isNaN(existingNumber)) {
 				return `[ERR: Math can't 'add' non-numeric user variable '${name}']`;
 			} else {
-				let result = Number(existingValue + value);
+				let result = Number(existingNumber + value);
 				await rive.setUservar(user, name, result);
 			}
 			return '';
@@ -87,7 +87,7 @@ const tags = {
 			} else if (isNaN(existingNumber)) {
 				return `[ERR: Math can't 'sub' non-numeric user variable '${name}']`;
 			} else {
-				let result = Number(existingValue - value);
+				let result = Number(existingNumber - value);
 				await rive.setUservar(user, name, result);
 			}
 			return '';
@@ -105,7 +105,7 @@ const tags = {
 			} else if (isNaN(existingNumber)) {
 				return `[ERR: Math can't 'mult' non-numeric user variable '${name}']`;
 			} else {
-				let result = Number(existingValue * value);
+				let result = Number(existingNumber * value);
 				await rive.setUservar(user, name, result);
 			}
 			return '';
@@ -125,7 +125,7 @@ const tags = {
 			} else if (value === 0) {
 				return `[ERR: Can't Divide By Zero]`;
 			} else {
-				let result = Number(existingValue / value);
+				let result = Number(existingNumber / value);
 				await rive.setUservar(user, name, result);
 			}
 			return '';
