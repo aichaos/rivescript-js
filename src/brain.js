@@ -61,7 +61,10 @@ const tags = {
 		selfClosing: true, handle: async (rive, data, user, scope) => {
 			let split = data.split("=");
 			let name = split[0].trim();
-			let existingValue = await rive.getUservar(user, name) || 0;
+			let existingValue = await rive.getUservar(user, name);
+            if(existingValue === "undefined") {
+                existingValue = 0;
+            }
 			let value = parseInt(split[1].trim());
 			let existingNumber = parseInt(existingValue);
 			if (isNaN(value)) {
@@ -79,7 +82,10 @@ const tags = {
 		selfClosing: true, handle: async (rive, data, user, scope) => {
 			let split = data.split("=");
 			let name = split[0].trim();
-			let existingValue = await rive.getUservar(user, name) || 0;
+			let existingValue = await rive.getUservar(user, name);
+            if(existingValue === "undefined") {
+                existingValue = 0;
+            }
 			let value = parseInt(split[1].trim());
 			let existingNumber = parseInt(existingValue);
 			if (isNaN(value)) {
@@ -97,7 +103,10 @@ const tags = {
 		selfClosing: true, handle: async (rive, data, user, scope) => {
 			let split = data.split("=");
 			let name = split[0].trim();
-			let existingValue = await rive.getUservar(user, name) || 0;
+			let existingValue = await rive.getUservar(user, name);
+            if(existingValue === "undefined") {
+                existingValue = 0;
+            }
 			let value = parseInt(split[1].trim());
 			let existingNumber = parseInt(existingValue);
 			if (isNaN(value)) {
@@ -115,7 +124,10 @@ const tags = {
 		selfClosing: true, handle: async (rive, data, user, scope) => {
 			let split = data.split("=");
 			let name = split[0].trim();
-			let existingValue = await rive.getUservar(user, name) || 0;
+			let existingValue = await rive.getUservar(user, name);
+            if(existingValue === "undefined") {
+                existingValue = 0;
+            }
 			let value = parseInt(split[1].trim());
 			let existingNumber = parseInt(existingValue);
 			if (isNaN(value)) {
