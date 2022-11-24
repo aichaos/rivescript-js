@@ -1,5 +1,13 @@
 # Changes
 
+## 2.2.1 - Nov 23 2022
+
+- Bugfix: number tags `<add>`, `<sub>`, `<mult>` or `<div>` were not
+  working on new variables (returning an error like "could not 'add'
+  non-numeric user variable" because the variable was 'undefined').
+  This is now fixed and undefined variables evaluate as zero to be
+  modified by these tags.
+
 ## 2.2.0 - Oct 1 2021
 
 This release includes various bugfixes and features from the GitHub

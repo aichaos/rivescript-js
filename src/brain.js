@@ -62,6 +62,7 @@ const tags = {
 			let split = data.split("=");
 			let name = split[0].trim();
 			let existingValue = await rive.getUservar(user, name) || 0;
+			if (existingValue === 'undefined') existingValue = 0;
 			let value = parseInt(split[1].trim());
 			let existingNumber = parseInt(existingValue);
 			if (isNaN(value)) {
@@ -81,6 +82,7 @@ const tags = {
 			let name = split[0].trim();
 			let existingValue = await rive.getUservar(user, name) || 0;
 			let value = parseInt(split[1].trim());
+			if (existingValue === 'undefined') existingValue = 0;
 			let existingNumber = parseInt(existingValue);
 			if (isNaN(value)) {
 				return `[ERR: Math can't 'sub' non-numeric value '${value}']`;
@@ -99,6 +101,7 @@ const tags = {
 			let name = split[0].trim();
 			let existingValue = await rive.getUservar(user, name) || 0;
 			let value = parseInt(split[1].trim());
+			if (existingValue === 'undefined') existingValue = 0;
 			let existingNumber = parseInt(existingValue);
 			if (isNaN(value)) {
 				return `[ERR: Math can't 'mult' non-numeric value '${value}']`;
@@ -117,6 +120,7 @@ const tags = {
 			let name = split[0].trim();
 			let existingValue = await rive.getUservar(user, name) || 0;
 			let value = parseInt(split[1].trim());
+			if (existingValue === 'undefined') existingValue = 0;
 			let existingNumber = parseInt(existingValue);
 			if (isNaN(value)) {
 				return `[ERR: Math can't 'div' non-numeric value '${value}']`;

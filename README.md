@@ -223,6 +223,14 @@ purpose, I have a Makefile.
 * `make test` - runs `nodeunit` on the ES2015+ test sources directly without
   building them as `npm run test` would.
 
+### Error "digital envelope routines::unsupported"
+
+I ran into this on Fedora 37/node 18.7.0; the answer from https://github.com/webpack/webpack/issues/14532 is to:
+
+```bash
+export NODE_OPTIONS=--openssl-legacy-provider
+```
+
 ## PUBLISHING
 
 Steps for the npm maintainer of this module:

@@ -6,11 +6,11 @@ TestCase = require("./test-base");
 //###############################################################################
 // calculation (add,sub) tests
 //###############################################################################
-exports.test_addition = async function(test) {
+exports.test_addition = async function (test) {
 	var bot;
 	bot = new TestCase(test, `
 		+ test counter
-		- <set counter=0>counter set
+		- counter set
 
 		+ show
 		- counter = <get counter>
@@ -30,9 +30,18 @@ exports.test_addition = async function(test) {
 		- <set counter=10>
 		^ <mult counter=2>
 		^ multing
+
+		+ subtractor
+		- <sub subtractor=1>Subtractor is now: <get subtractor>
+
+		+ multiplier
+		- <mult multiplier=2>Multiplier is now: <get multiplier>
+
+		+ diviser
+		- <div diviser=2>Diviser is now: <get diviser>
 	`);
 	await bot.reply("test counter", "counter set");
-	await bot.reply("show", "counter = 0");
+	await bot.reply("show", "counter = undefined");
 	await bot.reply("add", "adding");
 	await bot.reply("show", "counter = 1");
 	await bot.reply("sub", "subbing");
@@ -41,5 +50,13 @@ exports.test_addition = async function(test) {
 	await bot.reply("show", "counter = 5");
 	await bot.reply("mult", "multing");
 	await bot.reply("show", "counter = 20");
+	await bot.reply("subtractor", "Subtractor is now: -1");
+	await bot.reply("subtractor", "Subtractor is now: -2");
+	await bot.reply("multiplier", "Multiplier is now: 0");
+	await bot.reply("diviser", "Diviser is now: 0");
+	await bot.rs.setUservar("localuser", "multiplier", "4");
+	await bot.rs.setUservar("localuser", "diviser", "128");
+	await bot.reply("multiplier", "Multiplier is now: 8");
+	await bot.reply("diviser", "Diviser is now: 64");
 	return test.done();
 };
